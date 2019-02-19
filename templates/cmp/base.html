@@ -1,0 +1,40 @@
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Оценивание групп по критериям</title>
+    <link href="{% static "css/bootstrap.min.css" %}" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <form name="form" action="{% url "cmp:calculate" %}" method="post">
+        {% csrf_token %}
+        {% for cr in all_criteria %}
+            {% if cr|length > 1 %}
+                <p>Наука</p>
+            {% endif %}
+            {% for key, value in cr.items %}
+                <p>{{ key }}</p>
+                <div class="row">
+                    {% for v in value %}
+                        <div class="form-group col-sm-1">
+                            <label for="ex">{{ v.0 }}</label>
+                            <input class="form-control" id="ex" type="text" value="{{ v.1 }}">
+                        </div>
+                        {#                            {% update_variable counter %}#}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        <button сlass="btn btn-primary labelText">
+            Генерация
+        </button>
+        <button type="submit" class="btn btn-primary labelText">
+            Применить
+        </button>
+    </form>
+</div>
+</body>
+</html>
