@@ -46,7 +46,7 @@ def cmp(weights):
         patriotism_norm.append((patriotism[i] - min_patriotism) / (max_patriotism - min_patriotism) * 10)
     for i in range(len(data)):
         new_ranking.append(
-            culture_norm[i] + sport_norm[i] + science_norm[i] + social_norm[i] + patriotism[i] + academic_performance[
+            culture_norm[i] + sport_norm[i] + science_norm[i] + social_norm[i] + patriotism_norm[i] + academic_performance[
                 i])
     return deviation_sum(old_ranking, new_ranking)
 
