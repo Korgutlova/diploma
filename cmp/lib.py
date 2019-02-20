@@ -2,7 +2,7 @@ import math
 
 from openpyxl import load_workbook
 
-file = '../data.xlsx'
+file = './data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 

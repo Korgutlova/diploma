@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="container">
-    <form name="form" action="{% url "cmp:calculate" %}" method="post">
+    <form name="form" action="{% url "cmp:base" %}" method="post">
         {% csrf_token %}
         {% for cr in all_criteria %}
             {% if cr|length > 1 %}
