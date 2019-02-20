@@ -1,3 +1,6 @@
+import functools
+import itertools
+
 from django.shortcuts import render
 
 
@@ -16,7 +19,8 @@ def base_page(request):
                     {"Общественная": pattern}
                     ]
 
-    return render(request, 'cmp/base.html', {"all_criteria": all_criteria})
+    return render(request, 'cmp/base.html',
+                  {"all_criteria": all_criteria, 'counter': functools.partial(next, itertools.count())})
 
 
 def calculate(request):
