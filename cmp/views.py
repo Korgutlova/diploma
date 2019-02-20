@@ -23,25 +23,19 @@ def base_page(request):
     old_ranking = []
     new_ranking = []
     difference = []
+    name_groups = []
+    func = lambda x: float("{0:.3f}".format(x))
     if request.method == "POST":
         weights = []
         for i in range(45):
             weights.append(int(request.POST[str(i)][0]))
-        old_ranking, new_ranking, difference = cmp(weights)
-        print(old_ranking)
-        print(new_ranking)
-        print(difference)
-
+        old_ranking, new_ranking, difference, name_groups = cmp(weights)
+        print("old", old_ranking)
+        print("new", new_ranking)
+        print("diff", difference)
+    new_ranking = map(func, new_ranking)
+    difference = map(func, difference)
     return render(request, 'cmp/base.html',
                   {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
-                   'counter_name': functools.partial(next, itertools.count()), 'new_ranking': new_ranking,
-                   'old_ranking': old_ranking, 'difference': difference})
-
-
-def calculate(request):
-    n = 20
-    for a in range(n):
-        print(a)
-    # return Redirect(reverse("cmp:base", kwargs={}))
-
-    return render(request, 'cmp/base.html', {})
+                   'counter_name': functools.partial(next, itertools.count()),
+                   'ranking': zip(old_ranking, new_ranking, difference, name_groups)})

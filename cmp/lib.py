@@ -10,6 +10,7 @@ ws = wb.get_sheet_by_name('Входные данные')
 
 data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
 
+name_groups = [cell[0].value for cell in ws['A2':'A16']]
 old_ranking = [cell[0].value for cell in ws['B2':'B16']]
 academic_performance = [cell[0].value for cell in ws['C2':'C16']]
 
@@ -51,7 +52,7 @@ def cmp(weights):
             culture_norm[i] + sport_norm[i] + science_norm[i] + social_norm[i] + patriotism_norm[i] +
             academic_performance[
                 i])
-    return old_ranking, new_ranking, [abs(old - new) for old, new in zip(old_ranking, new_ranking)]
+    return old_ranking, new_ranking, [abs(old - new) for old, new in zip(old_ranking, new_ranking)], name_groups
 
 
 # def deviation_sum(old_ranking, new_ranking):

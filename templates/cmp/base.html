@@ -10,34 +10,68 @@
     </script>
 </head>
 <body>
-<div class="container">
-    <form name="form" action="{% url "cmp:base" %}" method="post">
-        {% csrf_token %}
-        {% for cr in all_criteria %}
-            {% if cr|length > 1 %}
-                <p>Наука</p>
-            {% endif %}
-            {% for key, value in cr.items %}
-                <p>{{ key }}</p>
-                <div class="row">
-                    {% for v in value %}
-                        <div class="form-group col-sm-1">
-                            <label for="ex">{{ v.0 }}</label>
-                            <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}" type="text"
-                                   value="{{ v.1 }}">
-                        </div>
-                        {#                            {% update_variable counter %}#}
+<br>
+
+<div class="row">
+    <div class="col-xs-5">
+        <div class="container">
+            <div class="col-md-5">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Группа</th>
+                        <th scope="col">Жюри</th>
+                        <th scope="col">???</th>
+                        <th scope="col">Разница</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for old, new, diff, name in ranking %}
+                        <tr>
+                            <th scope="row">{{ name }}</th>
+                            <td>{{ old }}</td>
+                            <td>{{ new }}</td>
+                            <td>{{ diff }}</td>
+                        </tr>
                     {% endfor %}
-                </div>
-            {% endfor %}
-        {% endfor %}
-        <button type="submit" class="btn btn-primary labelText">
-            Применить
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-7">
+        <div class="container">
+            <form name="form" action="{% url "cmp:base" %}" method="post">
+                {% csrf_token %}
+                {% for cr in all_criteria %}
+                    {% if cr|length > 1 %}
+                        <p>Наука</p>
+                    {% endif %}
+                    {% for key, value in cr.items %}
+                        <p>{{ key }}</p>
+                        <div class="row">
+                            {% for v in value %}
+                                <div class="form-group col-xs-1">
+                                    <label for="ex">{{ v.0 }}</label>
+                                    <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}"
+                                           type="text"
+                                           value="{{ v.1 }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                <button type="submit" class="btn btn-primary labelText">
+                    Применить
+                </button>
+            </form>
+        </div>
+        <button сlass="btn btn-primary labelText" onclick="gen()">
+            Генерация
         </button>
-    </form>
-    <button сlass="btn btn-primary labelText" onclick="gen()">
-        Генерация
-    </button>
+    </div>
 </div>
+{#</div>#}
 </body>
 </html>

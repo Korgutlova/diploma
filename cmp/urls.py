@@ -6,5 +6,4 @@ app_name = "cmp"
 
 urlpatterns = [
     url(r'^base$', base_page, name="base"),
-    url(r'^base$', calculate, name="calculate"),
 ]
