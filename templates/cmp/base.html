@@ -29,9 +29,9 @@
                     {% for old, new, diff, name in ranking %}
                         <tr>
                             <th scope="row">{{ name }}</th>
-                            <td>{{ old }}</td>
-                            <td>{{ new }}</td>
-                            <td>{{ diff }}</td>
+                            <td id="old{{ forloop.counter0 }}">{{ old }}</td>
+                            <td id="new{{ forloop.counter0 }}">{{ new }}</td>
+                            <td id="dif{{ forloop.counter0 }}">{{ diff }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -53,7 +53,7 @@
                         <div class="row">
                             {% for v in value %}
                                 <div class="form-group col-xs-1">
-                                    <label for="ex">{{ v.0 }}</label>
+                                    <label>{{ v.0 }}</label>
                                     <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}"
                                            type="text"
                                            value="{{ v.1 }}">
@@ -74,4 +74,29 @@
 </div>
 {#</div>#}
 </body>
+<script>
+    function func1() {
+        var len = 15;
+        var color = "";
+        colors = ["#ff0000",
+            "#ff2700", "#ff3a00", "#ff4800", "#ff5500", "#ff6000", "#ff6a00", "#ff7400", "#ff7d00",
+            "#ff8600", "#ff8f00", "#ff9700", "#ff9f00", "#ffa800", "#ffaf00", "#ffb700", "#ffbf00", "#ffc700", "#ffce00",
+            "#ffd600", "#ffde00", "#ffe500", "#ffec00", "#fff400", "#fffb00", "#fafc00", "#f1f700", "#e8f200", "#dfed00",
+            "#d6e700", "#cde200", "#c4dd00", "#bbd800", "#b2d200", "#a9cd00", "#a1c800", "#98c300", "#8fbe00", "#86b800",
+            "#7db300", "#73ae00", "#6aa900", "#61a400", "#579f00", "#4d9a00", "#439400", "#388f00", "#2b8a00", "#1b8500",
+            "#008000"];
+
+        for (i = 0; i < len; i++) {
+            perc = document.getElementById("dif" + i).innerText;
+            color = colors[50 - Math.ceil(perc)];
+            document.getElementById("old" + i).style.backgroundColor = color;
+            document.getElementById("new" + i).style.backgroundColor = color;
+        }
+    }
+
+    window.onload = func1;
+
+</script>
+
+
 </html>
