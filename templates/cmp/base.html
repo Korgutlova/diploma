@@ -21,7 +21,7 @@
                     {% for v in value %}
                         <div class="form-group col-sm-1">
                             <label for="ex">{{ v.0 }}</label>
-                            <input class="form-control" id="{{ counter }}" type="text" value="{{ v.1 }}">
+                            <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}" type="text" value="{{ v.1 }}">
                         </div>
                         {#                            {% update_variable counter %}#}
                     {% endfor %}

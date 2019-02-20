@@ -20,7 +20,8 @@ def base_page(request):
                     ]
 
     return render(request, 'cmp/base.html',
-                  {"all_criteria": all_criteria, 'counter': functools.partial(next, itertools.count())})
+                  {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
+                   'counter_name': functools.partial(next, itertools.count())})
 
 
 def calculate(request):
