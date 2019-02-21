@@ -11,80 +11,103 @@
 </head>
 <body>
 <br>
-
-<div class="row">
-    <div class="col-xs-5">
-        <div class="container">
-            <div class="col-md-5">
-                <table class="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th scope="col">Группа</th>
-                        <th scope="col">Жюри</th>
-                        <th scope="col">???</th>
-                        <th scope="col">Разница</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for old, new, diff, name in ranking %}
+<br>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="container">
+                <div class="col-md-5">
+                    <table class="table table-bordered">
+                        <caption class="text-center" style="font-family: 'Comic Sans MS',monospace"><strong>Сравнение
+                            полученных оценок</strong></caption>
+                        <thead>
                         <tr>
-                            <th scope="row">{{ name }}</th>
-                            <td id="old{{ forloop.counter0 }}">{{ old }}</td>
-                            <td id="new{{ forloop.counter0 }}">{{ new }}</td>
-                            <td id="dif{{ forloop.counter0 }}">{{ diff }}</td>
+                            <th scope="col">Группа</th>
+                            <th scope="col">Жюри</th>
+                            <th scope="col">???</th>
+                            <th scope="col">Разница</th>
                         </tr>
+                        </thead>
+                        <tbody>
+                        {% for old, new, diff, name in ranking %}
+                            <tr>
+                                <th scope="row">{{ name }}</th>
+                                <td id="old{{ forloop.counter0 }}">{{ old }}</td>
+                                <td id="new{{ forloop.counter0 }}">{{ new }}</td>
+                                <td id="dif{{ forloop.counter0 }}">{{ diff }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-6">
+            <div class="container">
+                <form name="form" action="{% url "cmp:base" %}" method="post">
+                    <div class="row">
+                        <div class="col-xs-2">
+                            <a href="#" onclick="gen()" class="btn btn-warning" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Генерация</span></a>
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" class="btn btn-primary labelText">
+                                <span style="font-family: 'Comic Sans MS',monospace">
+                                Применить
+                                    </span>
+                            </button>
+                        </div>
+                        <div class="col-xs-2">
+                            <a href="#" class="btn btn-info" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Лучшие результаты</span></a>
+                        </div>
+                    </div>
+                    <br><br>
+
+                    {% csrf_token %}
+                    {% for cr in all_criteria %}
+                        {% if cr|length > 1 %}
+                            <h4><span
+                                    style="font-family: 'Comic Sans MS',monospace; color: #3d4352; "><strong>Наука</strong></span>
+                            </h4>
+                            <br>
+                        {% endif %}
+                        {% for key, value in cr.items %}
+                            <h4><span
+                                    style="font-family: 'Comic Sans MS',monospace; color: #3d4352; "><strong>{{ key }}</strong></span>
+                            </h4>
+                            <hr  align="left" width="50%">
+                            <div class="row">
+                                {% for v in value %}
+                                    <div class="form-group col-xs-1">
+                                        <label>{{ v.0 }}</label>
+                                        <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}"
+                                               type="text"
+                                               value="{{ v.1 }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
                     {% endfor %}
-                    </tbody>
-                </table>
+
+                </form>
             </div>
         </div>
     </div>
-
-    <div class="col-xs-7">
-        <div class="container">
-            <form name="form" action="{% url "cmp:base" %}" method="post">
-                {% csrf_token %}
-                {% for cr in all_criteria %}
-                    {% if cr|length > 1 %}
-                        <p>Наука</p>
-                    {% endif %}
-                    {% for key, value in cr.items %}
-                        <p>{{ key }}</p>
-                        <div class="row">
-                            {% for v in value %}
-                                <div class="form-group col-xs-1">
-                                    <label>{{ v.0 }}</label>
-                                    <input class="form-control" id="{{ counter_id }}" name="{{ counter_name }}"
-                                           type="text"
-                                           value="{{ v.1 }}">
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                {% endfor %}
-                <button type="submit" class="btn btn-primary labelText">
-                    Применить
-                </button>
-            </form>
-        </div>
-        <button сlass="btn btn-primary labelText" onclick="gen()">
-            Генерация
-        </button>
-    </div>
 </div>
-{#</div>#}
+<br>
 </body>
 <script>
     function func1() {
         var len = 15;
         var color = "";
-        colors = ["#ff0000",
-            "#ff2700", "#ff3a00", "#ff4800", "#ff5500", "#ff6000", "#ff6a00", "#ff7400", "#ff7d00",
-            "#ff8600", "#ff8f00", "#ff9700", "#ff9f00", "#ffa800", "#ffaf00", "#ffb700", "#ffbf00", "#ffc700", "#ffce00",
-            "#ffd600", "#ffde00", "#ffe500", "#ffec00", "#fff400", "#fffb00", "#fafc00", "#f1f700", "#e8f200", "#dfed00",
-            "#d6e700", "#cde200", "#c4dd00", "#bbd800", "#b2d200", "#a9cd00", "#a1c800", "#98c300", "#8fbe00", "#86b800",
-            "#7db300", "#73ae00", "#6aa900", "#61a400", "#579f00", "#4d9a00", "#439400", "#388f00", "#2b8a00", "#1b8500",
-            "#008000"];
+        colors = ['#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000',
+            '#ff0000', '#ff0000', '#ff0000', '#ff2200', '#ff3800', '#ff4700', '#ff5400', '#ff6000', '#ff6b00', '#ff7500',
+            '#ff7e00', '#ff8700', '#ff9000', '#ff9900', '#ffa100', '#ffa900', '#ffb000', '#ffb800', '#ffbf00', '#ffc700',
+            '#ffce00', '#ffd500', '#ffdd00', '#ffe400', '#ffeb00', '#fff200', '#fffa00', '#fafc00', '#e8f200', '#d6e700',
+            '#c4dd00', '#b2d200', '#a1c800', '#8fbe00', '#7db300', '#6aa900', '#579f00', '#439400', '#2b8a00', '#008000'];
 
         for (i = 0; i < len; i++) {
             perc = document.getElementById("dif" + i).innerText;
