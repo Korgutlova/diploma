@@ -3,7 +3,7 @@ import itertools
 
 from django.shortcuts import render
 
-from cmp.lib import cmp
+from cmp.lib import cmp, fill_inputs
 
 
 def base_page(request):
@@ -33,6 +33,7 @@ def base_page(request):
         print("old", old_ranking)
         print("new", new_ranking)
         print("diff", difference)
+        all_criteria = fill_inputs(weights)
     new_ranking = map(func, new_ranking)
     difference = map(func, difference)
     return render(request, 'cmp/base.html',
