@@ -51,4 +51,4 @@ def best_weights(request):
         w = (w, b_w.deviations_sum)
         result.append(w)
     print(result)
-    return render(request, 'cmp/best_weights.html', {'best_weights': best_weights })
+    return render(request, 'cmp/best_weights.html', {'best_weights': result })
