@@ -3,7 +3,8 @@ import itertools
 
 from django.shortcuts import render
 
-from cmp.lib import cmp, fill_inputs
+from cmp.lib import cmp, fill_inputs, put_best
+from cmp.models import Weights
 
 
 def base_page(request):
@@ -30,6 +31,7 @@ def base_page(request):
         for i in range(45):
             weights.append(int(request.POST[str(i)][0]))
         old_ranking, new_ranking, difference, name_groups = cmp(weights)
+        put_best(weights, sum(difference))
         print("old", old_ranking)
         print("new", new_ranking)
         print("diff", difference)
@@ -40,3 +42,13 @@ def base_page(request):
                   {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
                    'counter_name': functools.partial(next, itertools.count()),
                    'ranking': zip(old_ranking, new_ranking, difference, name_groups)})
+
+def best_weights(request):
+    result = []
+    best_weights = Weights.objects.all().order_by('deviations_sum')
+    for b_w in best_weights:
+        w = b_w.weights.split()
+        w = (w, b_w.deviations_sum)
+        result.append(w)
+    print(result)
+    return render(request, 'cmp/best_weights.html', {'best_weights': best_weights })

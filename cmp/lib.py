@@ -4,6 +4,8 @@ import math
 import numpy as np
 from openpyxl import load_workbook
 
+from cmp.models import Weights
+
 file = './data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
@@ -90,6 +92,18 @@ def fill_inputs(weights):
                     ]
 
     return all_criteria
+
+
+K = 20
+
+
+def put_best(weights, sum):
+    objects = Weights.objects.all().order_by('-deviations_sum')
+    if objects.count() < K:
+        Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum)
+    elif objects.first().deviations_sum > sum:
+            objects.first().delete()
+            Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum)
 
 # def deviation_sum(old_ranking, new_ranking):
 #     return sum([(old - new) ** 2 for old, new in zip(old_ranking, new_ranking)])
