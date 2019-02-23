@@ -52,9 +52,10 @@ def best_weights(request):
 
 
 def load_data(request, id):
-    weights = list(map(int,Weights.objects.get(id=id).weights.split()))
+    weights = list(map(int, Weights.objects.get(id=id).weights.split()))
     result, all_criteria = cmp(weights), fill_inputs(weights)
+    func = lambda x: float("{0:.3f}".format(x))
     return render(request, 'cmp/base.html',
                   {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
                    'counter_name': functools.partial(next, itertools.count()),
-                   'ranking': zip(result[0], result[1], result[2], result[3])})
+                   'ranking': zip(result[0], map(func, result[1]), map(func, result[2]), result[3])})
