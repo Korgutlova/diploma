@@ -1,6 +1,7 @@
 import functools
 import itertools
 
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from cmp.lib import cmp, fill_inputs, put_best
@@ -43,12 +44,21 @@ def base_page(request):
                    'counter_name': functools.partial(next, itertools.count()),
                    'ranking': zip(old_ranking, new_ranking, difference, name_groups)})
 
+
 def best_weights(request):
     result = []
     best_weights = Weights.objects.all().order_by('deviations_sum')
     for b_w in best_weights:
         w = b_w.weights.split()
-        w = (w, b_w.deviations_sum)
+        w = [w, float("{0:.3f}".format(b_w.deviations_sum)), b_w.id]
         result.append(w)
     print(result)
-    return render(request, 'cmp/best_weights.html', {'best_weights': result })
+    return render(request, 'cmp/best_weights.html', {'best_weights': result})
+
+
+# метод необходим для применения сохраненных весов к группам
+def load_data(request, id):
+    weight = Weights.objects.get(id=id)
+    print(weight.weights)
+    # надо вернуть base страницу (то есть берем веса и применяем, заново выводим табицу)
+    return HttpResponse("OK! id=%s" % id)

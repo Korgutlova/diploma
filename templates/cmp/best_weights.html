@@ -1,0 +1,54 @@
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Лучшие веса критериев</title>
+    <link href="{% static "css/bootstrap.min.css" %}" type="text/css" rel="stylesheet"/>
+    <script type="text/javascript" src="{% static "js/generation.js" %}">
+    </script>
+</head>
+<body>
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="col-md-9">
+        <table class="table table-bordered">
+            <caption class="text-center" style="font-family: 'Comic Sans MS',monospace"><strong>Лучшие веса</strong>
+            </caption>
+            <thead>
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Веса</th>
+                <th scope="col">Сумма</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in best_weights %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td style="text-align: center;">
+                        {% with arr=r.0 %}
+                            {% for weight in arr %}
+                                {{ weight }}
+                            {% endfor %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ r.1 }}</td>
+                    <td>
+                        <div class="col-xs-2">
+                            <a href="{% url "cmp:load_db" id=r.2 %}" class="btn btn-info" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Применить</span></a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
