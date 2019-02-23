@@ -46,19 +46,15 @@ def base_page(request):
 
 
 def best_weights(request):
-    result = []
     best_weights = Weights.objects.all().order_by('deviations_sum')
-    for b_w in best_weights:
-        w = b_w.weights.split()
-        w = [w, float("{0:.3f}".format(b_w.deviations_sum)), b_w.id]
-        result.append(w)
-    print(result)
+    result = [[b_w.weights.split(), float("{0:.3f}".format(b_w.deviations_sum)), b_w.id] for b_w in best_weights]
     return render(request, 'cmp/best_weights.html', {'best_weights': result})
 
 
-# метод необходим для применения сохраненных весов к группам
 def load_data(request, id):
-    weight = Weights.objects.get(id=id)
-    print(weight.weights)
-    # надо вернуть base страницу (то есть берем веса и применяем, заново выводим табицу)
-    return HttpResponse("OK! id=%s" % id)
+    weights = list(map(int,Weights.objects.get(id=id).weights.split()))
+    result, all_criteria = cmp(weights), fill_inputs(weights)
+    return render(request, 'cmp/base.html',
+                  {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
+                   'counter_name': functools.partial(next, itertools.count()),
+                   'ranking': zip(result[0], result[1], result[2], result[3])})
