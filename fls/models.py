@@ -29,6 +29,7 @@ class Param(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_params', on_delete=models.CASCADE,
                                     blank=False, null=False)
     name = models.CharField(max_length=30)
+    description = models.TextField()
     max = models.IntegerField()
     min = models.IntegerField()
 

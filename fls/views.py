@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def params(request):
+    return render(request, 'fls/add_params.html', {})

@@ -1,9 +1,9 @@
 from django.conf.urls import url
 
-from cmp.views import *
+from fls.views import *
 
 app_name = "fls"
 
 urlpatterns = [
-
+    url(r'^params$', params, name="params"),
 ]
