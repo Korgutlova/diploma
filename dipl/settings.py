@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cmp',
     'django.contrib.sites',
+    'fls',
 ]
 
 SITE_ID = 1

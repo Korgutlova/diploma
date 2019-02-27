@@ -20,4 +20,5 @@ from django.conf.urls import include
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^app/', include('cmp.urls', namespace="cmp")),
+    url(r'^fls/', include('fls.urls', namespace="fls")),
 ]
