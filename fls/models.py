@@ -28,6 +28,7 @@ class Group(models.Model):
 
 class Param(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, blank=False, null=False)
+    name = models.CharField(max_length=30)
     max = models.IntegerField()
     min = models.IntegerField()
 
