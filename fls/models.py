@@ -55,7 +55,7 @@ class ParamValue(models.Model):
 
 class Criterion(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_criterions', on_delete=models.CASCADE,
-                                    blank=False, null=False)
+                                    blank=True, null=True)
     name = models.CharField(max_length=20, unique=True)
     formula = models.TextField()
 
