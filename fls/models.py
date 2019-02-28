@@ -3,11 +3,6 @@ from django.db import models
 
 # Create your models here.
 
-class Competition(models.Model):
-    name = models.CharField(max_length=40, unique=True)
-    description = models.TextField()
-
-
 YEAR_CHOICES = (
     (1, '1'),
     (2, '2'),
@@ -16,6 +11,16 @@ YEAR_CHOICES = (
     (5, '1(магистратура)'),
     (6, '2(магистратура)'),
 )
+
+class Competition(models.Model):
+    name = models.CharField(max_length=40, unique=True)
+    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True)
+    description = models.TextField()
+
+
+    class Meta:
+        unique_together = (('name', 'description'),)
+
 
 
 class Group(models.Model):
@@ -27,18 +32,21 @@ class Group(models.Model):
 
 class Param(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_params', on_delete=models.CASCADE,
-                                    blank=False, null=False)
+                                    blank=True, null=True)
     name = models.CharField(max_length=30)
     description = models.TextField()
     max = models.IntegerField()
     min = models.IntegerField()
+
+    class Meta:
+        unique_together = (('name', 'description'),)
 
 
 class ParamValue(models.Model):
     param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
     group = models.ForeignKey(Group, related_name='group_param_values', on_delete=models.CASCADE, blank=False,
                               null=False)
-    value = models.FloatField()
+    value = models.FloatField(default=0)
     person_count = models.IntegerField()
 
     class Meta:
@@ -46,19 +54,19 @@ class ParamValue(models.Model):
 
 
 class Criterion(models.Model):
+    competition = models.ForeignKey(Competition, related_name='competition_criterions', on_delete=models.CASCADE,
+                                    blank=False, null=False)
     name = models.CharField(max_length=20, unique=True)
     formula = models.TextField()
-    params = models.ManyToManyField(Param, related_name='param_criterions')
 
 
 class CriterionValue(models.Model):
-    competition = models.ForeignKey(Competition, related_name='competition_criterion_values', on_delete=models.CASCADE,
-                                    blank=False, null=False)
+
     criterion = models.ForeignKey(Criterion, related_name='criterion_values', on_delete=models.CASCADE, blank=False,
                                   null=False)
     group = models.ForeignKey(Group, related_name='group_criterion_values', on_delete=models.CASCADE, blank=False,
                               null=False)
-    value = models.FloatField()
+    value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('competition', 'criterion', 'group'),)
+        unique_together = (('criterion', 'group'),)
