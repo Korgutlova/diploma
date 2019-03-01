@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание критерия</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+{# first try #}
+<div class="container">
+    <br>
+    <h4>Параметры</h4>
+    {% for p in params %}
+        <button type="button" class="btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
+    {% endfor %}
+    <hr>
+    <h4>Операции</h4>
+    {# hardcode #}
+    <div class="oper">
+        <button type="button" class="btn" id="plus">+</button>
+        <button type="button" class="btn" id="minus">-</button>
+        <button type="button" class="btn" id="div">/</button>
+        <button type="button" class="btn" id="mult">*</button>
+    </div>
+
+    <hr>
+    <h4>Функции</h4>
+    <div class="func">
+        <button type="button" class="btn btn-warning" id="max">max()</button>
+        <button type="button" class="btn btn-warning" id="min">min()</button>
+        <button type="button" class="btn btn-warning" id="avg">avg()</button>
+        <button type="button" class="btn btn-warning" id="sum">sum()</button>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-5">
+            <label>Формула
+                <textarea style="resize: none;" class="form-control rounded-0" rows="5" cols="40" id="desc" name="desc"
+                          disabled></textarea>
+
+            </label>
+        </div>
+        <br>
+        <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span> back
+        </button>
+    </div>
+    <form name="form" action="{% url 'fls:criteria' %}" method="post">
+        {% csrf_token %}
+        <br>
+        <input type="text" id="formula" name="formula" disabled hidden>
+        <hr>
+        <button type="submit" class="btn btn-primary labelText">
+                                <span style="font-family: 'Comic Sans MS',monospace">
+                                Сохранить
+                                    </span>
+        </button>
+        <button type="submit" class="btn btn-success labelText">
+                                <span style="font-family: 'Comic Sans MS',monospace">
+                                Сохранить и добавить еще критерий
+                                    </span>
+        </button>
+    </form>
+</div>
+</body>
+
+<script>
+    $(document).ready(function () {
+        $(document).on('click', '.param', function () {
+            $("#desc").append("a_" + $(this).attr("id") + " ");
+        });
+
+        $(".oper").on('click', '.btn', function () {
+            var symb = $("#desc").val().slice(-2).slice(0, 1);
+            var bool = true;
+            $(".oper > .btn").each(function () {
+                if ($(this).text() === symb) {
+                    bool = false;
+                }
+            });
+            if (bool) {
+                $("#desc").append($(this).text() + " ");
+            }
+
+        });
+
+
+    });
+</script>
+</html>

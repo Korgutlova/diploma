@@ -6,4 +6,5 @@ app_name = "fls"
 
 urlpatterns = [
     url(r'^params$', params, name="params"),
+    url(r'^criteria$', criteria, name="criteria"),
 ]

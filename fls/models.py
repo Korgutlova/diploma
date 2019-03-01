@@ -1,6 +1,5 @@
 from django.db import models
 
-
 # Create your models here.
 
 YEAR_CHOICES = (
@@ -12,15 +11,14 @@ YEAR_CHOICES = (
     (6, '2(магистратура)'),
 )
 
+
 class Competition(models.Model):
     name = models.CharField(max_length=40, unique=True)
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True)
     description = models.TextField()
 
-
     class Meta:
         unique_together = (('name', 'description'),)
-
 
 
 class Group(models.Model):
@@ -61,7 +59,6 @@ class Criterion(models.Model):
 
 
 class CriterionValue(models.Model):
-
     criterion = models.ForeignKey(Criterion, related_name='criterion_values', on_delete=models.CASCADE, blank=False,
                                   null=False)
     group = models.ForeignKey(Group, related_name='group_criterion_values', on_delete=models.CASCADE, blank=False,
