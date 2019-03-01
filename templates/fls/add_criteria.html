@@ -6,9 +6,9 @@
     <title>Создание критерия</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-{# first try #}
 <div class="container">
     <h3>Создание критерия</h3>
     <hr>
@@ -29,10 +29,10 @@
     <hr>
     <h4>Функции</h4>
     <div class="func">
-        <button type="button" class="btn btn-warning" id="max">max()</button>
-        <button type="button" class="btn btn-warning" id="min">min()</button>
-        <button type="button" class="btn btn-warning" id="avg">avg()</button>
-        <button type="button" class="btn btn-warning" id="sum">sum()</button>
+        <button type="button" class="btn btn-warning" id="max">max</button>
+        <button type="button" class="btn btn-warning" id="min">min</button>
+        <button type="button" class="btn btn-warning" id="avg">avg</button>
+        <button type="button" class="btn btn-warning" id="sum">sum</button>
     </div>
     <hr>
     <div class="row">
@@ -63,30 +63,110 @@
                                     </span>
         </button>
     </form>
+
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" id="closeModal" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Выберите параметры для функции <span id="insert"></span></h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="checkAll">
+                            <label class="form-check-label" for="checkAll">Выбрать все</label>
+                        </div>
+                        {% for p in params %}
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="item" id="{{ p.id }}">
+                                <label class="form-check-label" for="{{ p.id }}">{{ p.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="apply_checkbox"><span
+                            style="font-family: 'Comic Sans MS',monospace">Применить</span></button>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
+
 </body>
 
 <script>
     $(document).ready(function () {
+        var array = [];
         $(document).on('click', '.param', function () {
-            $("#desc").append("a_" + $(this).attr("id") + " ");
+            var str = "a_" + $(this).attr("id") + " ";
+            if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
+                && false === array[array.length - 1].endsWith(") "))) {
+                array.push(str);
+            }
+            full_textarea();
         });
 
         $(".oper").on('click', '.btn', function () {
-            var symb = $("#desc").val().slice(-2).slice(0, 1);
-            var bool = true;
-            $(".oper > .btn").each(function () {
-                if ($(this).text() === symb) {
-                    bool = false;
+            if (array.length !== 0) {
+                var elem = array[array.length - 1];
+                var bool = true;
+                $(".oper > .btn").each(function () {
+                    if ($(this).text() + " " === elem) {
+                        bool = false;
+                    }
+                });
+                if (bool) {
+                    array.push($(this).text() + " ");
                 }
-            });
-            if (bool) {
-                $("#desc").append($(this).text() + " ");
-            }
 
+                full_textarea();
+            }
         });
 
+        $("#back").click(function () {
+            array = array.slice(0, array.length - 1);
+            full_textarea();
+        });
 
+        $("#closeModal").click(function () {
+            $("input[name='item']:checked").prop('checked', false);
+            $("#insert").text('');
+        });
+
+        $("#apply_checkbox").click(function () {
+            var params = [];
+            $.each($("input[name='item']:checked"), function () {
+                params.push("a_" + $(this).attr("id"));
+                $(this).prop('checked', false);
+            });
+            array.push($("#insert").text() + "(" + params + ") ");
+            $("#insert").text('');
+            full_textarea();
+        });
+
+        function full_textarea() {
+            var i;
+            var content = "";
+            for (i = 0; i < array.length; i++) {
+                content += array[i];
+            }
+            $("#desc").val(content);
+        }
+
+        $(".func > .btn").click(function () {
+            if (array.length === 0 || false === array[array.length - 1].startsWith("a_")) {
+                $("#insert").append($(this).text());
+                $('#myModal').modal('show');
+            }
+        });
+
+        $("#checkAll").click(function () {
+            $(".form-check-input").prop('checked', $(this).prop('checked'));
+        });
     });
 </script>
 </html>
