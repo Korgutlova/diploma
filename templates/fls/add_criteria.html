@@ -158,7 +158,8 @@
         }
 
         $(".func > .btn").click(function () {
-            if (array.length === 0 || false === array[array.length - 1].startsWith("a_")) {
+            if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
+                && false === array[array.length - 1].endsWith(") "))) {
                 $("#insert").append($(this).text());
                 $('#myModal').modal('show');
             }
