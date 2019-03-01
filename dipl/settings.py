@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'cmp',
     'django.contrib.sites',
     'fls',
+    'widget_tweaks'
 ]
 
 SITE_ID = 1

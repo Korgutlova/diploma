@@ -13,8 +13,8 @@ YEAR_CHOICES = (
 
 
 class Competition(models.Model):
-    name = models.CharField(max_length=40, unique=True)
-    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True)
+    name = models.CharField(max_length=100, unique=True)
+    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0])
     description = models.TextField()
 
     class Meta:

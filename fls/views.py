@@ -26,8 +26,10 @@ def criteria(request):
 
 
 def comp(request):
-    if request.method == 'POST':
-        f = CompetitionForm(request.POST)
-        r = f.save()
     form = CompetitionForm()
+    if request.method == 'POST':
+        form = CompetitionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            form = CompetitionForm()
     return render(request, 'fls/add_comp.html', {"form": form})

@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,13 +15,29 @@
     <hr>
     <form name="form" action="{% url 'fls:comp' %}" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        {#        {{ form.as_p }}#}
+    <div style="width: 300px">
+        {% for field in form %}
+            <div class="form-group{% if field.errors %} has-error{% endif %}">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% render_field field class="form-control" %}
+                {% for error in field.errors %}
+                    <p class="help-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <p class="help-block">{{ error }}</p>
+        {% endfor %}
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Сохранить
                                     </span>
         </button>
+    </div>
     </form>
+
+
 </div>
 </body>
 </html>
