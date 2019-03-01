@@ -9,6 +9,8 @@
 </head>
 <body>
 <div class="container">
+    <h3>Создание параметров</h3>
+    <hr>
     <form name="form" action="{% url 'fls:params' %}" method="post">
         {% csrf_token %}
         <div class="param" id="param_1">

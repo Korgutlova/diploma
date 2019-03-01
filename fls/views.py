@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from fls.forms import CompetitionForm
 from fls.models import Param, Competition
 
 
@@ -22,3 +23,11 @@ def criteria(request):
 
     params = Param.objects.filter(competition=comp)
     return render(request, 'fls/add_criteria.html', {"params": params})
+
+
+def comp(request):
+    if request.method == 'POST':
+        f = CompetitionForm(request.POST)
+        r = f.save()
+    form = CompetitionForm()
+    return render(request, 'fls/add_comp.html', {"form": form})

@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание конкурса</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h3>Создание конкурса</h3>
+    <hr>
+    <form name="form" action="{% url 'fls:comp' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary labelText">
+                                <span style="font-family: 'Comic Sans MS',monospace">
+                                Сохранить
+                                    </span>
+        </button>
+    </form>
+</div>
+</body>
+</html>
