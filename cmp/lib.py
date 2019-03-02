@@ -1,12 +1,17 @@
 import copy
-import math
+from random import randint
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dipl.settings")
+django.setup()
 
 import numpy as np
 from openpyxl import load_workbook
 
 from cmp.models import Weights
 
-file = './data.xlsx'
+file = '../data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
@@ -104,6 +109,14 @@ def put_best(weights, sum):
     elif objects.first().deviations_sum > sum:
         objects.first().delete()
         Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum)
+
+
+def generate_random_weights(iter_count):
+    random_weights = [[randint(1, 9) for i in range(45)] for i in range(iter_count)]
+    for weights in random_weights:
+        put_best(weights, sum(cmp(weights)[2]))
+
+#generate_random_weights(1000000)
 
 # def deviation_sum(old_ranking, new_ranking):
 #     return sum([(old - new) ** 2 for old, new in zip(old_ranking, new_ranking)])
