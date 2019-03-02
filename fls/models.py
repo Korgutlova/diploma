@@ -13,12 +13,16 @@ YEAR_CHOICES = (
 
 
 class Competition(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0])
-    description = models.TextField()
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название")
+    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
+                                        verbose_name="Курс")
+    description = models.TextField(verbose_name="Описание конкурса")
 
     class Meta:
         unique_together = (('name', 'description'),)
+
+    def __str__(self):
+        return self.name
 
 
 class Group(models.Model):

@@ -135,6 +135,7 @@
         $("#closeModal").click(function () {
             $("input[name='item']:checked").prop('checked', false);
             $("#insert").text('');
+            $("#checkAll").prop('checked', false);
         });
 
         $("#apply_checkbox").click(function () {
@@ -145,6 +146,7 @@
             });
             array.push($("#insert").text() + "(" + params + ") ");
             $("#insert").text('');
+            $("#checkAll").prop('checked', false);
             full_textarea();
         });
 
