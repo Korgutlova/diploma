@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 
 from cmp.models import Weights
 
-file = '../data.xlsx'
+file = './data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
