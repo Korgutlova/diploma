@@ -17,14 +17,27 @@ wb = load_workbook(filename=file, data_only=True)
 
 ws = wb.get_sheet_by_name('Входные данные')
 
-data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
 
-name_groups = [cell[0].value for cell in ws['A2':'A16']]
-old_ranking = [cell[0].value for cell in ws['B2':'B16']]
-academic_performance = [cell[0].value for cell in ws['C2':'C16']]
+def cmp(weights, param='kfavg'):
+    ws = wb.get_sheet_by_name('Входные данные')
+    data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+    if param == 'kf':
+        ws = wb.get_sheet_by_name('Входные данные (кф)')
+        data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+    elif param == 'avg' or param == 'c':
+        ws = wb.get_sheet_by_name('Входные данные (кол)')
+        data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+        if param == 'avg':
+            counts = [cell[0].value for cell in ws['AW2':'AW16']]
+            for i in range(len(data)):
+                for j in range(len(data[i])):
+                    data[i][j] = data[i][j] / counts[i]
 
 
-def cmp(weights):
+    name_groups = [cell[0].value for cell in ws['A2':'A16']]
+    old_ranking = [cell[0].value for cell in ws['B2':'B16']]
+    academic_performance = [cell[0].value for cell in ws['C2':'C16']]
+
     new_ranking = []
 
     culture = []
@@ -116,7 +129,9 @@ def generate_random_weights(iter_count):
     for weights in random_weights:
         put_best(weights, sum(cmp(weights)[2]))
 
-#generate_random_weights(1000000)
+
+# generate_random_weights(1000000)
 
 # def deviation_sum(old_ranking, new_ranking):
 #     return sum([(old - new) ** 2 for old, new in zip(old_ranking, new_ranking)])
+

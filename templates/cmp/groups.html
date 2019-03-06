@@ -1,0 +1,147 @@
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Оценивание групп по критериям</title>
+    <link href="{% static "css/bootstrap.min.css" %}" type="text/css" rel="stylesheet"/>
+    <script type="text/javascript" src="{% static "js/generation.js" %}">
+    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    {#    <!-- jQuery Modal -->#}
+    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>#}
+    {#    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css"/>#}
+</head>
+<body>
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="container">
+                <div class="col-md-5">
+                    <table class="table table-bordered" id="itable">
+                        <caption class="text-center" style="font-family: 'Comic Sans MS',monospace"><strong>Сравнение
+                            полученных оценок</strong></caption>
+                        <thead>
+                        <tr>
+                            <th scope="col">Группа</th>
+                            <th scope="col">Жюри</th>
+                            <th scope="col">???</th>
+                            <th scope="col">Разница</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-6">
+            <div class="container">
+                <form name="form" action="{% url "cmp:base" %}" method="post">
+                    <div class="row">
+                        <div class="col-xs-2">
+                            <a href="#" class="btn btn-success" id="apply" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Применить</span></a>
+                        </div>
+                        <div class="col-xs-2">
+                            <a href="{% url "cmp:best" %}" class="btn btn-info" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Лучшие результаты</span></a>
+                        </div>
+
+                    </div>
+                    <br><br>
+
+                    <h4><span
+                            style="font-family: 'Comic Sans MS',monospace; color: #3d4352; "><strong>Параметры оценки</strong></span>
+                    </h4>
+                    <hr align="left" width="50%">
+                    <div class="container">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="kf">
+                            <label class="form-check-label" for="kf">Коэффициент участия</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="c">
+                            <label class="form-check-label" for="c">Количество человек в группе</label>
+                        </div>
+
+
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+</body>
+<script>
+
+    $('input[type=checkbox]').click(function () {
+        if ($(this).is(':checked')) {
+            $(this.prop("checked", false))
+        } else {
+            $(this.prop("checked", true));
+        }
+    });
+
+    $('#apply').click(function () {
+        q = 'c';
+        if ($('#kf').is(':checked') && $("#c").is(':checked')) {
+            q = 'kfavg';
+        }
+        else if (($('#kf').is(':checked')))
+            q = 'kf';
+        else if (($('#c').is(':checked')))
+            q = 'avg';
+        $.ajax({
+            url: '/app/calc',
+            type: 'get',
+            data: {'param': q},
+            dataType: 'json',
+            success: function (data) {
+                $('#itable tbody').html(data.ranking)
+            },
+            error: function () {
+                alert("error");
+            },
+            complete: function (data) {
+                func1();
+            }
+        })
+
+    });
+
+
+    function func1() {
+        var len = 15;
+        var color = "";
+        colors = ['#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000',
+            '#ff0000', '#ff0000', '#ff0000', '#ff2200', '#ff3800', '#ff4700', '#ff5400', '#ff6000', '#ff6b00', '#ff7500',
+            '#ff7e00', '#ff8700', '#ff9000', '#ff9900', '#ffa100', '#ffa900', '#ffb000', '#ffb800', '#ffbf00', '#ffc700',
+            '#ffce00', '#ffd500', '#ffdd00', '#ffe400', '#ffeb00', '#fff200', '#fffa00', '#fafc00', '#e8f200', '#d6e700',
+            '#c4dd00', '#b2d200', '#a1c800', '#8fbe00', '#7db300', '#6aa900', '#579f00', '#439400', '#2b8a00', '#008000'];
+
+        for (i = 0; i < len; i++) {
+            perc = document.getElementById("dif" + i).innerText;
+            color = colors[50 - Math.ceil(perc)];
+            document.getElementById("old" + i).style.backgroundColor = color;
+            document.getElementById("new" + i).style.backgroundColor = color;
+        }
+    }
+
+
+</script>
+
+
+</html>

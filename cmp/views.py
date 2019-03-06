@@ -1,8 +1,9 @@
 import functools
 import itertools
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from cmp.lib import cmp, fill_inputs, put_best
 from cmp.models import Weights
@@ -59,3 +60,16 @@ def load_data(request, id):
                   {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
                    'counter_name': functools.partial(next, itertools.count()),
                    'ranking': zip(result[0], map(func, result[1]), map(func, result[2]), result[3])})
+
+
+def groups(request):
+    return render(request, 'cmp/groups.html', {})
+
+
+def calc(request):
+    b_w = Weights.objects.all().order_by('-deviations_sum').first()
+    result = cmp(list(map(int, b_w.weights.split())), request.GET['param'])
+    func = lambda x: float("{0:.3f}".format(x))
+    ranking = zip(result[0], map(func, result[1]), map(func, result[2]), result[3])
+    data = {'ranking': render_to_string('cmp/result_table.html', {'ranking': ranking})}
+    return JsonResponse(data)
