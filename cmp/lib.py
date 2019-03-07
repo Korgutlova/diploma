@@ -33,7 +33,6 @@ def cmp(weights, param='kfavg'):
                 for j in range(len(data[i])):
                     data[i][j] = data[i][j] / counts[i]
 
-
     name_groups = [cell[0].value for cell in ws['A2':'A16']]
     old_ranking = [cell[0].value for cell in ws['B2':'B16']]
     academic_performance = [cell[0].value for cell in ws['C2':'C16']]
@@ -115,23 +114,32 @@ def fill_inputs(weights):
 K = 20
 
 
-def put_best(weights, sum):
-    objects = Weights.objects.all().order_by('-deviations_sum')
+def put_best(weights, sum, param='kfavg'):
+    objects = Weights.objects.filter(type=param).order_by('-deviations_sum')
     if objects.count() < K:
-        Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum)
+        Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum, type=param)
     elif objects.first().deviations_sum > sum:
         objects.first().delete()
-        Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum)
+        Weights.objects.create(weights=' '.join(str(e) for e in weights), deviations_sum=sum, type=param)
 
 
 def generate_random_weights(iter_count):
     random_weights = [[randint(1, 9) for i in range(45)] for i in range(iter_count)]
     for weights in random_weights:
-        put_best(weights, sum(cmp(weights)[2]))
+        put_best(weights, sum(cmp(weights, param='c')[2]), param='c')
 
 
 # generate_random_weights(1000000)
 
-# def deviation_sum(old_ranking, new_ranking):
-#     return sum([(old - new) ** 2 for old, new in zip(old_ranking, new_ranking)])
+# def read_weights():
+#     f = open('../static/result/weights2.txt', 'r')
+#     for line in f.readlines():
+#         Weights.objects.create(weights=line[:89], deviations_sum=float(line[90:].split()[0]), type=line[90:-1].split()[1])
+#     f.close()
 
+# def write_weights():
+#     objects = Weights.objects.all()
+#     f = open('../static/result/weights2.txt', 'w')
+#     for object in objects:
+#         f.write(object.weights + ' ' + str(object.deviations_sum) + ' ' + object.type + '\n')
+#     f.close()
