@@ -73,6 +73,10 @@
                             <input type="checkbox" class="form-check-input" id="c">
                             <label class="form-check-label" for="c">Количество человек в группе</label>
                         </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="e_g">
+                            <label class="form-check-label" for="c">Для каждой группы</label>
+                        </div>
 
 
                     </div>
@@ -97,6 +101,7 @@
 
     $('#apply').click(function () {
         q = 'c';
+        each_group = 0;
         if ($('#kf').is(':checked') && $("#c").is(':checked')) {
             q = 'kfavg';
         }
@@ -104,10 +109,13 @@
             q = 'kf';
         else if (($('#c').is(':checked')))
             q = 'avg';
+        if ($('#e_g').is(':checked')) {
+            each_group = 1
+        }
         $.ajax({
             url: '/app/calc',
             type: 'get',
-            data: {'param': q},
+            data: {'param': q, 'each_group': each_group},
             dataType: 'json',
             success: function (data) {
                 $('#itable tbody').html(data.ranking)
