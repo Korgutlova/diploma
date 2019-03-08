@@ -9,16 +9,16 @@ django.setup()
 import numpy as np
 from openpyxl import load_workbook
 
-from cmp.models import Weights
+from cmp.models import Weights, GroupWeights
 
-file = './data.xlsx'
+file = '../data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
 ws = wb.get_sheet_by_name('Входные данные')
 
 
-def cmp(weights, param='kfavg'):
+def cmp(weights, param='kfavg', group=-1):
     ws = wb.get_sheet_by_name('Входные данные')
     data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
     if param == 'kf':
@@ -36,6 +36,12 @@ def cmp(weights, param='kfavg'):
     name_groups = [cell[0].value for cell in ws['A2':'A16']]
     old_ranking = [cell[0].value for cell in ws['B2':'B16']]
     academic_performance = [cell[0].value for cell in ws['C2':'C16']]
+
+    if group != -1:
+        data.pop(group)
+        name_groups.pop(group)
+        old_ranking.pop(group)
+        academic_performance.pop(group)
 
     new_ranking = []
 
@@ -128,6 +134,60 @@ def generate_random_weights(iter_count):
     for weights in random_weights:
         put_best(weights, sum(cmp(weights, param='c')[2]), param='c')
 
+
+name_groups = [cell[0].value for cell in ws['A2':'A16']]
+old_ranking = [cell[0].value for cell in ws['B2':'B16']]
+academic_performance = [cell[0].value for cell in ws['C2':'C16']]
+
+
+def generate_random_group_weights(iter_count, group_number, param):
+    random_weights = [[randint(1, 9) for i in range(45)] for i in range(iter_count)]
+    min = sum(cmp(random_weights[0], param=param, group=group_number)[2])
+    best_weights = random_weights[0]
+    random_weights.pop(0)
+    for weights in random_weights:
+        result = sum(cmp(weights, param=param, group=group_number)[2])
+        if result < min:
+            min = result
+            best_weights = weights
+    GroupWeights.objects.create(group_name=name_groups[group_number], weights=' '.join(str(e) for e in best_weights),
+                                deviations_sum=min, type=param)
+
+
+def groups(iter_count):
+    for param in ['kfavg', 'kf', 'c', 'avg']:
+        for j in range(len(name_groups)):
+            generate_random_group_weights(iter_count, j, param)
+
+
+def each_group_separately(param):
+    ws = wb.get_sheet_by_name('Входные данные')
+    data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+    if param == 'kf':
+        ws = wb.get_sheet_by_name('Входные данные (кф)')
+        data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+    elif param == 'avg' or param == 'c':
+        ws = wb.get_sheet_by_name('Входные данные (кол)')
+        data = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+        if param == 'avg':
+            counts = [cell[0].value for cell in ws['AW2':'AW16']]
+            for i in range(len(data)):
+                for j in range(len(data[i])):
+                    data[i][j] = data[i][j] / counts[i]
+    cmp = []
+    func = lambda x: float("{0:.3f}".format(x))
+    for i in range(len(name_groups)):
+        group_weights = list(map(int, GroupWeights.objects.get(group_name=name_groups[i], type=param).weights.split()))
+        new_value = sum([sc * w for sc, w in zip(group_weights, data[i])])
+        old_value = old_ranking[i]
+        diff = abs(new_value - old_value)
+        cmp.append([old_value, func(new_value), func(diff), name_groups[i]])
+    return cmp
+
+
+# print(each_group_separately('kfavg'))
+
+groups(50000)
 
 # generate_random_weights(1000000)
 

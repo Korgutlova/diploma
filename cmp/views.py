@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
-from cmp.lib import cmp, fill_inputs, put_best
+from cmp.lib import cmp, fill_inputs, put_best, each_group_separately
 from cmp.models import Weights
 
 
@@ -67,9 +67,13 @@ def groups(request):
 
 
 def calc(request):
-    b_w = Weights.objects.filter(type=request.GET['param']).order_by('deviations_sum').first()
-    result = cmp(list(map(int, b_w.weights.split())), request.GET['param'])
-    func = lambda x: float("{0:.3f}".format(x))
-    ranking = zip(result[0], map(func, result[1]), map(func, result[2]), result[3])
+    if request.GET['each_group'] == '1':
+        ranking = each_group_separately(request.GET['param'])
+
+    else:
+        b_w = Weights.objects.filter(type=request.GET['param']).order_by('deviations_sum').first()
+        result = cmp(list(map(int, b_w.weights.split())), request.GET['param'])
+        func = lambda x: float("{0:.3f}".format(x))
+        ranking = zip(result[0], map(func, result[1]), map(func, result[2]), result[3])
     data = {'ranking': render_to_string('cmp/result_table.html', {'ranking': ranking})}
     return JsonResponse(data)
