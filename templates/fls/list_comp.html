@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список конкурсов</title>
+    <link href="{% static "css/bootstrap.min.css" %}" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    {% for comp in comps %}
+        {{ comp.name }} <a href="{% url 'fls:criteria' comp.id %}">Добавить критерий</a>
+    {% endfor %}
+</div>
+
+</body>
+</html>

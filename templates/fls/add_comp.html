@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Создание конкурса</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link href="{% static "css/bootstrap.min.css" %}" type="text/css" rel="stylesheet"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
@@ -15,29 +15,97 @@
     <hr>
     <form name="form" action="{% url 'fls:comp' %}" method="post">
         {% csrf_token %}
-        {#        {{ form.as_p }}#}
-    <div style="width: 300px">
-        {% for field in form %}
-            <div class="form-group{% if field.errors %} has-error{% endif %}">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% render_field field class="form-control" %}
-                {% for error in field.errors %}
-                    <p class="help-block">{{ error }}</p>
-                {% endfor %}
-            </div>
-        {% endfor %}
-        {% for error in form.non_field_errors %}
-            <p class="help-block">{{ error }}</p>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary labelText">
+        <div class="row">
+            <div class="col-xs-6">
+                <div style="width: 300px">
+                    {% for field in form %}
+                        <div class="form-group{% if field.errors %} has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% render_field field class="form-control" %}
+                            {% for error in field.errors %}
+                                <p class="help-block">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p class="help-block">{{ error }}</p>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Сохранить
                                     </span>
-        </button>
-    </div>
+                    </button>
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <h3>Создание параметров</h3>
+                <hr>
+
+                <div class="param" id="param_1">
+                    <h4>Параметр </h4>
+                    <label>Название *
+                        <input class="form-control" type="text" name="text">
+                    </label><br>
+                    <label>Описание
+                        <textarea class="form-control rounded-0" rows="5" name="description"></textarea>
+                    </label><br>
+                    <p>Ограничения</p>
+                    <label>Огранчиение снизу
+                        <input class="form-control" type="text" name="min">
+                    </label>
+                    <label>Ограничение сверху
+                        <input class="form-control" type="text" name="max">
+                    </label>
+                    <br>
+                    <a href="#" class="btn btn-danger delete_param" role="button"><span
+                            style="font-family: 'Comic Sans MS',monospace">Удалить параметр</span></a>
+                    <br>
+                    <hr>
+                </div>
+                <a href="#" class="btn btn-info add_param" role="button"><span
+                        style="font-family: 'Comic Sans MS',monospace">Добавить параметр</span></a>
+                <br>
+                <hr>
+            </div>
+        </div>
     </form>
 
 
 </div>
 </body>
+<script>
+    $(document).ready(function () {
+        $(".add_param").click(function () {
+            var lastid = $(".param:last").attr("id");
+            var nextindex = Number(lastid.split('_')[1]) + 1;
+            $(".param:last").after(" <div class=\"param\" id=\"param_" + nextindex + "\"></div>");
+            $("#param_" + nextindex).append("<h4>Параметр </h4>\n" +
+                "            <label>Название *\n" +
+                "                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
+                "            </label><br>\n" +
+                "            <label>Описание\n" +
+                "                <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
+                "            </label><br>\n" +
+                "            <p>Ограничения</p>\n" +
+                "            <label>Огранчиение снизу\n" +
+                "                <input class=\"form-control\" type=\"text\" name=\"min\">\n" +
+                "            </label>\n" +
+                "            <label>Ограничение сверху\n" +
+                "                <input class=\"form-control\" type=\"text\" name=\"max\">\n" +
+                "            </label>\n" +
+                "            <br>\n" +
+                "            <a href=\"#\" class=\"btn btn-danger delete_param\" role=\"button\"><span\n" +
+                "                    style=\"font-family: 'Comic Sans MS',monospace\">Удалить параметр</span></a>\n" +
+                "            <br>\n" +
+                "            <hr>");
+        });
+
+        $('.container').on('click', '.delete_param', function () {
+            var total_element = $(".param").length;
+            if (total_element !== 1) {
+                $(this).parent().remove();
+            }
+        });
+    });
+</script>
 </html>

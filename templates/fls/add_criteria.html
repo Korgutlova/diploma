@@ -47,7 +47,7 @@
         <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span> back
         </button>
     </div>
-    <form name="form" action="{% url 'fls:criteria' %}" method="post">
+    <form name="form" action="{% url 'fls:criteria' id %}" method="post">
         {% csrf_token %}
         <br>
         <input type="text" id="formula" name="formula" disabled hidden>
