@@ -14,16 +14,18 @@
     <hr>
     <h4>Параметры</h4>
     {% for p in params %}
-        <button type="button" class="btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
+        <button type="button" class="btn btn-info param" id="{{ forloop.counter0 }}">{{ p.name }}</button>
     {% endfor %}
     <hr>
     <h4>Операции</h4>
     {# hardcode #}
     <div class="oper">
-        <button type="button" class="btn" id="plus">+</button>
-        <button type="button" class="btn" id="minus">-</button>
-        <button type="button" class="btn" id="div">/</button>
-        <button type="button" class="btn" id="mult">*</button>
+        <button type="button" class="btn sign" id="plus">+</button>
+        <button type="button" class="btn sign" id="minus">-</button>
+        <button type="button" class="btn sign" id="div">/</button>
+        <button type="button" class="btn sign" id="mult">*</button>
+        <button type="button" class="btn" id="bracket1">(</button>
+        <button type="button" class="btn" id="bracket2">)</button>
     </div>
 
     <hr>
@@ -35,33 +37,38 @@
         <button type="button" class="btn btn-warning" id="sum">sum</button>
     </div>
     <hr>
-    <div class="row">
-        <div class="col-md-5">
-            <label>Формула
-                <textarea style="resize: none;" class="form-control rounded-0" rows="5" cols="40" id="desc" name="desc"
-                          disabled></textarea>
 
-            </label>
-        </div>
-        <br>
-        <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span> back
-        </button>
-    </div>
     <form name="form" action="{% url 'fls:criteria' id %}" method="post">
         {% csrf_token %}
+        <div class="row">
+            <div class="col-md-5">
+                <label>Название *
+                        <input class="form-control" type="text" name="name">
+                    </label><br>
+                <label>Формула
+                    <textarea style="resize: none;" name="formula" class="form-control rounded-0" rows="5" cols="40"
+                              id="desc" readonly></textarea>
+
+                </label>
+            </div>
+            <br>
+            <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span>
+                back
+            </button>
+        </div>
         <br>
-        <input type="text" id="formula" name="formula" disabled hidden>
+{#        <input type="text" id="formula" name="formula2" disabled hidden>#}
         <hr>
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Сохранить
                                     </span>
         </button>
-        <button type="submit" class="btn btn-success labelText">
-                                <span style="font-family: 'Comic Sans MS',monospace">
-                                Сохранить и добавить еще критерий
-                                    </span>
-        </button>
+{#        <button type="submit" class="btn btn-success labelText">#}
+{#                                <span style="font-family: 'Comic Sans MS',monospace">#}
+{#                                Сохранить и добавить еще критерий#}
+{#                                    </span>#}
+{#        </button>#}
     </form>
 
     <div class="modal fade" id="myModal" role="dialog">
@@ -114,11 +121,11 @@
             if (array.length !== 0) {
                 var elem = array[array.length - 1];
                 var bool = true;
-                $(".oper > .btn").each(function () {
-                    if ($(this).text() + " " === elem) {
-                        bool = false;
-                    }
-                });
+                {#$(".oper > .btn").each(function () {#}
+                {#    if ($(this).text() + " " === elem) {#}
+                {#        bool = false;#}
+                {#    }#}
+                {#});#}
                 if (bool) {
                     array.push($(this).text() + " ");
                 }

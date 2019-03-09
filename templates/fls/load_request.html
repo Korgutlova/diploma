@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка заявки</title>
+</head>
+<body>
+<h2>Заявка на конкурс "{{ comp.name }}"</h2>
+<form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
+    {% csrf_token %}
+    <h3>Выберите свою группу</h3>
+    <select name="group">
+        {% for g in groups %}
+            <option value="{{ g.id }}"> {{ g.name }}</option>
+        {% endfor %}
+    </select>
+    {% for p in params %}
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.description }}</p>
+
+        <label>Ваше значение
+            <input type="text" name="value_{{ p.id }}">
+        </label>
+        <label>Количество участвующих людей
+            <input type="text" name="person_{{ p.id }}">
+        </label>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary labelText">
+                                <span style="font-family: 'Comic Sans MS',monospace">
+                                Добавить заявку
+                                    </span>
+    </button>
+</form>
+</body>
+</html>
