@@ -48,13 +48,15 @@ def base_page(request):
 
 def best_weights(request):
     best_weights = Weights.objects.all().order_by('deviations_sum')
-    result = [[b_w.weights.split(), float("{0:.3f}".format(b_w.deviations_sum)), b_w.id] for b_w in best_weights]
+    result = [[b_w.weights.split(), float("{0:.3f}".format(b_w.deviations_sum)), b_w.id, b_w.type] for b_w in
+              best_weights]
     return render(request, 'cmp/best_weights.html', {'best_weights': result})
 
 
 def load_data(request, id):
-    weights = list(map(int, Weights.objects.get(id=id).weights.split()))
-    result, all_criteria = cmp(weights), fill_inputs(weights)
+    weights_object = Weights.objects.get(id=id)
+    weights = list(map(int, weights_object.weights.split()))
+    result, all_criteria = cmp(weights, param=weights_object.type), fill_inputs(weights)
     func = lambda x: float("{0:.3f}".format(x))
     return render(request, 'cmp/base.html',
                   {"all_criteria": all_criteria, 'counter_id': functools.partial(next, itertools.count()),
