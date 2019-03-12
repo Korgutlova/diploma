@@ -11,7 +11,8 @@ from openpyxl import load_workbook
 
 from cmp.models import Weights, GroupWeights
 
-file = 'data.xlsx'
+
+file = './data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
@@ -155,7 +156,7 @@ def generate_random_group_weights(iter_count, group_number, param):
 
 
 def groups(iter_count):
-    for param in ['kfavg', 'kf', 'c', 'avg']:
+    for param in ['c', 'avg']:
         for j in range(len(name_groups)):
             generate_random_group_weights(iter_count, j, param)
 
@@ -186,8 +187,6 @@ def each_group_separately(param):
 
 
 # print(each_group_separately('kfavg'))
-
-# groups(50000)
 
 # generate_random_weights(1000000)
 

@@ -13,6 +13,10 @@
 <br>
 <br>
 <br>
+<div class="col-xs-2">
+    <a href="{% url 'cmp:groups' %}" class="btn btn-warning" role="button"><span
+            style="font-family: 'Comic Sans MS',monospace">Вернуться</span></a>
+</div>
 <div class="container">
     <div class="col-md-9">
         <table class="table table-bordered">
@@ -22,6 +26,7 @@
             <tr>
                 <th scope="col">№</th>
                 <th scope="col">Веса</th>
+                <th scope="col">Тип</th>
                 <th scope="col">Сумма</th>
                 <th scope="col"></th>
             </tr>
@@ -37,6 +42,7 @@
                             {% endfor %}
                         {% endwith %}
                     </td>
+                    <td>{{ r.3 }}</td>
                     <td>{{ r.1 }}</td>
                     <td>
                         <div class="col-xs-2">

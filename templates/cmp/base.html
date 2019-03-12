@@ -48,6 +48,13 @@
             <div class="container">
                 <form name="form" action="{% url "cmp:base" %}" method="post">
                     <div class="row">
+                        <div class="col-xs-1">
+                            <a href="{% url 'cmp:groups' %}" class="btn btn-default" role="button"><span
+                                    style="font-family: 'Comic Sans MS',monospace">Вернуться</span></a>
+                        </div>
+                    </div>
+                <br>
+                    <div class="row">
                         <div class="col-xs-2">
                             <a href="#" onclick="gen()" class="btn btn-warning" role="button"><span
                                     style="font-family: 'Comic Sans MS',monospace">Генерация</span></a>
@@ -78,7 +85,7 @@
                             <h4><span
                                     style="font-family: 'Comic Sans MS',monospace; color: #3d4352; "><strong>{{ key }}</strong></span>
                             </h4>
-                            <hr  align="left" width="50%">
+                            <hr align="left" width="50%">
                             <div class="row">
                                 {% for v in value %}
                                     <div class="form-group col-xs-1">

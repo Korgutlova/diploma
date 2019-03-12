@@ -61,7 +61,6 @@ class ParamValue(models.Model):
         unique_together = (('param', 'group'),)
 
 
-
 class Criterion(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_criterions', on_delete=models.CASCADE,
                                     blank=True, null=True)
@@ -81,4 +80,3 @@ class CriterionValue(models.Model):
 
     class Meta:
         unique_together = (('criterion', 'group'),)
-
