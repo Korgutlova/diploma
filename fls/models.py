@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
@@ -11,12 +12,29 @@ YEAR_CHOICES = (
     (6, '2(магистратура)'),
 )
 
+METHOD_CHOICES = (
+    (1, 'Окончательная оценка заявки'),
+    (2, 'Попарные сравнения параметров'),
+    (3, 'Ранжирование параметров'),
+    (4, 'Автоматически'),
+)
+
+ROLE_CHOICES = (
+    (1, 'Участник'),
+    (2, 'Жюри'),
+    (3, 'Эксперт-организатор'),
+    (4, 'Эксперт оценок жюри'),
+)
+
 
 class Competition(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название")
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
                                         verbose_name="Курс")
     description = models.TextField(verbose_name="Описание конкурса")
+
+    method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
+                                             default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
 
     class Meta:
         unique_together = (('name', 'description'),)
@@ -35,13 +53,37 @@ class Group(models.Model):
         return self.name
 
 
+class CustomUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # exists if role=participant
+    group = models.ForeignKey(Group, related_name="current_group", on_delete=models.SET_NULL,
+                              blank=True, null=True, verbose_name="Группа участника")
+    role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=ROLE_CHOICES[0][0],
+                               verbose_name="Роль")
+
+    def __str__(self):
+        return self.user.username
+
+
+class Request(models.Model):
+    competition = models.ForeignKey(Competition, related_name='competition_request', on_delete=models.CASCADE,
+                                    blank=True, null=True, verbose_name='Конкурс')
+    participant = models.ForeignKey(CustomUser, related_name='custom_user', on_delete=models.CASCADE,
+                                    blank=True, null=True, verbose_name='Участник')
+    rang = models.IntegerField(default=0)
+    result_value = models.FloatField(default=0)
+
+    def __str__(self):
+        return "Заявка %s - %s" % (self.participant.group, self.competition.name)
+
+
 class Param(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_params', on_delete=models.CASCADE,
                                     blank=True, null=True)
     name = models.CharField(max_length=30)
     description = models.TextField()
     max = models.IntegerField()
-    min = models.IntegerField()
+    result_weight = models.FloatField(default=0)
 
     class Meta:
         unique_together = (('name', 'description'),)
@@ -52,13 +94,16 @@ class Param(models.Model):
 
 class ParamValue(models.Model):
     param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
-    group = models.ForeignKey(Group, related_name='group_param_values', on_delete=models.CASCADE, blank=False,
-                              null=False)
+    request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
     value = models.FloatField(default=0)
     person_count = models.IntegerField()
 
     class Meta:
-        unique_together = (('param', 'group'),)
+        unique_together = (('param', 'request'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.param.name, self.value)
 
 
 class Criterion(models.Model):
@@ -74,9 +119,59 @@ class Criterion(models.Model):
 class CriterionValue(models.Model):
     criterion = models.ForeignKey(Criterion, related_name='criterion_values', on_delete=models.CASCADE, blank=False,
                                   null=False)
-    group = models.ForeignKey(Group, related_name='group_criterion_values', on_delete=models.CASCADE, blank=False,
-                              null=False)
+    request = models.ForeignKey(Request, related_name='request_criterion_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
     value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('criterion', 'group'),)
+        unique_together = (('criterion', 'request'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.criterion.name, self.value)
+
+
+class EstimationJury(models.Model):
+    request = models.ForeignKey(Request, related_name='request_jury_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
+    jury = models.ForeignKey(CustomUser, related_name='jury1', on_delete=models.CASCADE,
+                             blank=True, null=True, verbose_name='Жюри')
+
+    value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('jury', 'request'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.jury, self.request)
+
+
+class WeightParamJury(models.Model):
+    param = models.ForeignKey(Param, related_name='param_for_jury', on_delete=models.CASCADE, blank=False, null=False)
+    jury = models.ForeignKey(CustomUser, related_name='jury2', on_delete=models.CASCADE,
+                             blank=True, null=True, verbose_name='Жюри')
+
+    # это ранг или попарные в зависимости от метода
+    value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('jury', 'param'),)
+
+    def __str__(self):
+        return "Жюри %s - Параметр %s" % (self.jury, self.param)
+
+
+class CalcEstimationJury(models.Model):
+    expert = models.ForeignKey(CustomUser, related_name='experts', on_delete=models.CASCADE,
+                               blank=True, null=True, verbose_name='Эксперт')
+    competition = models.ForeignKey(Competition, related_name='competition_formula_for_jury', on_delete=models.CASCADE,
+                                    blank=True, null=True)
+    name = models.CharField(max_length=20, unique=True)
+
+    formula = models.TextField()
+
+    # для попарных или рнажированных методов
+    param = models.ForeignKey(Param, related_name='param_for_formula_jury', on_delete=models.SET_NULL, blank=True,
+                              null=True)
+
+    def __str__(self):
+        return self.name

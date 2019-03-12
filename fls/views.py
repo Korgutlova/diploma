@@ -22,9 +22,8 @@ def comp(request):
             comp = form.save()
 
             for text, desc, min, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
-                                            request.POST.getlist('min'),
                                             request.POST.getlist('max')):
-                Param.objects.create(name=text, description=desc, min=min, max=max, competition=comp)
+                Param.objects.create(name=text, description=desc, max=max, competition=comp)
             return redirect("fls:list_comp")
 
     return render(request, 'fls/add_comp.html', {"form": form})
@@ -41,12 +40,12 @@ def load_request(request, comp_id):
     groups = Group.objects.all()
     if request.method == 'POST':
         print(request.POST)
-        needed_group = groups.get(id=request.POST["group"])
-        for p in params:
-            pv = ParamValue(group=needed_group, param=p, value=request.POST["value_%s" % p.id],
-                            person_count=request.POST["person_%s" % p.id])
-            pv.save()
-        print("saving")
+        # needed_group = groups.get(id=request.POST["group"])
+        # for p in params:
+        #     pv = ParamValue(group=needed_group, param=p, value=request.POST["value_%s" % p.id],
+        #                     person_count=request.POST["person_%s" % p.id])
+        #     pv.save()
+        # print("saving")
     return render(request, 'fls/load_request.html', {"params": params, "comp": comp, "groups": groups})
 
 
