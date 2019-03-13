@@ -13,10 +13,11 @@ YEAR_CHOICES = (
 )
 
 METHOD_CHOICES = (
-    (1, 'Окончательная оценка заявки'),
-    (2, 'Попарные сравнения параметров'),
-    (3, 'Ранжирование параметров'),
-    (4, 'Автоматически'),
+    (1, 'Окончательная (абсолютная) оценка заявки'),
+    (2, 'Попарное сравнение заявок'),
+    (3, 'Попарные сравнения параметров'),
+    (4, 'Ранжирование параметров'),
+    (5, 'Автоматически'),
 )
 
 ROLE_CHOICES = (
@@ -131,21 +132,25 @@ class CriterionValue(models.Model):
 
 
 class EstimationJury(models.Model):
+    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[0][0], null=True,
+                               blank=True, verbose_name='Тип оценивания')
     request = models.ForeignKey(Request, related_name='request_jury_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
-    jury = models.ForeignKey(CustomUser, related_name='jury1', on_delete=models.CASCADE,
+    jury = models.ForeignKey(CustomUser, related_name='jury_values', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name='Жюри')
 
     value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('jury', 'request'),)
+        unique_together = (('jury', 'request', 'type'),)
 
     def __str__(self):
         return "%s - %s" % (self.jury, self.request)
 
 
 class WeightParamJury(models.Model):
+    type = models.IntegerField(choices=METHOD_CHOICES[2:4], default=METHOD_CHOICES[2][0], null=True,
+                               blank=True, verbose_name='Тип оценивания')
     param = models.ForeignKey(Param, related_name='param_for_jury', on_delete=models.CASCADE, blank=False, null=False)
     jury = models.ForeignKey(CustomUser, related_name='jury2', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name='Жюри')
@@ -154,7 +159,7 @@ class WeightParamJury(models.Model):
     value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('jury', 'param'),)
+        unique_together = (('jury', 'param', 'type'),)
 
     def __str__(self):
         return "Жюри %s - Параметр %s" % (self.jury, self.param)
