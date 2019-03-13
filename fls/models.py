@@ -84,13 +84,27 @@ class Param(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField()
     max = models.IntegerField()
-    result_weight = models.FloatField(default=0)
+    # result_weight = models.FloatField(default=0)
 
     class Meta:
         unique_together = (('name', 'description'),)
 
     def __str__(self):
         return self.name
+
+
+class ParamResultWeight(models.Model):
+    param = models.ForeignKey(Param, related_name='param_weights', on_delete=models.CASCADE,
+                              blank=False, null=False)
+    type = models.IntegerField(choices=METHOD_CHOICES[2:4], default=METHOD_CHOICES[2][0], null=False,
+                               blank=False, verbose_name='Тип оценивания')
+    weight_value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('param', 'type'),)
+
+    def __str__(self):
+        return '%s - %s' % (self.param, self.type)
 
 
 class ParamValue(models.Model):
@@ -133,6 +147,7 @@ class CriterionValue(models.Model):
 
 class EstimationJury(models.Model):
     # method_choices[:4], значения последнего типа в criterion_value
+    # пока пусть null
     type = models.IntegerField(choices=METHOD_CHOICES[:4], default=METHOD_CHOICES[0][0], null=True,
                                blank=True, verbose_name='Тип оценивания')
     request = models.ForeignKey(Request, related_name='request_jury_values', on_delete=models.CASCADE, blank=False,
@@ -146,7 +161,7 @@ class EstimationJury(models.Model):
         unique_together = (('jury', 'request', 'type'),)
 
     def __str__(self):
-        return "%s - %s" % (self.jury, self.request)
+        return "%s - %s - %s" % (self.jury, self.request, self.type)
 
 
 class WeightParamJury(models.Model):
@@ -163,7 +178,7 @@ class WeightParamJury(models.Model):
         unique_together = (('jury', 'param', 'type'),)
 
     def __str__(self):
-        return "Жюри %s - Параметр %s" % (self.jury, self.param)
+        return "Жюри %s - Параметр %s - Тип %s" % (self.jury, self.param, self.type)
 
 
 class CalcEstimationJury(models.Model):
