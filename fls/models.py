@@ -33,7 +33,7 @@ class Competition(models.Model):
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
                                         verbose_name="Курс")
     description = models.TextField(verbose_name="Описание конкурса")
-
+    # либо это, либо types в Estimation/Weight
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
 
@@ -132,7 +132,8 @@ class CriterionValue(models.Model):
 
 
 class EstimationJury(models.Model):
-    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[0][0], null=True,
+    # method_choices[:4], значения последнего типа в criterion_value
+    type = models.IntegerField(choices=METHOD_CHOICES[:4], default=METHOD_CHOICES[0][0], null=True,
                                blank=True, verbose_name='Тип оценивания')
     request = models.ForeignKey(Request, related_name='request_jury_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
