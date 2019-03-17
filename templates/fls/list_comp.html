@@ -9,7 +9,7 @@
 <body>
 <div class="container">
     {% for comp in comps %}
-        {{ comp.name }} <a href="{% url 'fls:criteria' comp.id %}">Добавить критерий</a>
+        {{ comp.name }} <a href="{% url 'fls:criteria' comp.id %}">Добавить критерий</a><hr>
     {% endfor %}
 </div>
 

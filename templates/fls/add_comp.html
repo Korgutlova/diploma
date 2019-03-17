@@ -75,25 +75,22 @@
             var lastid = $(".param:last").attr("id");
             var nextindex = Number(lastid.split('_')[1]) + 1;
             $(".param:last").after(" <div class=\"param\" id=\"param_" + nextindex + "\"></div>");
-            $("#param_" + nextindex).append("<h4>Параметр </h4>\n" +
-                "            <label>Название *\n" +
-                "                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
-                "            </label><br>\n" +
-                "            <label>Описание\n" +
-                "                <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
-                "            </label><br>\n" +
-                "            <p>Ограничения</p>\n" +
-                "            <label>Огранчиение снизу\n" +
-                "                <input class=\"form-control\" type=\"text\" name=\"min\">\n" +
-                "            </label>\n" +
-                "            <label>Ограничение сверху\n" +
-                "                <input class=\"form-control\" type=\"text\" name=\"max\">\n" +
-                "            </label>\n" +
-                "            <br>\n" +
-                "            <a href=\"#\" class=\"btn btn-danger delete_param\" role=\"button\"><span\n" +
-                "                    style=\"font-family: 'Comic Sans MS',monospace\">Удалить параметр</span></a>\n" +
-                "            <br>\n" +
-                "            <hr>");
+            $("#param_" + nextindex).append("<div class=\"param\" id=\"param_1\">\n" +
+                "                    <h4>Параметр </h4>\n" +
+                "                    <label>Название *\n" +
+                "                        <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
+                "                    </label><br>\n" +
+                "                    <label>Описание\n" +
+                "                        <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
+                "                    </label><br>\n" +
+                "                    <label>Ограничение сверху\n" +
+                "                        <input class=\"form-control\" type=\"text\" name=\"max\">\n" +
+                "                    </label>\n" +
+                "                    <br>\n" +
+                "                    <a href=\"#\" class=\"btn btn-danger delete_param\" role=\"button\"><span\n" +
+                "                            style=\"font-family: 'Comic Sans MS',monospace\">Удалить параметр</span></a>\n" +
+                "                    <br>\n" +
+                "                    <hr>");
         });
 
         $('.container').on('click', '.delete_param', function () {

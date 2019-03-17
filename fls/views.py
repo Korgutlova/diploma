@@ -21,8 +21,8 @@ def comp(request):
         if form.is_valid():
             comp = form.save()
 
-            for text, desc, min, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
-                                            request.POST.getlist('max')):
+            for text, desc, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
+                                       request.POST.getlist('max')):
                 Param.objects.create(name=text, description=desc, max=max, competition=comp)
             return redirect("fls:list_comp")
 
@@ -54,3 +54,18 @@ def process_request(request):
     # сопоставить соответсвующим значениям -> получить массив value
     # для всех критериев данного конкурса вычилисть значения  и каждый соотвественно сохранить
     pass
+
+
+def pairwise_comparison(request, comp_id):
+    comp = Competition.objects.get(id=comp_id)
+    params = Param.objects.filter(competition=comp)
+    params_modif = {}
+    for p in params:
+        arr = []
+        for f in params:
+            arr.append("%s_%s" % (p.id, f.id))
+        params_modif[p.name] = arr
+    print(params_modif)
+    if request.method == 'POST':
+        print(request.POST)
+    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp_id": comp_id})
