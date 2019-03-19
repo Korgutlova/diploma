@@ -22,6 +22,7 @@ def parse_formula(formula, params_values):
     vars = list(filter(lambda x: x.find('_') != -1, vars_func))
     funcs = list(filter(lambda x: x.find('_') == -1, vars_func))
     variables = {}
+    print(vars)
     for var in vars:
         variables[var] = params_values[int(var.split('_')[1])]
     st = cexprtk.Symbol_Table(variables)

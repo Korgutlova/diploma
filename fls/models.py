@@ -71,11 +71,28 @@ class Request(models.Model):
                                     blank=True, null=True, verbose_name='Конкурс')
     participant = models.ForeignKey(CustomUser, related_name='custom_user', on_delete=models.CASCADE,
                                     blank=True, null=True, verbose_name='Участник')
-    rang = models.IntegerField(default=0)
-    result_value = models.FloatField(default=0)
+
+    # rang = models.IntegerField(default=0)
+    # result_value = models.FloatField(default=0)
 
     def __str__(self):
         return "Заявка %s - %s" % (self.participant.group, self.competition.name)
+
+
+class RequestEstimation(models.Model):
+    request = models.ForeignKey(Request, related_name='request_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
+    type = models.IntegerField(choices=METHOD_CHOICES[:4], default=METHOD_CHOICES[0][0], null=False,
+                               blank=False, verbose_name='Тип оценивания')
+    value = models.FloatField()
+    rank = models.IntegerField(null=True, blank=True)
+
+    # для различных формул объединения жюри в случае методов 1,2
+    jury_formula = models.ForeignKey('CalcEstimationJury', related_name='formula_request_values', null=True, blank=True,
+                                     on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (('request', 'type', 'jury_formula'),)
 
 
 class Param(models.Model):
@@ -84,6 +101,7 @@ class Param(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField()
     max = models.IntegerField()
+
     # result_weight = models.FloatField(default=0)
 
     class Meta:

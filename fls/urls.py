@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^comp$', comp, name="comp"),
     url(r'^load_request/(?P<comp_id>\d+)/$', load_request, name="load_request"),
     url(r'^comp/(?P<comp_id>\d+)/pairwise_comparison$', pairwise_comparison, name="pairwise_comparison"),
+    url(r'^preq/(?P<id>\d+)/$', process_request, name="preq"),
 ]
