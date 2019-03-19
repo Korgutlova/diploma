@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from fls.forms import CompetitionForm
-from fls.models import Param, Competition, Criterion, Group, ParamValue
+from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury
 
 
 def criteria(request, id):
@@ -68,4 +68,27 @@ def pairwise_comparison(request, comp_id):
     print(params_modif)
     if request.method == 'POST':
         print(request.POST)
+        values = dict(request.POST)
+        del values['csrfmiddlewaretoken']
+        param_rows = {}
+        for key in values:
+            param_id = key.split('_')[0].replace('rank', '')
+            if not param_id in param_rows:
+                param_rows[param_id] = [0.5]
+            param_rows[param_id].append(float(values[key][0]))
+        # hc
+        jury = CustomUser.objects.first()
+        #
+        elems = sum(param_rows.values(), [])
+        for key in param_rows:
+            param = Param.objects.get(id=int(key))
+            param_value = sum(param_rows[key]) / sum(elems)
+            print(key, param_value, sep=' : ')
+            if not WeightParamJury.objects.filter(type=2, param=param, jury=jury).exists():
+                WeightParamJury.objects.create(type=2, param=param, jury=jury)
+            else:
+                w = WeightParamJury.objects.get(type=2, param=param, jury=jury)
+                w.value = param_value
+                w.save()
+
     return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp_id": comp_id})
