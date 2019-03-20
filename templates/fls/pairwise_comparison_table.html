@@ -32,7 +32,7 @@
                         <th scope="col">
                             {% if item|filter_equals %}
                             {% else %}
-                                <select name="{{ item }}" id="{{ item }}" class="cell form-control">
+                                <select name="rank{{ item }}" id="{{ item }}" class="cell form-control">
                                     <option selected value="-">-</option>
                                     <option value="0">0</option>
                                     <option value="0.5">0,5</option>
