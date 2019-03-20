@@ -3,59 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>Авторизация</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="form_block col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 col-xs-8 col-xs-offset-2">
-    <form method="post" action="{% url 'fls:login_view' %}">
-        {% csrf_token %}
+<div class="container">
+    <div class="form_block col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 col-xs-8 col-xs-offset-2">
+        <form method="post" action="{% url 'fls:login_view' %}">
+            {% csrf_token %}
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="form_header col-lg-12">
-                    <span>Вход в систему</span>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="form_header col-lg-12">
+                        <h3>
+                            <div style="text-align: center;">Вход в систему</div>
+                        </h3>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label for="input_email">Email</label>
-            <input type="text" class="form-control input-lg" id="username" name="username"
-                   {% if email %}value="{{ email }}"{% endif %}>
-        </div>
-        <div class="form-group">
-            <label for="input_pass">Пароль</label>
-            <input type="password" class="form-control input-lg" id="password" name="password">
-        </div>
-        <div class="row">
-            <div class="checkbox col-lg-6">
-                <label>
-                    <input type="checkbox" value="check1">
-                    Запомнить меня
-                </label>
+            <div class="form-group">
+                <label for="input_email">Email</label>
+                <input type="text" class="form-control input-lg" id="username" name="username"
+                       {% if email %}value="{{ email }}"{% endif %}>
             </div>
-            <div class="col-lg-6 frgt_pass">
-                <a id="frgt_pass" href="#">Забыли пароль?</a>
+            <div class="form-group">
+                <label for="input_pass">Пароль</label>
+                <input type="password" class="form-control input-lg" id="password" name="password">
             </div>
-        </div>
-        {% if error %}
-            <div class="col-lg-12 alert_block">
-                <p>{{ error }}</p>
-            </div>
-        {% endif %}
+            {#            <div class="row">#}
+            {#                <div class="checkbox col-lg-6">#}
+            {#                    <label>#}
+            {#                        <input type="checkbox" value="check1">#}
+            {#                        Запомнить меня#}
+            {#                    </label>#}
+            {#                </div>#}
+            {#                <div class="col-lg-6 frgt_pass">#}
+            {#                    <a id="frgt_pass" href="#">Забыли пароль?</a>#}
+            {#                </div>#}
+            {#            </div>#}
+            {% if error %}
+                <div class="col-lg-12 alert_block">
+                    <p>{{ error }}</p>
+                </div>
+            {% endif %}
 
 
-        <div class="row">
-            <div class="col-lg-12">
-                <button type="submit" class="btn btn-default btn-lg btn-block" id="sign_in_btn">
-                    Войти
-                </button>
+            <div class="row">
+                <div class="col-lg-12">
+                    <button type="submit" class="btn btn-default btn-lg btn-block" id="sign_in_btn">
+                        Войти
+                    </button>
+                </div>
+                {#                <div class="col-lg-12">#}
+                {#                    <p class="message">Нет аккаунта? <a id="reg"#}
+                {#                                                        href="#">Зарегистрируйтесь</a>#}
+                {#                    </p>#}
+                {#                </div>#}
             </div>
-            <div class="col-lg-12">
-                <p class="message">Нет аккаунта? <a id="reg"
-                                                    href="#">Зарегистрируйтесь</a>
-                </p>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 </body>
 </html>

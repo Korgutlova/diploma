@@ -29,6 +29,7 @@ ROLE_CHOICES = (
 
 
 class Competition(models.Model):
+    # можно еще тут указать поле, групповой или же единичный (на одного человека) конкурс
     name = models.CharField(max_length=100, unique=True, verbose_name="Название")
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
                                         verbose_name="Курс")
@@ -64,6 +65,15 @@ class CustomUser(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    def get_username(self):
+        return self.user.username
+
+    def get_role(self):
+        for r in ROLE_CHOICES:
+            if r[0] == self.role:
+                return r[1]
+        return "Анонимус"
 
 
 class Request(models.Model):

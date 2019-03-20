@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Профиль</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-<a href="{% url 'fls:logout' %}" class="btn btn-danger" role="button"><span
-        style="font-family: 'Comic Sans MS',monospace">Выход</span></a>
+<div class="container">
+    <h3>Профиль</h3>
+    <hr>
+    <h4><b>Имя:</b> {{ cust_user }}</h4>
+    <h4><b>Статус:</b> {{ cust_user.get_role }}</h4>
+    <br>
+    <a href="{% url 'fls:logout' %}" class="btn btn-danger" role="button"><span
+            style="font-family: 'Comic Sans MS',monospace">Выход</span></a>
+</div>
 </body>
 </html>

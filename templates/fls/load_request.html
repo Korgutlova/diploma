@@ -3,33 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <title>Загрузка заявки</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-<h2>Заявка на конкурс "{{ comp.name }}"</h2>
-<form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
-    {% csrf_token %}
-    <h3>Выберите свою группу</h3>
-    <select name="group">
-        {% for g in groups %}
-            <option value="{{ g.id }}"> {{ g.name }}</option>
-        {% endfor %}
-    </select>
-    {% for p in params %}
-        <h3>{{ p.name }}</h3>
-        <p>{{ p.description }}</p>
+<div class="container">
+    <h2>Заявка на конкурс "{{ comp.name }}"</h2>
+    <form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
+        {% csrf_token %}
+        {#    <h3>Выберите свою группу</h3>#}
+        {#    <select name="group">#}
+        {#        {% for g in groups %}#}
+        {#            <option value="{{ g.id }}"> {{ g.name }}</option>#}
+        {#        {% endfor %}#}
+        {#    </select>#}
+        {% for p in params %}
+            <div class="card_param">
+                <h3>{{ p.name }}</h3>
+                <p><b>Описание: </b><i>{{ p.description }}</i></p>
 
-        <label>Ваше значение
-            <input type="text" name="value_{{ p.id }}">
-        </label>
-        <label>Количество участвующих людей
-            <input type="text" name="person_{{ p.id }}">
-        </label>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary labelText">
+                <label>Ваше значение
+                    <input type="text" name="value_{{ p.id }}">
+                </label>
+                <label>Количество участвующих людей
+                    <input type="text" name="person_{{ p.id }}">
+                </label>
+            </div>
+            <hr>
+        {% endfor %}
+        <br>
+        <br>
+        <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Добавить заявку
                                     </span>
-    </button>
-</form>
+        </button>
+    </form>
+</div>
+<script>
+    $(".card_param").mousemove(function (event) {
+        $(this).css('background-color', '#d6f3f1');
+    });
+    $(".card_param").mouseout(function (event) {
+        $(this).css('background-color', '#ffffff');
+    });
+</script>
 </body>
 </html>

@@ -45,18 +45,21 @@ def list_comp(request):
 
 @login_required(login_url="login/")
 def load_request(request, comp_id):
+    participant = CustomUser.objects.get(user=request.user)
+    if participant.role != 1:
+        return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
     params = Param.objects.filter(competition=comp)
-    groups = Group.objects.all()
     if request.method == 'POST':
         print(request.POST)
-        # needed_group = groups.get(id=request.POST["group"])
-        # for p in params:
-        #     pv = ParamValue(group=needed_group, param=p, value=request.POST["value_%s" % p.id],
-        #                     person_count=request.POST["person_%s" % p.id])
-        #     pv.save()
-        # print("saving")
-    return render(request, 'fls/load_request.html', {"params": params, "comp": comp, "groups": groups})
+        req = Request(competition=comp, participant=participant)
+        req.save()
+        for p in params:
+            pv = ParamValue(request=req, param=p, value=request.POST["value_%s" % p.id],
+                            person_count=request.POST["person_%s" % p.id])
+            pv.save()
+        print("saving")
+    return render(request, 'fls/load_request.html', {"params": params, "comp": comp})
 
 
 def process_request(request, id):
@@ -131,7 +134,7 @@ def pairwise_comparison(request, comp_id):
 
 @login_required(login_url="login/")
 def profile(request):
-    return render(request, "fls/profile.html", {})
+    return render(request, "fls/profile.html", {"cust_user": CustomUser.objects.get(user=request.user)})
 
 
 def login_view(request):
