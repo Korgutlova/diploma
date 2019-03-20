@@ -11,7 +11,7 @@
 <body>
 <div class="container">
     <br>
-    <form name="form" action="{% url 'fls:pairwise_comparison' comp_id %}" method="post">
+    <form name="form" id="form" action="{% url 'fls:pairwise_comparison' comp_id %}" method="post">
         {% csrf_token %}
         <table class="table table-bordered" id="itable">
             <caption class="text-center" style="font-family: 'Comic Sans MS',monospace"><strong>Попарные сравнения
@@ -32,8 +32,9 @@
                         <th scope="col">
                             {% if item|filter_equals %}
                             {% else %}
-                                <select name="rank{{ item }}" id="{{ item }}" class="cell form-control">
-                                    <option selected value="0">0</option>
+                                <select name="{{ item }}" id="{{ item }}" class="cell form-control">
+                                    <option selected value="-">-</option>
+                                    <option value="0">0</option>
                                     <option value="0.5">0,5</option>
                                     <option value="1">1</option>
                                 </select>
@@ -44,7 +45,9 @@
             {% endfor %}
             </tbody>
         </table>
-        <button type="submit" class="btn btn-primary labelText">
+        <p class="has-error" style="font-weight:bold; color: #c10d1f; font-family: 'Comic Sans MS',monospace" hidden>
+            Заполните все поля!</p>
+        <button type="submit" id="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Сохранить
                                     </span>
@@ -61,15 +64,35 @@
             var color = '#79ff4d';
             $(this).css('background-color', color);
             $(new_id).css('background-color', color);
+            $(".has-error").hide();
             if (old_value === "1") {
                 $(new_id).val("0");
             } else if (old_value === "0") {
                 $(new_id).val("1");
-            } else {
+            } else if (old_value === "0.5") {
                 $(new_id).val("0.5");
+            } else {
+                $(new_id).val("-");
+                $(this).css('background-color', 'white');
+                $(new_id).css('background-color', 'white');
             }
         });
+
+        $('#submit').click(function () {
+            $('form[name=form]').submit(function (e) {
+                var sub = true;
+                $(":selected").each(function () {
+                    if ($(this).val() === "-") {
+                        sub = false;
+                        $(".has-error").show();
+                        return sub;
+                    }
+                });
+                return sub;
+            });
+        });
     });
+
 
 </script>
 </html>

@@ -1,3 +1,6 @@
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 
 from fls.forms import CompetitionForm
@@ -65,7 +68,44 @@ def pairwise_comparison(request, comp_id):
         for f in params:
             arr.append("%s_%s" % (p.id, f.id))
         params_modif[p.name] = arr
-    print(params_modif)
+
     if request.method == 'POST':
-        print(request.POST)
+        cur_post = request.POST
+        for key, value in params_modif.items():
+            s = 0
+            for v in value:
+                if v in cur_post:
+                    s += float(cur_post[v])
+            print("key %s sum %s" % (key, s))
+
     return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp_id": comp_id})
+
+
+def profile(request):
+    return render(request, "fls/profile.html", {})
+
+
+def login_view(request):
+    if not request.user.is_anonymous:
+        return redirect("fls:profile")
+
+    user = request.user
+    if request.method == 'POST':
+        user = authenticate(
+            username=request.POST['username'],
+            password=request.POST['password']
+        )
+        if user is not None:
+            login(request, user, backend=None)
+            return redirect("fls:profile")
+        else:
+            error_message = 'User not found.' if not User.objects.filter(username=request.POST['username']).count() \
+                else 'Password incorrect.'
+            return render(request, 'fls/login.html', {'error': error_message,
+                                                      'email': request.POST['username']})
+    return render(request, 'fls/login.html', {})
+
+
+def logout_page(request):
+    logout(request)
+    return redirect("fls:login_view")
