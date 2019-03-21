@@ -56,7 +56,7 @@ class Group(models.Model):
 
 
 class CustomUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_user')
     # exists if role=participant
     group = models.ForeignKey(Group, related_name="current_group", on_delete=models.SET_NULL,
                               blank=True, null=True, verbose_name="Группа участника")

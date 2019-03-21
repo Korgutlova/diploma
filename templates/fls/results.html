@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div style="margin-left: 5px; width: 250px">
+    <label for="comp">Выберите конкурс</label>
+    <select id="comp" name="comp">
+        {% for comp in comps %}
+            <option value={{ comp.id }}>{{ comp.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <label for="type">Выберите тип:</label>
+    <select name="type" id="type">
+        <option name="abs" value="1">Абсолютная оценка</option>
+        <option name="pair_e" value="2">Сравнение заявок</option>
+        <option name="pair_p" value="3">Сравнение парамтеров</option>
+        <option name="rank_p" value="4">Ранжирование параметров</option>
+    </select>
+    <br>
+    <br>
+    <button class="btn btn-success" id="send">Посмотреть</button>
+    <br>
+    <br>
+</div>
+<div style="margin-left: 5px; width: 250px">
+    <table id="values" class="table table-bordered">
+
+    </table>
+</div>
+
+
+</body>
+<script>
+
+    $('#send').click(function () {
+        type = $('#type').val();
+        comp_id = $('#comp').val();
+        $.ajax({
+            url: '/fls/jury_values/',
+            type: 'get',
+            data: {'comp': comp_id, 'type': type},
+            dataType: 'json',
+            success: function (data) {
+                $("#values").html(data.est)
+            },
+            error: function () {
+                alert("error");
+            },
+            complete: function (data) {
+
+            }
+        })
+
+    });
+
+
+</script>
+</html>

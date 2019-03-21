@@ -1,13 +1,15 @@
+import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
 from fls.lib import parse_formula
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury
+    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
 
 
 @login_required(login_url="login/")
@@ -123,7 +125,7 @@ def pairwise_comparison(request, comp_id):
             param_value = sum(param_rows[key]) / sum(elems)
             print(key, param_value, sep=' : ')
             if not WeightParamJury.objects.filter(type=3, param=param, jury=jury).exists():
-                WeightParamJury.objects.create(type=3, param=param, jury=jury)
+                WeightParamJury.objects.create(type=3, param=param, jury=jury, value=param_value)
             else:
                 w = WeightParamJury.objects.get(type=3, param=param, jury=jury)
                 w.value = param_value
@@ -161,3 +163,19 @@ def login_view(request):
 def logout_page(request):
     logout(request)
     return redirect("fls:login_view")
+
+
+def results(request):
+    comps = Competition.objects.all()
+    method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
+    return render(request, 'fls/results.html', {'comps': comps, 'methods': method_choices})
+
+
+def values(request):
+    comp_id, type = int(request.GET['comp']), int(request.GET['type'])
+    comp = Competition.objects.get(id=comp_id)
+    estimations = EstimationJury.objects.filter(type=type, jury=request.user.custom_user,
+                                                request__competition=comp).order_by('-value')
+
+    data = {'est': render_to_string('fls/rank_table.html', {'ests': estimations})}
+    return JsonResponse(data)

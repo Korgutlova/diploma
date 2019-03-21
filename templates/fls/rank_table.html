@@ -1,0 +1,21 @@
+{% if ests %}
+    <thead>
+    <tr>
+        {#    add params#}
+        <th>Заявка</th>
+        <th>Балл</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for est in ests %}
+        <tr>
+            <td>{{ est.request.participant }}</td>
+            <td>{{ est.value }}</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+
+
+{% endif %}
