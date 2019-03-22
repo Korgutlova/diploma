@@ -167,8 +167,8 @@ def logout_page(request):
 
 def results(request):
     comps = Competition.objects.all()
-    method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
-    return render(request, 'fls/results.html', {'comps': comps, 'methods': method_choices})
+    # method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
+    return render(request, 'fls/results.html', {'comps': comps})
 
 
 def values(request):
@@ -176,6 +176,13 @@ def values(request):
     comp = Competition.objects.get(id=comp_id)
     estimations = EstimationJury.objects.filter(type=type, jury=request.user.custom_user,
                                                 request__competition=comp).order_by('-value')
-
-    data = {'est': render_to_string('fls/rank_table.html', {'ests': estimations})}
+    estimation_values = {}
+    params = comp.competition_params.all()
+    for est in estimations:
+        part_name = est.request.participant
+        estimation_values[part_name] = [[], est.value]
+        for param in params:
+            param_value = ParamValue.objects.get(request=est.request, param=param).value
+            estimation_values[part_name][0].append(param_value)
+    data = {'est': render_to_string('fls/rank_table.html', {'ests': estimation_values, 'params': params})}
     return JsonResponse(data)
