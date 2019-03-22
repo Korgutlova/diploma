@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Загрузка заявки</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-</head>
-<body>
-<div class="container">
-    <h2>Заявка на конкурс "{{ comp.name }}"</h2>
+{% extends 'fls/base_template.html' %}
+{% block title %}
+    Загрузка заявки на конкурс
+{% endblock %}
+
+{% block content %}
+    <h3>Заявка на конкурс "{{ comp.name }}"</h3>
+    <hr>
     <form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
         {% csrf_token %}
         {#    <h3>Выберите свою группу</h3>#}
@@ -33,21 +29,21 @@
             <hr>
         {% endfor %}
         <br>
-        <br>
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Добавить заявку
                                     </span>
         </button>
+        <br>
     </form>
-</div>
-<script>
-    $(".card_param").mousemove(function (event) {
-        $(this).css('background-color', '#d6f3f1');
-    });
-    $(".card_param").mouseout(function (event) {
-        $(this).css('background-color', '#ffffff');
-    });
-</script>
-</body>
-</html>
+{% endblock %}
+{% block  script %}
+    <script>
+        $(".card_param").mousemove(function (event) {
+            $(this).css('background-color', '#d6f3f1');
+        });
+        $(".card_param").mouseout(function (event) {
+            $(this).css('background-color', '#ffffff');
+        });
+    </script>
+{% endblock %}

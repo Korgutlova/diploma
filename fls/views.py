@@ -136,7 +136,9 @@ def pairwise_comparison(request, comp_id):
 
 @login_required(login_url="login/")
 def profile(request):
-    return render(request, "fls/profile.html", {"cust_user": CustomUser.objects.get(user=request.user)})
+    user = CustomUser.objects.get(user=request.user)
+    requests = Request.objects.filter(participant=user)
+    return render(request, "fls/profile.html", {"cust_user": user, "requests": requests})
 
 
 def login_view(request):
@@ -186,3 +188,8 @@ def values(request):
             estimation_values[part_name][0].append(param_value)
     data = {'est': render_to_string('fls/rank_table.html', {'ests': estimation_values, 'params': params})}
     return JsonResponse(data)
+
+
+def get_request(request, id):
+    cur_request = Request.objects.get(id=id)
+    return render(request, 'fls/request.html', {'request': cur_request})

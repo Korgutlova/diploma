@@ -1,0 +1,51 @@
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Title{% endblock %}</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/custom_css.css">
+    {% block links %}
+    {% endblock %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top header">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            {#            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"#}
+            {#                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">#}
+            {#                <span class="sr-only">Toggle navigation</span>#}
+            {#                <span class="icon-bar"></span>#}
+            {#                <span class="icon-bar"></span>#}
+            {#                <span class="icon-bar"></span>#}
+            {#            </button>#}
+            {#            <a href="#"><h4 class="logo">C<span>C</span>OK</h4></a>#}
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="{% url 'fls:list_comp' %}" style="color: white">Конкурсы</a></li>
+                <li><a href="{% url 'fls:profile' %}" style="color: white">Профиль</a></li>
+                <li><a href="{% url 'fls:logout' %}" style="color: #c21914">Выход</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="main-block">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+</body>
+
+{% block script %}{% endblock %}
+
+</html>

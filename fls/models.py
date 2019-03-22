@@ -75,6 +75,9 @@ class CustomUser(models.Model):
                 return r[1]
         return "Анонимус"
 
+    def is_participant(self):
+        return self.role == 1
+
 
 class Request(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_request', on_delete=models.CASCADE,
@@ -87,6 +90,10 @@ class Request(models.Model):
 
     def __str__(self):
         return "Заявка %s - %s" % (self.participant.group, self.competition.name)
+
+    def get_params(self):
+        params = ParamValue.objects.filter(request=self.id)
+        return params
 
 
 class RequestEstimation(models.Model):

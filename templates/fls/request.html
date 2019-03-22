@@ -1,0 +1,21 @@
+{% extends 'fls/base_template.html' %}
+{% block title %}Заявка{% endblock %}
+
+{% block content %}
+    <h3>Заявка</h3>
+    <hr>
+    <p>Конкурс - {{ request.competition.name }}</p>
+    <p>Группа - {{ request.participant.group.name }}</p>
+    <p>Загрузил пользователь {{ request.participant.get_username }}</p>
+    <p>Содержание заявки</p>
+    <div class="container">
+        {% for r in  request.get_params %}
+            <p>Параметр '{{ r.param.name }}' значение - {{ r.value }}, количество участвующих - {{ r.person_count }}</p>
+        {% endfor %}
+    </div>
+    <button type="button" class="btn">Редактировать заявку</button>
+    <button type="button" class="btn">Удалить заявку</button>
+    <button type="button" class="btn">Оценить заявку</button>
+    <button type="button" class="btn">Редактировать оценку</button>
+    <button type="button" class="btn">Удалить оценку</button>
+{% endblock %}

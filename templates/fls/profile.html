@@ -1,24 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Профиль</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-</head>
-<body>
-<div class="container">
+{% extends 'fls/base_template.html' %}
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+
     <h3>Профиль</h3>
     <hr>
     <h4><b>Имя:</b> {{ cust_user }}</h4>
     <h4><b>Статус:</b> {{ cust_user.get_role }}</h4>
-    <br>
-    <a href="{% url 'fls:logout' %}" class="btn btn-danger" role="button"><span
-            style="font-family: 'Comic Sans MS',monospace">Выход</span></a>
-    <br>
-    <br>
-    <a href="{% url 'fls:results' %}" role="button" class="btn btn-info">Мои результаты</a>
-</div>
-</body>
-</html>
+    {% if cust_user.is_participant %}
+        <h4><b>Группа:</b> {{ cust_user.group.name }}</h4>
+        <br>
+        <a href="{% url 'fls:results' %} " style="font-family: 'Comic Sans MS',monospace">Мои результаты </a>
+        <br>
+        <br>
+        <a href="#" id="my_requests" role="button" class="btn btn-info">Мои заявки</a>
+        <br>
+        <div class="requests container" hidden>
+            <br>
+            <ul>
+                {% for r in requests %}
+                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка на конкурс "{{ r.competition.name }}"</p>
+                    </a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block script %}
+    <script>
+        $("#my_requests").click(function () {
+            $(".requests").show()
+        });
+    </script>
+{% endblock %}

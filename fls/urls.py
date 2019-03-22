@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^preq/(?P<id>\d+)/$', process_request, name="preq"),
     url(r'^results/$', results, name="results"),
     url(r'^jury_values/$', values, name="values"),
+    url(r'^request/(?P<id>\d+)/$', get_request, name="get_request"),
 ]

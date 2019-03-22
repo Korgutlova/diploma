@@ -1,15 +1,9 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Создание критерия</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-</head>
-<body>
-<div class="container">
+{% extends 'fls/base_template.html' %}
+{% block title %}
+    Создание критерия
+{% endblock %}
+
+{% block content %}
     <h3>Создание критерия</h3>
     <hr>
     <h4>Параметры</h4>
@@ -43,8 +37,8 @@
         <div class="row">
             <div class="col-md-5">
                 <label>Название *
-                        <input class="form-control" type="text" name="name">
-                    </label><br>
+                    <input class="form-control" type="text" name="name">
+                </label><br>
                 <label>Формула
                     <textarea style="resize: none;" name="formula" class="form-control rounded-0" rows="5" cols="40"
                               id="desc" readonly></textarea>
@@ -57,18 +51,18 @@
             </button>
         </div>
         <br>
-{#        <input type="text" id="formula" name="formula2" disabled hidden>#}
+        {#        <input type="text" id="formula" name="formula2" disabled hidden>#}
         <hr>
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 Сохранить
                                     </span>
         </button>
-{#        <button type="submit" class="btn btn-success labelText">#}
-{#                                <span style="font-family: 'Comic Sans MS',monospace">#}
-{#                                Сохранить и добавить еще критерий#}
-{#                                    </span>#}
-{#        </button>#}
+        {#        <button type="submit" class="btn btn-success labelText">#}
+        {#                                <span style="font-family: 'Comic Sans MS',monospace">#}
+        {#                                Сохранить и добавить еще критерий#}
+        {#                                    </span>#}
+        {#        </button>#}
     </form>
 
     <div class="modal fade" id="myModal" role="dialog">
@@ -94,89 +88,86 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="apply_checkbox"><span
-                            style="font-family: 'Comic Sans MS',monospace">Применить</span></button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="apply_checkbox"><span>Применить</span>
+                    </button>
                 </div>
             </div>
 
         </div>
     </div>
-</div>
-
-</body>
-
-<script>
-    $(document).ready(function () {
-        var array = [];
-        $(document).on('click', '.param', function () {
-            var str = "a_" + $(this).attr("id") + " ";
-            if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
-                && false === array[array.length - 1].endsWith(") "))) {
-                array.push(str);
-            }
-            full_textarea();
-        });
-
-        $(".oper").on('click', '.btn', function () {
-            if (array.length !== 0) {
-                var elem = array[array.length - 1];
-                var bool = true;
-                {#$(".oper > .btn").each(function () {#}
-                {#    if ($(this).text() + " " === elem) {#}
-                {#        bool = false;#}
-                {#    }#}
-                {#});#}
-                if (bool) {
-                    array.push($(this).text() + " ");
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            var array = [];
+            $(document).on('click', '.param', function () {
+                var str = "a_" + $(this).attr("id") + " ";
+                if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
+                    && false === array[array.length - 1].endsWith(") "))) {
+                    array.push(str);
                 }
-
                 full_textarea();
-            }
-        });
-
-        $("#back").click(function () {
-            array = array.slice(0, array.length - 1);
-            full_textarea();
-        });
-
-        $("#closeModal").click(function () {
-            $("input[name='item']:checked").prop('checked', false);
-            $("#insert").text('');
-            $("#checkAll").prop('checked', false);
-        });
-
-        $("#apply_checkbox").click(function () {
-            var params = [];
-            $.each($("input[name='item']:checked"), function () {
-                params.push("a_" + $(this).attr("id"));
-                $(this).prop('checked', false);
             });
-            array.push($("#insert").text() + "(" + params + ") ");
-            $("#insert").text('');
-            $("#checkAll").prop('checked', false);
-            full_textarea();
-        });
 
-        function full_textarea() {
-            var i;
-            var content = "";
-            for (i = 0; i < array.length; i++) {
-                content += array[i];
+            $(".oper").on('click', '.btn', function () {
+                if (array.length !== 0) {
+                    var elem = array[array.length - 1];
+                    var bool = true;
+                    {#$(".oper > .btn").each(function () {#}
+                    {#    if ($(this).text() + " " === elem) {#}
+                    {#        bool = false;#}
+
+                    if (bool) {
+                        array.push($(this).text() + " ");
+                    }
+
+                    full_textarea();
+                }
+            });
+
+            $("#back").click(function () {
+                array = array.slice(0, array.length - 1);
+                full_textarea();
+            });
+
+            $("#closeModal").click(function () {
+                $("input[name='item']:checked").prop('checked', false);
+                $("#insert").text('');
+                $("#checkAll").prop('checked', false);
+            });
+
+            $("#apply_checkbox").click(function () {
+                var params = [];
+                $.each($("input[name='item']:checked"), function () {
+                    params.push("a_" + $(this).attr("id"));
+                    $(this).prop('checked', false);
+                });
+                array.push($("#insert").text() + "(" + params + ") ");
+                $("#insert").text('');
+                $("#checkAll").prop('checked', false);
+                full_textarea();
+            });
+
+            function full_textarea() {
+                var i;
+                var content = "";
+                for (i = 0; i < array.length; i++) {
+                    content += array[i];
+                }
+                $("#desc").val(content);
             }
-            $("#desc").val(content);
-        }
 
-        $(".func > .btn").click(function () {
-            if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
-                && false === array[array.length - 1].endsWith(") "))) {
-                $("#insert").append($(this).text());
-                $('#myModal').modal('show');
-            }
-        });
+            $(".func > .btn").click(function () {
+                if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
+                    && false === array[array.length - 1].endsWith(") "))) {
+                    $("#insert").append($(this).text());
+                    $('#myModal').modal('show');
+                }
+            });
 
-        $("#checkAll").click(function () {
-            $(".form-check-input").prop('checked', $(this).prop('checked'));
+            $("#checkAll").click(function () {
+                $(".form-check-input").prop('checked', $(this).prop('checked'));
+            });
         });
-    });
-</script>
-</html>
+    </script>
+{% endblock %}
