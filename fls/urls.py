@@ -20,4 +20,6 @@ urlpatterns = [
     url(r'^request/(?P<id>\d+)/$', get_request, name="get_request"),
     url(r'^estimate_req/(?P<req_id>\d+)/$', estimate_req, name="estimate_req"),
     url(r'^estimate_del/(?P<est_id>\d+)/$', estimate_del, name="estimate_del"),
+    url(r'^commres/$', common_results, name="common"),
+    url(r'^common_values/$', common_values, name="common_values"),
 ]
