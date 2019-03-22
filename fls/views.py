@@ -131,7 +131,7 @@ def pairwise_comparison(request, comp_id):
                 w.value = param_value
                 w.save()
         return HttpResponse("Ваши оценки параметров сохранены")
-    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp_id": comp_id})
+    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp": comp})
 
 
 @login_required(login_url="login/")
@@ -190,6 +190,42 @@ def values(request):
     return JsonResponse(data)
 
 
+@login_required(login_url="login/")
 def get_request(request, id):
     cur_request = Request.objects.get(id=id)
-    return render(request, 'fls/request.html', {'request': cur_request})
+    estimate = EstimationJury.objects.filter(request=cur_request)
+    flag = False
+    dict = {'request': cur_request, 'user': CustomUser.objects.get(user=request.user)}
+    if len(estimate) == 1:
+        flag = True
+        dict['estimate_id'] = estimate[0].id
+        dict['estimate_val'] = estimate[0].value
+    dict['estimate_flag'] = flag
+    return render(request, 'fls/request.html', dict)
+
+
+def estimate_req(request, req_id):
+    if request.method == "POST":
+        try:
+            estimate = EstimationJury.objects.get(jury=CustomUser.objects.get(user=request.user),
+                                                  request=Request.objects.get(id=req_id), type=1)
+            estimate.value = request.POST["est_val"]
+
+        except:
+            estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
+                                      request=Request.objects.get(id=req_id),
+                                      value=request.POST["est_val"], type=1)
+        estimate.save()
+    return redirect("fls:get_request", req_id)
+
+
+def estimate_del(request, est_id):
+    estimate = EstimationJury.objects.get(id=est_id)
+    req_id = estimate.request.id
+    estimate.delete()
+    return redirect("fls:get_request", req_id)
+
+
+def get_comp(request, id):
+    comp = Competition.objects.get(id=id)
+    return render(request, 'fls/comp.html', {'comp': comp})

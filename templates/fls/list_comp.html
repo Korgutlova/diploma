@@ -7,7 +7,8 @@
     <h3>Конкурсы</h3>
     <hr>
     {% for comp in comps %}
-        {{ comp.name }}<a href="{% url 'fls:criteria' comp.id %}">Добавить критерий</a>
+        <h4><a href="{% url 'fls:get_comp' comp.id %}">{{ comp.name }} </a></h4>
+        {#        <a href="{% url 'fls:criteria' comp.id %}">Добавить критерий</a>#}
         <hr>
     {% endfor %}
 {% endblock %}

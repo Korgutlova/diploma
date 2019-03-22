@@ -37,12 +37,24 @@ class Competition(models.Model):
     # либо это, либо types в Estimation/Weight
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
+    # если метод 1, то нужно указать максимум из какого числа ставится оценка
+
+    max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл')
 
     class Meta:
         unique_together = (('name', 'description'),)
 
     def __str__(self):
         return self.name
+
+    def get_params(self):
+        return Param.objects.filter(competition=self)
+
+    def get_course(self):
+        for r in YEAR_CHOICES:
+            if r[0] == self.year_of_study:
+                return r[1]
+        return "Не указано"
 
 
 class Group(models.Model):
@@ -77,6 +89,9 @@ class CustomUser(models.Model):
 
     def is_participant(self):
         return self.role == 1
+
+    def is_jury(self):
+        return self.role == 2
 
 
 class Request(models.Model):

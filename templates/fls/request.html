@@ -4,18 +4,68 @@
 {% block content %}
     <h3>Заявка</h3>
     <hr>
-    <p>Конкурс - {{ request.competition.name }}</p>
-    <p>Группа - {{ request.participant.group.name }}</p>
-    <p>Загрузил пользователь {{ request.participant.get_username }}</p>
-    <p>Содержание заявки</p>
-    <div class="container">
-        {% for r in  request.get_params %}
-            <p>Параметр '{{ r.param.name }}' значение - {{ r.value }}, количество участвующих - {{ r.person_count }}</p>
-        {% endfor %}
+    <div class="card" style="width: 70rem;">
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><p>Конкурс - {{ request.competition.name }}</p></li>
+                <li class="list-group-item"><p>Группа - {{ request.participant.group.name }}</p></li>
+                <li class="list-group-item"><p>Загрузил пользователь {{ request.participant.get_username }}</p></li>
+                <li class="list-group-item"><p>Содержание заявки</p>
+                    <div class="container">
+                        {% for r in  request.get_params %}
+                            <p>Параметр '{{ r.param.name }}' значение - {{ r.value }}, количество участвующих
+                                - {{ r.person_count }}</p>
+                        {% endfor %}
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
-    <button type="button" class="btn">Редактировать заявку</button>
-    <button type="button" class="btn">Удалить заявку</button>
-    <button type="button" class="btn">Оценить заявку</button>
-    <button type="button" class="btn">Редактировать оценку</button>
-    <button type="button" class="btn">Удалить оценку</button>
+    {% if request.participant == user %}
+        <button type="button" class="btn">Редактировать заявку</button>
+        <button type="button" class="btn btn-danger">Удалить заявку</button>
+    {% endif %}
+    {% if user.is_jury and not estimate_flag %}
+        <h4>Вы еще не оценили заявку </h4>
+        <br>
+        <button id="estimate" type="button" class="btn">Оценить заявку</button>
+    {% endif %}
+    {% if estimate_flag %}
+        <br>
+        <h4>Ваша оценка <b>{{ estimate_val }}</b> из <b>{{ request.competition.max_limit }}</b></h4>
+        <br>
+        <button id="edit" type="button" class="btn">Редактировать оценку</button>
+        <br>
+        <br>
+        <form method="post" action="{% url 'fls:estimate_del' estimate_id %}">
+            {% csrf_token %}
+            <button id="delete" type="submit" class="btn btn-danger">Удалить оценку</button>
+        </form>
+    {% endif %}
+
+    <form id="form" method="post" action="{% url 'fls:estimate_req' request.id %}" hidden>
+        <br>
+        {% csrf_token %}
+        <label>Оценка заявки
+            <input type="text" name="est_val" value="{% if estimate_val %}
+                {{ estimate_val }}
+                {% endif %}">
+        </label>
+        <button type="submit" class="btn btn-primary labelText">
+            <span>Сохранить</span>
+        </button>
+    </form>
+{% endblock %}
+{% block script %}
+    <script>
+        $("#estimate").click(function () {
+            $("#form").show();
+            $('#estimate').hide();
+        });
+        $("#edit").click(function () {
+            $("#form").show();
+            $('#edit').hide();
+            $("#delete").hide();
+        });
+    </script>
 {% endblock %}

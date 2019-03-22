@@ -1,0 +1,18 @@
+{% extends 'fls/base_template.html' %}
+{% block title %}
+    Конкурc {{ comp.name }}
+{% endblock %}
+
+{% block content %}
+    <h3>{{ comp.name }}</h3>
+    <hr>
+    <p><b>Курс: </b> {{ comp.get_course}}</p>
+    <p><b>Описание: </b> <br>{{ comp.description }}</p>
+    <hr>
+    <p>Необходимые параметры для участия в конкурсе</p>
+    <ul>
+        {% for p in comp.get_params %}
+            <li><b>{{ p.name }}</b></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
