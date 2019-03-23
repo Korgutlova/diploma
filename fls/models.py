@@ -104,7 +104,7 @@ class Request(models.Model):
     # result_value = models.FloatField(default=0)
 
     def __str__(self):
-        return "Заявка %s - %s" % (self.participant.group, self.competition.name)
+        return "Заявка %s - %s" % (self.participant, self.competition.name)
 
     def get_params(self):
         params = ParamValue.objects.filter(request=self.id)
@@ -122,6 +122,9 @@ class RequestEstimation(models.Model):
     # для различных формул объединения жюри в случае методов 1,2
     jury_formula = models.ForeignKey('CalcEstimationJury', related_name='formula_request_values', null=True, blank=True,
                                      on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Заявка %s - %s - %s" % (self.request.participant, self.type, self.value)
 
     class Meta:
         unique_together = (('request', 'type', 'jury_formula'),)
@@ -162,13 +165,13 @@ class ParamValue(models.Model):
     request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
     value = models.FloatField(default=0)
-    person_count = models.IntegerField()
+    person_count = models.IntegerField(null=True, blank=True)
 
     class Meta:
         unique_together = (('param', 'request'),)
 
     def __str__(self):
-        return "%s - %s" % (self.param.name, self.value)
+        return "%s -%s - %s" % (self.request.participant, self.param.name, self.value)
 
 
 class Criterion(models.Model):

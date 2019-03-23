@@ -94,6 +94,38 @@ def process_request(request, id):
         RequestEstimation.objects.create(type=2, request=req, value=pair_value, jury_formula=jury_formula)
     return HttpResponse('OK')
 
+# script
+# def preq(request, id):
+#     req = Request.objects.get(id=id)
+#     params = req.competition.competition_params.all()
+#     jurys = CustomUser.objects.filter(role=2)
+#     param_values = []
+#     for param in params:
+#         param_value = ParamValue.objects.get(param=param, request=req).value
+#         param_values.append(param_value)
+#     for jury in jurys:
+#         jury_value = 0
+#         for param in params:
+#             weight = WeightParamJury.objects.get(type=3, param=param, jury=jury).value
+#             param_value = ParamValue.objects.get(param=param, request=req).value
+#             jury_value += weight * param_value
+#         EstimationJury.objects.create(type=3, request=req, jury=jury, value=jury_value)
+#     for criterion in req.competition.competition_criterions.all():
+#         value = parse_formula(criterion.formula, param_values)
+#         print('value', value)
+#         CriterionValue.objects.create(criterion=criterion, request=req, value=value)
+#     jury_1_values = []
+#     jury_3_values = []
+#     for jury in jurys:
+#         jury_1_values.append(EstimationJury.objects.get(type=1, jury=jury, request=req).value)
+#         jury_3_values.append(EstimationJury.objects.get(type=3, jury=jury, request=req).value)
+#     formula = req.competition.competition_formula_for_jury.first()
+#     value_1 = parse_formula(formula.formula, jury_1_values)
+#     value_2 = parse_formula(formula.formula, jury_3_values)
+#     RequestEstimation.objects.create(type=1, request=req, value=value_1)
+#     RequestEstimation.objects.create(type=3, request=req, value=value_2)
+#     return HttpResponse('OK')
+
 
 @login_required(login_url="login/")
 def pairwise_comparison(request, comp_id):
@@ -230,6 +262,7 @@ def get_comp(request, id):
     comp = Competition.objects.get(id=id)
     return render(request, 'fls/comp.html', {'comp': comp})
 
+
 def common_results(request):
     comps = Competition.objects.all()
     jurys = CustomUser.objects.filter(role=2)
@@ -254,11 +287,12 @@ def common_values(request):
                 param_value = ParamValue.objects.get(request=req, param=param).value
                 estimation_values[part_name][0].append(param_value)
             for t in [1, 3]:
-                estimation_values[part_name][1].append(RequestEstimation.objects.get(type=t, request=req).value)
+                estimation_values[part_name][1].append(
+                    round(RequestEstimation.objects.get(type=t, request=req).value, 2))
                 # hc
             criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
                 request=req).value
-            estimation_values[part_name][1].append(criterion_value)
+            estimation_values[part_name][1].append(round(criterion_value, 2))
         data = {'est': render_to_string('fls/common/table.html',
                                         {'ests': estimation_values, 'params': params, 'methods': methods})}
     else:
@@ -276,18 +310,21 @@ def common_values(request):
             if type != '5':
                 for jury in jurys:
                     estimation_values[part_name][1].append(
-                        EstimationJury.objects.get(type=int(type), request=req, jury=jury).value)
-                estimation_values[part_name].append(RequestEstimation.objects.get(type=int(type), request=req).value)
+                        round(EstimationJury.objects.get(type=int(type), request=req, jury=jury).value, 2))
+                estimation_values[part_name].append(
+                    round(RequestEstimation.objects.get(type=int(type), request=req).value, 2))
+                print(estimation_values)
             else:
                 jurys = []
                 one_method = False
-                methods.append(METHOD_CHOICES[int(type) - 1][1])
+                # methods.append(METHOD_CHOICES[int(type) - 1][1])
+                # print(methods)
                 criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
                     request=req).value
-                estimation_values[part_name][1].append(criterion_value)
-
+                estimation_values[part_name][1].append(round(criterion_value, 2))
+        if type == '5':
+            methods.append(METHOD_CHOICES[int(type) - 1][1])
         data = {'est': render_to_string('fls/common/table.html',
                                         {'ests': estimation_values, 'params': params,
                                          'jurys': jurys, 'one_method': one_method, 'methods': methods})}
     return JsonResponse(data)
-
