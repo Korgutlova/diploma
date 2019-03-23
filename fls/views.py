@@ -229,3 +229,65 @@ def estimate_del(request, est_id):
 def get_comp(request, id):
     comp = Competition.objects.get(id=id)
     return render(request, 'fls/comp.html', {'comp': comp})
+
+def common_results(request):
+    comps = Competition.objects.all()
+    jurys = CustomUser.objects.filter(role=2)
+    # method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
+    return render(request, 'fls/common/results.html', {'comps': comps, 'jurys': jurys})
+
+
+def common_values(request):
+    comp_id, type = int(request.GET['comp']), request.GET['type']
+    print(request.GET['type'])
+    reqs = Request.objects.filter(competition_id=comp_id)
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    estimation_values = {}
+    if type == 'all':
+        methods = []
+        for t in [1, 3, 5]:
+            methods.append(METHOD_CHOICES[t - 1][1])
+        for req in reqs:
+            part_name = req.participant
+            estimation_values[part_name] = [[], []]
+            for param in params:
+                param_value = ParamValue.objects.get(request=req, param=param).value
+                estimation_values[part_name][0].append(param_value)
+            for t in [1, 3]:
+                estimation_values[part_name][1].append(RequestEstimation.objects.get(type=t, request=req).value)
+                # hc
+            criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
+                request=req).value
+            estimation_values[part_name][1].append(criterion_value)
+        data = {'est': render_to_string('fls/common/table.html',
+                                        {'ests': estimation_values, 'params': params, 'methods': methods})}
+    else:
+        jury = request.GET['jury']
+        jurys = CustomUser.objects.filter(role=2) if jury == 'all' else [CustomUser.objects.get(
+            id=int(jury))]
+        one_method = True
+        methods = []
+        for req in reqs:
+            part_name = req.participant
+            estimation_values[part_name] = [[], []]
+            for param in params:
+                param_value = ParamValue.objects.get(request=req, param=param).value
+                estimation_values[part_name][0].append(param_value)
+            if type != '5':
+                for jury in jurys:
+                    estimation_values[part_name][1].append(
+                        EstimationJury.objects.get(type=int(type), request=req, jury=jury).value)
+                estimation_values[part_name].append(RequestEstimation.objects.get(type=int(type), request=req).value)
+            else:
+                jurys = []
+                one_method = False
+                methods.append(METHOD_CHOICES[int(type) - 1][1])
+                criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
+                    request=req).value
+                estimation_values[part_name][1].append(criterion_value)
+
+        data = {'est': render_to_string('fls/common/table.html',
+                                        {'ests': estimation_values, 'params': params,
+                                         'jurys': jurys, 'one_method': one_method, 'methods': methods})}
+    return JsonResponse(data)
+
