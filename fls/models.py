@@ -27,6 +27,13 @@ ROLE_CHOICES = (
     (4, 'Эксперт оценок жюри'),
 )
 
+STATUSES = (
+    (1, 'Создание'),
+    (2, 'Открыт'),
+    (3, 'Оценивание'),
+    (4, 'Закрыт')
+)
+
 
 class Competition(models.Model):
     # можно еще тут указать поле, групповой или же единичный (на одного человека) конкурс
@@ -40,6 +47,10 @@ class Competition(models.Model):
     # если метод 1, то нужно указать максимум из какого числа ставится оценка
 
     max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл')
+
+    # в каком состоянии находится конкурс
+    status = models.IntegerField(choices=STATUSES, blank=True, null=True,
+                                 default=STATUSES[0][0], verbose_name="Статус конкурса")
 
     class Meta:
         unique_together = (('name', 'description'),)
@@ -55,6 +66,17 @@ class Competition(models.Model):
             if r[0] == self.year_of_study:
                 return r[1]
         return "Не указано"
+
+    def get_status(self):
+        for r in STATUSES:
+            if r[0] == self.status:
+                return r[1]
+        return "Не определено"
+
+    def get_count(self):
+        size = len(Request.objects.filter(competition=self))
+        print(size)
+        return size
 
 
 class Group(models.Model):
@@ -137,7 +159,7 @@ class Param(models.Model):
     # result_weight = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('name', 'description'),)
+        unique_together = (('name', 'description', 'competition'),)
 
     def __str__(self):
         return self.name

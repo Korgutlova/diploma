@@ -9,8 +9,9 @@
     <h4><b>Статус:</b> {{ cust_user.get_role }}</h4>
     {% if cust_user.is_participant %}
         <h4><b>Группа:</b> {{ cust_user.group.name }}</h4>
+        <hr>
         <br>
-        <a href="{% url 'fls:results' %} " style="font-family: 'Comic Sans MS',monospace">Мои результаты </a>
+        <a href="{% url 'fls:results' %} ">Мои результаты </a>
         <br>
         <br>
         <a href="#" id="my_requests" role="button" class="btn btn-info">Мои заявки</a>
@@ -24,6 +25,43 @@
                 {% endfor %}
             </ul>
         </div>
+    {% endif %}
+    {% if cust_user.is_jury %}
+        <hr>
+        <h4>Доступные конкурсы</h4>
+        <br>
+        <form action="{% url 'fls:profile' %}" method="post">
+            {% csrf_token %}
+            <select name="comp">
+                {% for c in comps %}
+                    <option {% if select_comp == c.id %} selected {% endif %} value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary labelText">
+                <span>Применить</span>
+            </button>
+        </form>
+        <br>
+        {% if new_requests %}
+            <h4>Новые (непросмотренные) заявки</h4>
+            <ul>
+                {% for r in new_requests %}
+                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
+                        группы {{ r.participant.group }} {{ r.participant.group.faculty }}</p>
+                    </a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if view_requests %}
+            <h4>Оцененные заявки</h4>
+            <ul>
+                {% for r in view_requests %}
+                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
+                        группы {{ r.participant.group }} {{ r.participant.group.faculty }}</p>
+                    </a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     {% endif %}
 {% endblock %}
 {% block script %}
