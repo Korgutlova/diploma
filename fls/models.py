@@ -104,7 +104,7 @@ class Request(models.Model):
     # result_value = models.FloatField(default=0)
 
     def __str__(self):
-        return "Заявка %s - %s" % (self.participant.group, self.competition.name)
+        return "Заявка %s - %s -%s" % (self.participant.group, self.competition.name, self.id)
 
     def get_params(self):
         params = ParamValue.objects.filter(request=self.id)
