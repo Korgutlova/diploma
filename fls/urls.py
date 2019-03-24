@@ -14,7 +14,6 @@ urlpatterns = [
     url(r'^comp/(?P<id>\d+)$', get_comp, name="get_comp"),
     url(r'^load_request/(?P<comp_id>\d+)/$', load_request, name="load_request"),
     url(r'^comp/(?P<comp_id>\d+)/pairwise_comparison$', pairwise_comparison, name="pairwise_comparison"),
-    url(r'^preq/(?P<id>\d+)/$', process_request, name="preq"),
     url(r'^results/$', results, name="results"),
     url(r'^jury_values/$', values, name="values"),
     url(r'^request/(?P<id>\d+)/$', get_request, name="get_request"),
@@ -22,5 +21,4 @@ urlpatterns = [
     url(r'^estimate_del/(?P<est_id>\d+)/$', estimate_del, name="estimate_del"),
     url(r'^commres/$', common_results, name="common"),
     url(r'^common_values/$', common_values, name="common_values"),
-    # url(r'^p/(?P<id>\d+)/$', preq, name='p')
 ]

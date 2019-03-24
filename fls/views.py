@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula
+from fls.lib import parse_formula, process_3_method
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
 
@@ -64,69 +64,6 @@ def load_request(request, comp_id):
     return render(request, 'fls/load_request.html', {"params": params, "comp": comp})
 
 
-def process_request(request, id):
-    req = Request.objects.get(id=id)
-    params = req.competition.competition_params.all()
-    param_values = []
-    pair_result = 0
-    rank_result = 0
-    for param in params:
-        param_value = ParamValue.objects.get(param=param, request=req).value
-        pair_result += ParamResultWeight.objects.get(param=param, type=3).weight_value * param_value
-        rank_result += ParamResultWeight.objects.get(param=param, type=4).weight_value * param_value
-        param_values.append(param_value)
-    RequestEstimation.objects.create(type=3, request=req, value=pair_result)
-    RequestEstimation.objects.create(type=4, request=req, value=rank_result)
-    for criterion in req.competition.competition_criterions.all():
-        value = parse_formula(criterion.formula, param_values)
-        print('value', value)
-        CriterionValue.objects.create(criterion=criterion, request=req, value=value)
-    jurys = CustomUser.objects.filter(role=2)
-    for jury_formula in req.competition.competition_formula_for_jury.all():
-        request_abs_values = []
-        request_pair_values = []
-        for jury in jurys:
-            request_abs_values.append(EstimationJury.objects.get(type=1, jury=jury, request=req).value)
-            request_pair_values.append(EstimationJury.objects.get(type=2, jury=jury, request=req).value)
-        abs_value = parse_formula(jury_formula.formula, request_abs_values)
-        pair_value = parse_formula(jury_formula.formula, request_pair_values)
-        RequestEstimation.objects.create(type=1, request=req, value=abs_value, jury_formula=jury_formula)
-        RequestEstimation.objects.create(type=2, request=req, value=pair_value, jury_formula=jury_formula)
-    return HttpResponse('OK')
-
-# script
-# def preq(request, id):
-#     req = Request.objects.get(id=id)
-#     params = req.competition.competition_params.all()
-#     jurys = CustomUser.objects.filter(role=2)
-#     param_values = []
-#     for param in params:
-#         param_value = ParamValue.objects.get(param=param, request=req).value
-#         param_values.append(param_value)
-#     for jury in jurys:
-#         jury_value = 0
-#         for param in params:
-#             weight = WeightParamJury.objects.get(type=3, param=param, jury=jury).value
-#             param_value = ParamValue.objects.get(param=param, request=req).value
-#             jury_value += weight * param_value
-#         EstimationJury.objects.create(type=3, request=req, jury=jury, value=jury_value)
-#     for criterion in req.competition.competition_criterions.all():
-#         value = parse_formula(criterion.formula, param_values)
-#         print('value', value)
-#         CriterionValue.objects.create(criterion=criterion, request=req, value=value)
-#     jury_1_values = []
-#     jury_3_values = []
-#     for jury in jurys:
-#         jury_1_values.append(EstimationJury.objects.get(type=1, jury=jury, request=req).value)
-#         jury_3_values.append(EstimationJury.objects.get(type=3, jury=jury, request=req).value)
-#     formula = req.competition.competition_formula_for_jury.first()
-#     value_1 = parse_formula(formula.formula, jury_1_values)
-#     value_2 = parse_formula(formula.formula, jury_3_values)
-#     RequestEstimation.objects.create(type=1, request=req, value=value_1)
-#     RequestEstimation.objects.create(type=3, request=req, value=value_2)
-#     return HttpResponse('OK')
-
-
 @login_required(login_url="login/")
 def pairwise_comparison(request, comp_id):
     jury = CustomUser.objects.get(user=request.user)
@@ -162,6 +99,7 @@ def pairwise_comparison(request, comp_id):
                 w = WeightParamJury.objects.get(type=3, param=param, jury=jury)
                 w.value = param_value
                 w.save()
+        process_3_method(jury, comp)
         return HttpResponse("Ваши оценки параметров сохранены")
     return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp": comp})
 
