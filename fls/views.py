@@ -61,6 +61,8 @@ def load_request(request, comp_id):
             pv = ParamValue(request=req, param=p, value=request.POST["value_%s" % p.id],
                             person_count=request.POST["person_%s" % p.id])
             pv.save()
+        # до этого все жюри должны были выставить свои кф и эксперты должны были задать свои формулы
+        # объединение по абсолютным оценкам происходит в estimate_req со своими условиями
         process_request(req.id, union_types=(3,))
         print("saving")
     return render(request, 'fls/load_request.html', {"params": params, "comp": comp})

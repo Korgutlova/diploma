@@ -141,7 +141,7 @@ def process_5_method_request(req, criterion):
         CriterionValue.objects.create(criterion=criterion, request=req, value=value)
 
 
-# для всех подсчётов после обновления заявки
+# для всех подсчётов после создания/обновления заявки
 def process_request(request_id, union_types=(1, 3)):
     req = Request.objects.get(id=request_id)
     for jury in CustomUser.objects.filter(role=2):
