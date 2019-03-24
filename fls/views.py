@@ -108,7 +108,22 @@ def pairwise_comparison(request, comp_id):
 def profile(request):
     user = CustomUser.objects.get(user=request.user)
     requests = Request.objects.filter(participant=user)
-    return render(request, "fls/profile.html", {"cust_user": user, "requests": requests})
+    new_requests = []
+    view_requests = []
+    select_comp = 0
+    if request.method == "POST":
+        comp_id = request.POST['comp']
+        new_requests = Request.objects.filter(competition=Competition.objects.get(id=comp_id))
+        for req in new_requests:
+            result = EstimationJury.objects.filter(jury=user, request=req, type=1)
+            if len(result) == 1:
+                view_requests.append(req)
+            new_requests = list(set(new_requests) - set(view_requests))
+        select_comp = int(comp_id)
+    print(select_comp)
+    return render(request, "fls/profile.html",
+                  {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
+                   'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp})
 
 
 def login_view(request):
@@ -198,7 +213,10 @@ def estimate_del(request, est_id):
 
 def get_comp(request, id):
     comp = Competition.objects.get(id=id)
-    return render(request, 'fls/comp.html', {'comp': comp})
+    user = CustomUser.objects.get(user=request.user)
+    requests = Request.objects.filter(competition=Competition.objects.get(id=id))
+    return render(request, 'fls/comp.html', {'comp': comp, 'user': user, 'requests': requests})
+
 
 
 def common_results(request):

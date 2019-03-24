@@ -4,10 +4,11 @@
 {% endblock %}
 
 {% block content %}
-    <h3>{{ comp.name }}</h3>
+    <h3><b>Конкурс: </b>{{ comp.name }}</h3>
     <hr>
-    <p><b>Курс: </b> {{ comp.get_course}}</p>
-    <p><b>Описание: </b> <br>{{ comp.description }}</p>
+    <p><b>Курс: </b> {{ comp.get_course }}</p>
+    <p><b>Описание </b> <br>{{ comp.description }}</p>
+    <p><b>Статус:</b> {{ comp.get_status }}</p>
     <hr>
     <p>Необходимые параметры для участия в конкурсе</p>
     <ul>
@@ -15,4 +16,15 @@
             <li><b>{{ p.name }}</b></li>
         {% endfor %}
     </ul>
+    {% if  comp.get_count  == 0 %}
+        {% if user.is_participant %}
+            <h4>На конкурс еще не подано ни одной заявки! Будь первым!</h4>
+        {% endif %}
+    {% else %}
+        <h4>На конкурс уже подано <b>{{ comp.get_count }} </b> заявки !</h4>
+    {% endif %}
+    <br>
+    {% if user.is_participant %}
+        <a href="{% url 'fls:load_request' comp.id %}" class="btn btn-success"> Участвовать</a>
+    {% endif %}
 {% endblock %}
