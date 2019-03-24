@@ -81,25 +81,21 @@ def union_jury_estimations(formula_for_jury):
         union_request_ests(req, formula_for_jury)
 
 
-def union_request_ests(req, formula_for_jury):
+def union_request_ests(req, formula_for_jury, types=(1, 3)):
     jurys = CustomUser.objects.filter(role=2)
-    jury_1_values = []
-    jury_3_values = []
-    for jury in jurys:
-        jury_1_values.append(EstimationJury.objects.get(type=1, jury=jury, request=req).value)
-        jury_3_values.append(EstimationJury.objects.get(type=3, jury=jury, request=req).value)
-    value_1 = parse_formula(formula_for_jury.formula, jury_1_values)
-    value_3 = parse_formula(formula_for_jury.formula, jury_3_values)
-    if not RequestEstimation.objects.filter(request=req, jury_formula=formula_for_jury).exists():
-        RequestEstimation.objects.create(type=1, request=req, value=value_1, jury_formula=formula_for_jury)
-        RequestEstimation.objects.create(type=3, request=req, value=value_3, jury_formula=formula_for_jury)
-    else:
-        est_1, est_3 = RequestEstimation.objects.get(type=1, request=req,
-                                                     jury_formula=formula_for_jury), RequestEstimation.objects.get(
-            type=3, request=req, jury_formula=formula_for_jury)
-        est_1.value, est_3.value = value_1, value_3
-        est_1.save()
-        est_3.save()
+    for type in types:
+        jury_values = []
+        for jury in jurys:
+            jury_values.append(EstimationJury.objects.get(type=type, jury=jury, request=req).value)
+        common_jury_value = parse_formula(formula_for_jury.formula, jury_values)
+        if not RequestEstimation.objects.filter(request=req, jury_formula=formula_for_jury, type=type).exists():
+            RequestEstimation.objects.create(type=type, request=req, value=common_jury_value,
+                                             jury_formula=formula_for_jury)
+        else:
+            est = RequestEstimation.objects.get(type=type, request=req,
+                                                jury_formula=formula_for_jury)
+            est.value = common_jury_value
+            est.save()
 
 
 # для вызова после создания/обновления попар.кф. у жюри
@@ -146,14 +142,14 @@ def process_5_method_request(req, criterion):
 
 
 # для всех подсчётов после обновления заявки
-def process_request(request_id):
+def process_request(request_id, union_types=(1, 3)):
     req = Request.objects.get(id=request_id)
     for jury in CustomUser.objects.filter(role=2):
         process_3_method_request(req, jury)
     for criterion in req.competition.competition_criterions.all():
         process_5_method_request(req, criterion)
     for jury_formula in req.competition.competition_formula_for_jury.all():
-        union_request_ests(req, jury_formula)
+        union_request_ests(req, jury_formula, union_types)
 
 # process_requests(Competition.objects.get(id=8))
 

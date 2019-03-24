@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, process_3_method, process_5_method
+from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
 
@@ -61,6 +61,7 @@ def load_request(request, comp_id):
             pv = ParamValue(request=req, param=p, value=request.POST["value_%s" % p.id],
                             person_count=request.POST["person_%s" % p.id])
             pv.save()
+        process_request(req.id, union_types=(3,))
         print("saving")
     return render(request, 'fls/load_request.html', {"params": params, "comp": comp})
 
@@ -191,17 +192,26 @@ def get_request(request, id):
 
 
 def estimate_req(request, req_id):
+    req = Request.objects.get(id=req_id)
     if request.method == "POST":
         try:
             estimate = EstimationJury.objects.get(jury=CustomUser.objects.get(user=request.user),
-                                                  request=Request.objects.get(id=req_id), type=1)
+                                                  request=req, type=1)
             estimate.value = request.POST["est_val"]
 
         except:
             estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
-                                      request=Request.objects.get(id=req_id),
+                                      request=req,
                                       value=request.POST["est_val"], type=1)
         estimate.save()
+        jurys_count = CustomUser.objects.filter(role=2).count()
+        request_estimations_count = EstimationJury.objects.filter(request=req,
+                                                                  type=1).count()
+        if request_estimations_count == jurys_count:
+
+            for jury_formula in req.competition.competition_formula_for_jury.all():
+                union_request_ests(req, jury_formula, types=(1,))
+
     return redirect("fls:get_request", req_id)
 
 
