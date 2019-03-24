@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, process_3_method
+from fls.lib import parse_formula, process_3_method, process_5_method
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
 
@@ -19,6 +19,7 @@ def criteria(request, id):
     if request.method == "POST":
         c = Criterion(name=request.POST["name"], formula=request.POST["formula"], competition=comp)
         c.save()
+        process_5_method(c)
         return redirect("fls:list_comp")
     return render(request, 'fls/add_criteria.html', {"params": params, "id": id})
 
@@ -216,7 +217,6 @@ def get_comp(request, id):
     user = CustomUser.objects.get(user=request.user)
     requests = Request.objects.filter(competition=Competition.objects.get(id=id))
     return render(request, 'fls/comp.html', {'comp': comp, 'user': user, 'requests': requests})
-
 
 
 def common_results(request):
