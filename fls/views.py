@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
+    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM
 
 
 @login_required(login_url="login/")
@@ -37,7 +37,7 @@ def comp(request):
                 Param.objects.create(name=text, description=desc, max=max, competition=comp)
             return redirect("fls:list_comp")
 
-    return render(request, 'fls/add_comp.html', {"form": form})
+    return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
 
 
 @login_required(login_url="login/")

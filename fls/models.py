@@ -31,7 +31,21 @@ STATUSES = (
     (1, 'Создание'),
     (2, 'Открыт'),
     (3, 'Оценивание'),
-    (4, 'Закрыт')
+    (4, 'Закрыт'),
+)
+
+TYPE = (
+    (1, 'Одиночный'),
+    (2, 'Групповой'),
+)
+
+TYPE_SUBPARAM = (
+    (1, 'NUMBER'),
+    (2, 'TEXT'),
+    (3, 'FILE'),
+    (4, 'PHOTO'),
+    (5, 'ENUM'),
+    (6, 'LINK'),
 )
 
 
@@ -44,8 +58,11 @@ class Competition(models.Model):
     # либо это, либо types в Estimation/Weight
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
-    # если метод 1, то нужно указать максимум из какого числа ставится оценка
 
+    type_comp = models.IntegerField(choices=TYPE, blank=True, null=True,
+                                    default=TYPE[0][0], verbose_name="Тип конкурса")
+
+    # если метод 1, то нужно указать максимум из какого числа ставится оценка
     max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл')
 
     # в каком состоянии находится конкурс
@@ -154,9 +171,9 @@ class RequestEstimation(models.Model):
 
 class Param(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_params', on_delete=models.CASCADE,
-                                    blank=True, null=True)
-    name = models.CharField(max_length=30)
-    description = models.TextField()
+                                    blank=False, null=False)
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
     max = models.IntegerField()
 
     # result_weight = models.FloatField(default=0)
@@ -166,6 +183,66 @@ class Param(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ParamValue(models.Model):
+    param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
+    request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
+    value = models.FloatField(default=0)
+    person_count = models.IntegerField()
+
+    class Meta:
+        unique_together = (('param', 'request'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.param.name, self.value)
+
+
+class CustomEnum(models.Model):
+    competition = models.ForeignKey(Competition, related_name='competition_enums', on_delete=models.CASCADE,
+                                    blank=True, null=True)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = (('name', 'competition'),)
+
+    def __str__(self):
+        return "%s" % self.name
+
+
+class ValuesForEnum(models.Model):
+    enum = models.ForeignKey(CustomEnum, related_name='values_for_enum', on_delete=models.SET_NULL,
+                             blank=True, null=True, verbose_name="Перечисление")
+    enum_key = models.CharField(max_length=50)
+    enum_value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('enum', 'enum_key', 'enum_value'),)
+
+    def __str__(self):
+        return "%s - %s" % (self.enum_key, self.enum_value)
+
+
+class SubParam(models.Model):
+    param = models.ForeignKey(Param, related_name='subparam_params', on_delete=models.CASCADE,
+                              blank=False, null=False, verbose_name="Ссылка на параметр")
+    name = models.CharField(max_length=50)
+
+    # True - for formula
+    # False - for jury
+
+    for_formula = models.BooleanField()
+    type = models.IntegerField(choices=TYPE_SUBPARAM, blank=True, null=True,
+                               default=TYPE_SUBPARAM[0][0], verbose_name="Тип данных")
+    enum = models.ForeignKey(CustomEnum, related_name='subparam_enum', on_delete=models.SET_NULL,
+                             blank=True, null=True, verbose_name="Перечисление")
+
+    class Meta:
+        unique_together = (('param', 'name'),)
+
+    def __str__(self):
+        return "Параметр %s - подпараметр %s" % (self.param.name, self.name)
 
 
 class ParamResultWeight(models.Model):
@@ -182,18 +259,31 @@ class ParamResultWeight(models.Model):
         return '%s - %s' % (self.param, self.type)
 
 
-class ParamValue(models.Model):
-    param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
-    request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
+class SubParamValue(models.Model):
+    subparam = models.ForeignKey(SubParam, related_name='subparam_values', on_delete=models.CASCADE, blank=False,
+                                 null=False)
+    request = models.ForeignKey(Request, related_name='request_subparam_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
-    value = models.FloatField(default=0)
-    person_count = models.IntegerField(null=True, blank=True)
+    value = models.FloatField(default=0, blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    enum_val = models.ForeignKey(ValuesForEnum, related_name='cur_value_enum_values', on_delete=models.SET_NULL,
+                                 blank=True, null=True)
 
     class Meta:
-        unique_together = (('param', 'request'),)
+        unique_together = (('subparam', 'request'),)
 
     def __str__(self):
-        return "%s -%s - %s" % (self.request.participant, self.param.name, self.value)
+        return "%s - %s - %s" % (self.request.participant, self.subparam.name, self.value)
+
+
+class UploadData(models.Model):
+    sub_param_value = models.ForeignKey(SubParamValue, related_name="files", on_delete=models.CASCADE, blank=False,
+                                        null=False)
+    header_for_file = models.CharField(max_length=100, null=True, blank=True)
+    link_file = models.CharField(max_length=200)
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.sub_param_value.subparam.name, self.header_for_file, self.link_file)
 
 
 class Criterion(models.Model):

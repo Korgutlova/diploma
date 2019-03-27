@@ -23,7 +23,10 @@
     </div>
     {% if request.participant == user %}
         <button type="button" class="btn">Редактировать заявку</button>
-        <button type="button" class="btn btn-danger">Удалить заявку</button>
+        {#        <form method="post" action="{% url 'fls:delete_req' request.id %}" hidden>#}
+        {#            {% csrf_token %}#}
+        {#            <button type="submit" class="btn btn-danger">Удалить заявку</button>#}
+        {#        </form>#}
     {% endif %}
     {% if user.is_jury and not estimate_flag %}
         <h4>Вы еще не оценили заявку </h4>
