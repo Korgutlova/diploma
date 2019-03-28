@@ -28,15 +28,15 @@ def criteria(request, id):
 def comp(request):
     form = CompetitionForm()
     if request.method == 'POST':
-        form = CompetitionForm(request.POST)
-        if form.is_valid():
-            comp = form.save()
-
-            for text, desc, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
-                                       request.POST.getlist('max')):
-                Param.objects.create(name=text, description=desc, max=max, competition=comp)
-            return redirect("fls:list_comp")
-
+        print(request.POST)
+        # form = CompetitionForm(request.POST)
+        # if form.is_valid():
+        #     comp = form.save()
+        #
+        #     for text, desc, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
+        #                                request.POST.getlist('max')):
+        #         Param.objects.create(name=text, description=desc, max=max, competition=comp)
+        #     return redirect("fls:list_comp")
     return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
 
 

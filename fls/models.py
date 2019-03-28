@@ -238,6 +238,8 @@ class SubParam(models.Model):
     enum = models.ForeignKey(CustomEnum, related_name='subparam_enum', on_delete=models.SET_NULL,
                              blank=True, null=True, verbose_name="Перечисление")
 
+    max = models.IntegerField()
+
     class Meta:
         unique_together = (('param', 'name'),)
 
