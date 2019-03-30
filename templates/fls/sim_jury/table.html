@@ -1,0 +1,39 @@
+<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Наиболее похожие оценки
+    для {{ slt_jury }}</strong></caption>
+<thead class="thead-dark">
+<tr>
+    {#    add params#}
+    <th style="width: 50px">Участник</th>
+    {% for param in params %}
+        <th style="width: 50px">{{ param }}</th>
+    {% endfor %}
+    <th style="width: 50px">{{ slt_jury }}</th>
+    {% if jurys %}
+        {% for jury in jurys %}
+            <th style="width: 50px">{{ jury }}</th>
+        {% endfor %}
+    {% endif %}
+
+
+</tr>
+</thead>
+<tbody>
+
+{% for est_name, values in ests.items %}
+    <tr>
+        <td>{{ est_name }}</td>
+        {% for param_value in values.0 %}
+            <td>{{ param_value }}</td>
+        {% endfor %}
+        {% for jury_value in values.1 %}
+            <td id="{{ est_name }}+j{{ forloop.counter0 }}">{{ jury_value }}</td>
+        {% endfor %}
+
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="8" class="text-center bg-warning">Нет результатов</td>
+    </tr>
+{% endfor %}
+
+</tbody>

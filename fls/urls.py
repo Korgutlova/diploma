@@ -21,4 +21,7 @@ urlpatterns = [
     url(r'^estimate_del/(?P<est_id>\d+)/$', estimate_del, name="estimate_del"),
     url(r'^commres/$', common_results, name="common"),
     url(r'^common_values/$', common_values, name="common_values"),
+    url(r'^simjury/$', similar_page, name="simjury"),
+    url(r'^similar_jury/$', similar_jury, name="similar_jury"),
+
 ]
