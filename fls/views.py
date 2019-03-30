@@ -296,3 +296,47 @@ def common_values(request):
                                         {'ests': estimation_values, 'params': params,
                                          'jurys': jurys, 'one_method': one_method, 'methods': methods})}
     return JsonResponse(data)
+
+
+def similar_page(request):
+    comps = Competition.objects.all()
+    jurys = CustomUser.objects.filter(role=2)
+    return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'jurys': jurys})
+
+
+def similar_jury(request):
+    comp_id, type, jury_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury'])
+    reqs = Request.objects.filter(competition_id=comp_id)
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    slt_jury = CustomUser.objects.get(id=jury_id)
+    rest_jury = CustomUser.objects.filter(role=2).exclude(id=jury_id)
+    smt = {}
+    for jury in rest_jury:
+        s = 0
+        for req in reqs:
+            slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req).value
+            jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req).value
+            s += abs(slt_value - jury_value)
+        smt[jury.id] = s
+    print(smt)
+    sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
+    print(sorted_smt)
+    clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i) for i, pk in enumerate(list(sorted_smt.keys()))])
+    ordering = 'CASE %s END' % clauses
+    sorted_jury = CustomUser.objects.filter(pk__in=list(sorted_smt.keys())).extra(
+        select={'ordering': ordering}, order_by=('ordering',))
+    print(sorted_jury)
+    estimation_values = {}
+    for req in reqs:
+        part_name = req.participant
+        estimation_values[part_name] = [[], []]
+        estimation_values[part_name][0].extend(
+            ParamValue.objects.get(request=req, param=param).value for param in params)
+        estimation_values[part_name][1].append(
+            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req).value, 2))
+        estimation_values[part_name][1].extend(
+            [round(EstimationJury.objects.get(type=type, jury=jury, request=req).value, 2) for jury in sorted_jury])
+    data = {'est': render_to_string('fls/sim_jury/table.html',
+                                    {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
+                                     'slt_jury': slt_jury})}
+    return JsonResponse(data)

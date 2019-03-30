@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Результаты</title>
+    <title>Похожие оценки</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
@@ -17,11 +17,11 @@
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" >Аналитика результатов</a>
+            <a class="navbar-brand" href="#">Аналитика результатов</a>
         </div>
         <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Результаты</a></li>
-            <li ><a href="{% url 'fls:simjury' %}">Схожесть жюри</a></li>
+            <li><a href="{% url 'fls:common' %}">Результаты</a></li>
+            <li class="active"><a href="#">Схожесть жюри</a></li>
         </ul>
     </div>
 </nav>
@@ -40,17 +40,16 @@
             <label for="type">Выберите метод:</label>
             <br>
             <select name="type" id="type" class="selectpicker">
-                <option value="all" selected>Все</option>
                 <option value="1">Абсолютная оценка</option>
                 <option value="3">Сравнение параметров</option>
-                <option value="5">Оценка по формуле</option>
             </select>
             <br>
             <br>
+
             <label for="jury">Жюри:</label>
             <br>
             <select id="jury" name="jury" class="selectpicker">
-                <option name="abs" value="all" selected>Все</option>
+
                 {% for jury in jurys %}
                     <option value={{ jury.id }}>{{ jury }}</option>
                 {% endfor %}
@@ -71,12 +70,12 @@
 </body>
 <script>
 
-    var f = function () {
+    const f = function () {
         type = $('#type').val();
         comp_id = $('#comp').val();
         jury = $('#jury').val();
         $.ajax({
-            url: '/fls/common_values/',
+            url: '/fls/similar_jury/',
             type: 'get',
             data: {'comp': comp_id, 'type': type, 'jury': jury},
             dataType: 'json',
@@ -92,26 +91,11 @@
         })
 
     };
-
-    const disable_jury = function () {
-        select_type = $('#type');
-        select_jury = $('#jury');
-        if (select_type.val() == 'all' || select_type.val() == '5') {
-            select_jury.val('all');
-            select_jury.prop('disabled', true);
-        }
-        else {
-            select_jury.prop('disabled', false);
-        }
-    };
-    select_type = $('#type');
-    select_type.change(disable_jury);
     select = $('select');
     select.selectpicker();
     {#$('#send').click(f);#}
     select.change(f);
     $(document).ready(f);
-    $(document).ready(disable_jury)
 
 
 </script>
