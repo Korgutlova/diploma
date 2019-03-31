@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -250,7 +252,7 @@ def common_values(request):
             methods.append(METHOD_CHOICES[t - 1][1])
         for req in reqs:
             part_name = req.participant
-            estimation_values[part_name] = [[], []]
+            estimation_values[part_name] = ([], [])
             for param in params:
                 param_value = ParamValue.objects.get(request=req, param=param).value
                 estimation_values[part_name][0].append(param_value)
@@ -329,7 +331,7 @@ def similar_jury(request):
     estimation_values = {}
     for req in reqs:
         part_name = req.participant
-        estimation_values[part_name] = [[], []]
+        estimation_values[part_name] = ([], [])
         estimation_values[part_name][0].extend(
             ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].append(
@@ -340,3 +342,47 @@ def similar_jury(request):
                                     {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
                                      'slt_jury': slt_jury})}
     return JsonResponse(data)
+
+
+def metcomp_page(request):
+    comps = Competition.objects.all()
+    jurys = CustomUser.objects.filter(role=2)
+    return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
+
+
+def metcomp(request):
+    method_indexes = (0, 2)
+    methods = itemgetter(*method_indexes)(METHOD_CHOICES)
+    comp_id, jury_id = int(request.GET['comp']), int(request.GET['jury'])
+    reqs = Request.objects.filter(competition_id=comp_id)
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    slt_jury = CustomUser.objects.get(id=jury_id)
+    estimation_values = {}
+    for req in reqs:
+        part_name = req.participant
+        estimation_values[part_name] = ([], [])
+        estimation_values[part_name][0].extend(
+            ParamValue.objects.get(request=req, param=param).value for param in params)
+        estimation_values[part_name][1].extend(
+            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0]).value, 2) for tp in methods)
+    data = {'est': render_to_string('fls/metcomp/table.html',
+                                    {'ests': estimation_values, 'params': params,
+                                     'slt_jury': slt_jury, 'methods': methods})}
+
+    return JsonResponse(data)
+
+
+def dev_page(request):
+    comps = Competition.objects.all()
+    return render(request, 'fls/dev/dev.html', {'comps': comps})
+
+
+def deviation(request):
+    pass
+
+
+def comp_reqs(request):
+    reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
+    reqs = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
+    print(reqs)
+    return JsonResponse(reqs)

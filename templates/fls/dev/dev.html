@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Результаты</title>
+    <title>Похожие оценки</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
@@ -17,13 +17,15 @@
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand">Аналитика результатов</a>
+            <a class="navbar-brand" href="#">Аналитика результатов</a>
         </div>
         <ul class="nav navbar-nav">
-            <li class="active"><a href="{% url 'fls:common' %}">Результаты</a></li>
+            <li><a href="{% url 'fls:common' %}">Результаты</a></li>
             <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
             <li><a href="{% url 'fls:metcomp' %}">Сравнение методов</a></li>
-            <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
+            <li class="active"><a href="#">Отклонения оценок</a></li>
+
+
         </ul>
     </div>
 </nav>
@@ -37,25 +39,24 @@
                     <option value={{ comp.id }}>{{ comp.name }}</option>
                 {% endfor %}
             </select>
+
             <br>
             <br>
             <label for="type">Выберите метод:</label>
             <br>
             <select name="type" id="type" class="selectpicker">
-                <option value="all" selected>Все</option>
                 <option value="1">Абсолютная оценка</option>
                 <option value="3">Сравнение параметров</option>
-                <option value="5">Оценка по формуле</option>
             </select>
             <br>
             <br>
-            <label for="jury">Жюри:</label>
+
+
+            <label for="reqs">Участник:</label>
             <br>
-            <select id="jury" name="jury" class="selectpicker">
-                <option name="abs" value="all" selected>Все</option>
-                {% for jury in jurys %}
-                    <option value={{ jury.id }}>{{ jury }}</option>
-                {% endfor %}
+            <select id="reqs" name="reqs" class="selectpicker">
+{#                <option value="all">Все</option>#}
+
             </select>
             {#    <button class="btn btn-success" id="send">Посмотреть</button>#}
 
@@ -73,14 +74,14 @@
 </body>
 <script>
 
-    var f = function () {
-        type = $('#type').val();
+    const f = function () {
         comp_id = $('#comp').val();
-        jury = $('#jury').val();
+        type = $('#type').val();
+        req = $('#req').val();
         $.ajax({
-            url: '/fls/common_values/',
+            url: '/fls/deviation/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type, 'jury': jury},
+            data: {'comp': comp_id, 'req': req, 'type': type},
             dataType: 'json',
             success: function (data) {
                 $("#values").html(data.est)
@@ -95,25 +96,45 @@
 
     };
 
-    const disable_jury = function () {
-        select_type = $('#type');
-        select_jury = $('#jury');
-        if (select_type.val() == 'all' || select_type.val() == '5') {
-            select_jury.val('all');
-            select_jury.prop('disabled', true);
-        }
-        else {
-            select_jury.prop('disabled', false);
-        }
-    };
-    select_type = $('#type');
-    select_type.change(disable_jury);
+    function fill_reqs() {
+        comp_id = $('#comp').val();
+        $.ajax({
+            url: '/fls/comp_reqs/',
+            type: 'get',
+            data: {'comp': comp_id},
+            dataType: 'json',
+            success: function (data) {
+                arr = [];
+                options = data.reqs.split('\n');
+                options.forEach(function (element) {
+                    if (element.length!=0){
+                        el = element.trim();
+                        $('#reqs').html(el);
+                        arr.push(el);
+                    }
+                    {#$('#reqs').append(el);#}
+                    {#console.log(el);#}
+
+                });
+                console.log(arr);
+                {#$("#r").html(data.reqs)#}
+            },
+            error: function () {
+                alert("error");
+            },
+            complete: function (data) {
+
+            }
+        })
+    }
+
     select = $('select');
     select.selectpicker();
-    {#$('#send').click(f);#}
-    select.change(f);
-    $(document).ready(f);
-    $(document).ready(disable_jury)
+    $('#comp').change(fill_reqs());
+    $('#type').change(f);
+    $('#reqs').change(f);
+    {##}
+    {#$(document).ready(fill_reqs);#}
 
 
 </script>

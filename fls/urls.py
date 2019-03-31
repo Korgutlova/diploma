@@ -23,5 +23,10 @@ urlpatterns = [
     url(r'^common_values/$', common_values, name="common_values"),
     url(r'^simjury/$', similar_page, name="simjury"),
     url(r'^similar_jury/$', similar_jury, name="similar_jury"),
+    url(r'^metcomp/$', metcomp_page, name="metcomp"),
+    url(r'^method_comp/$', metcomp, name="method_comp"),
+    url(r'^dev/$', dev_page, name="devpage"),
+    url(r'^deviation/$', deviation, name="dev"),
+    url(r'^comp_reqs/$', comp_reqs, name="compreqs"),
 
 ]
