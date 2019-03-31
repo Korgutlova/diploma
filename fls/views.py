@@ -1,3 +1,5 @@
+import traceback
+
 import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -9,7 +11,7 @@ from django.template.loader import render_to_string
 from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM
+    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam
 
 
 @login_required(login_url="login/")
@@ -28,15 +30,41 @@ def criteria(request, id):
 def comp(request):
     form = CompetitionForm()
     if request.method == 'POST':
+        key = "params[%s][%s]"
         print(request.POST)
-        # form = CompetitionForm(request.POST)
-        # if form.is_valid():
-        #     comp = form.save()
-        #
-        #     for text, desc, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
-        #                                request.POST.getlist('max')):
-        #         Param.objects.create(name=text, description=desc, max=max, competition=comp)
-        #     return redirect("fls:list_comp")
+        form = CompetitionForm(request.POST)
+        if form.is_valid():
+            print("create comp")
+            comp = form.save()
+        else:
+            return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
+        i = 0
+        while True:
+            try:
+                name = request.POST[key % (i, "name")]
+                desc = request.POST[key % (i, "description")]
+                p = Param(competition=comp, name=name, description=desc)
+                p.save()
+                print(name)
+                k = 0
+                while True:
+                    try:
+                        name_sub = request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "name")]
+                        type = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "type_subparam")])
+                        print(type)
+                        flag = bool(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "for_formula")])
+                        sub_p = SubParam(param=p, name=name_sub, type=type, for_formula=flag)
+                        sub_p.save()
+                        print(name_sub)
+                        k += 1
+                    except Exception as e:
+                        traceback.print_exc()
+                        break
+                i += 1
+            except Exception as e:
+                traceback.print_exc()
+                break
+
     return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
 
 

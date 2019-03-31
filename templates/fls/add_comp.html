@@ -4,27 +4,31 @@
 {% block content %}
     <h3>Создание конкурса</h3>
     <hr>
-    {#    <form name="form" action="{% url 'fls:comp' %}" method="post">#}
-    {#        {% csrf_token %}#}
+
+
     <div class="row">
+
         <div class="col-xs-4">
-            <div style="width: 300px">
-                {% for field in form %}
-                    <div class="form-group{% if field.errors %} has-error{% endif %}">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% render_field field class="form-control" %}
-                        {% for error in field.errors %}
-                            <p class="help-block">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <p class="help-block">{{ error }}</p>
-                {% endfor %}
-                <button id="submit" type="submit" class="btn btn-primary labelText">
-                    <span>Сохранить</span>
-                </button>
-            </div>
+            <form id="form">
+                {% csrf_token %}
+                <div style="width: 300px">
+                    {% for field in form %}
+                        <div class="form-group{% if field.errors %} has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% render_field field class="form-control" %}
+                            {% for error in field.errors %}
+                                <p class="help-block">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p class="help-block">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </form>
+            <button id="submit" class="btn btn-primary labelText">
+                <span>Сохранить</span>
+            </button>
         </div>
         <div class="col-xs-8">
             <h3>Создание параметров</h3>
@@ -60,12 +64,12 @@
                     <div class="form-row">
                         <div class="form-group col-md-5">
                             <label>Название
-                                <input class="form-control" type="text" name="sub_text">
+                                <input class="form-control" type="text" id="sub_text">
                             </label>
                         </div>
                         <div class="form-group col-md-3">
                             <label>Тип данных
-                                <select class="form-control" name="type_subparam">
+                                <select class="form-control" id="type_subparam">
                                     {% for t in types %}
                                         <option value="{{ t | first }}">{{ t | last }}</option>
                                     {% endfor %}
@@ -94,7 +98,6 @@
             <br>
         </div>
     </div>
-    {#    </form>#}
 
 {% endblock %}
 {% block script %}
@@ -113,64 +116,64 @@
                 var nextindex = Number(lastid.split('_')[1]) + 1;
                 $(".param:last").after("<div class=\"param\" id=\"param_" + nextindex + "\"></div>");
                 $("#param_" + nextindex).append("<div class=\"col-xs-12\">\n" +
-                    "                        <hr><h4>Параметр </h4>\n" +
-                    "                        <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
-                    "                           role=\"button\">&times;</a>\n" +
-                    "                        <div class=\"form-row\">\n" +
-                    "                            <div class=\"form-group\">\n" +
-                    "                                <label>Название\n" +
-                    "                                    <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
-                    "                                </label><br>\n" +
-                    "                            </div>\n" +
-                    "                            <div class=\"form-group\">\n" +
-                    "                                <label>Описание\n" +
-                    "                                    <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
-                    "                                </label>\n" +
-                    "                            </div>\n" +
+                    "                    <hr>\n" +
+                    "                    <h4>Параметр </h4>\n" +
+                    "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
+                    "                            </label><br>\n" +
                     "                        </div>\n" +
-                    "                        <hr>\n" +
+                    "                        <div class=\"form-group\">\n" +
+                    "                            <label>Описание\n" +
+                    "                                <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
                     "                    </div>\n" +
-                    "                    <div class=\"col-xs-12\">\n" +
-                    "                        <h5>Подпараметры </h5>\n" +
-                    "                        <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
-                    "                            <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
-                    "                        </a>\n" +
-                    "                    </div>");
+                    "                    <hr>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"col-xs-12\">\n" +
+                    "                    <h5>Подпараметры </h5>\n" +
+                    "                    <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
+                    "                        <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
+                    "                    </a>\n" +
+                    "                </div>");
 
                 var lastid = $(".subparam:last").attr("id");
                 var newindex = Number(lastid.split('_')[1]) + 1;
                 $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
                 $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
-                    "                           role=\"button\">&times;</a>\n" +
-                    "                        <div class=\"form-row\">\n" +
-                    "                            <div class=\"form-group col-md-5\">\n" +
-                    "                                <label>Название\n" +
-                    "                                    <input class=\"form-control\" type=\"text\" name=\"sub_text\">\n" +
-                    "                                </label>\n" +
-                    "                            </div>\n" +
-                    "                            <div class=\"form-group col-md-3\">\n" +
-                    "                                <label>Тип данных\n" +
-                    "                                    <select class=\"form-control\" name=\"type_subparam\">\n" +
-                    "                                        {% for t in types %}\n"+
-                        "                                            <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
-                        +
-                        "                                        {% endfor %}\n" +
-                    "                                    </select>\n" +
-                    "                                </label>\n" +
-                    "                            </div>\n" +
-                    "                            <div class=\"form-group col-md-4\">\n" +
-                    "                                <div class=\"form-check\">\n" +
-                    "                                    <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
-                    "                                    <label class=\"form-check-label\" for=\"gridCheck\">\n" +
-                    "                                        Для формулы\n" +
-                    "                                    </label>\n" +
-                    "                                </div>\n" +
-                    "                            </div>\n" +
-                    "                            <br>\n" +
-                    "                            <br>\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group col-md-5\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                            </label>\n" +
                     "                        </div>\n" +
-                    "                    ");
-                {#$("#param_" + nextindex).scrollView();#}
+                    "                        <div class=\"form-group col-md-3\">\n" +
+                    "                            <label>Тип данных\n" +
+                    "                                <select class=\"form-control\" id=\"type_subparam\">\n" +
+                    "                                    {% for t in types %}\n"+
+                        "                                        <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
+                        +
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-4\">\n" +
+                    "                            <div class=\"form-check\">\n" +
+                    "                                <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
+                    "                                <label class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                    Для формулы\n" +
+                    "                                </label>\n" +
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                        <br>\n" +
+                    "                        <br>\n" +
+                    "                    </div>");
             });
 
 
@@ -179,39 +182,35 @@
                 var id = "subparam_" + (Number(lastid.split('_')[1]) + 1);
                 $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
                 $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
-                    "                           role=\"button\">&times;</a>\n" +
-                    "                        <div class=\"form-row\">\n" +
-                    "                            <div class=\"form-group col-md-5\">\n" +
-                    "                                <label>Название\n" +
-                    "                                    <input class=\"form-control\" type=\"text\" name=\"sub_text\">\n" +
-                    "                                </label>\n" +
-                    "                            </div>\n" +
-                    "                            <div class=\"form-group col-md-3\">\n" +
-                    "                                <label>Тип данных\n" +
-                    "                                    <select class=\"form-control\" name=\"type_subparam\">\n" +
-                    "                                        {% for t in types %}\n"+
-                        "                                            <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
-                        +
-                        "                                        {% endfor %}\n" +
-                    "                                    </select>\n" +
-                    "\n" +
-                    "                                </label>\n" +
-                    "                            </div>\n" +
-                    "                            <div class=\"form-group col-md-4\">\n" +
-                    "                                <div class=\"form-check\">\n" +
-                    "                                    <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
-                    "                                    <label class=\"form-check-label\" for=\"gridCheck\">\n" +
-                    "                                        Для формулы\n" +
-                    "                                    </label>\n" +
-                    "                                </div>\n" +
-                    "                            </div>\n" +
-                    "                            <br>\n" +
-                    "                            <br>\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group col-md-5\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                            </label>\n" +
                     "                        </div>\n" +
-                    "                    ");
-
-                {#$("#" + id).scrollView();#}
-
+                    "                        <div class=\"form-group col-md-3\">\n" +
+                    "                            <label>Тип данных\n" +
+                    "                                <select class=\"form-control\" id=\"type_subparam\">\n" +
+                    "                                    {% for t in types %}\n"+
+                        "                                        <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
+                        +
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-4\">\n" +
+                    "                            <div class=\"form-check\">\n" +
+                    "                                <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
+                    "                                <label class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                    Для формулы\n" +
+                    "                                </label>\n" +
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                        <br>\n" +
+                    "                        <br>\n" +
+                    "                    </div>");
 
             });
 
@@ -230,17 +229,19 @@
                 }
             });
 
-            $(".container").on('click', '#submit', function (event) {
+            $(".container").on('click', '#submit', function () {
                 var data_params = [];
                 var params = $('.param');
                 for (i = 0; i < params.length; i++) {
                     var subparams = $("#" + $(params[i]).attr("id") + " .subparam");
                     var data_subparams = [];
                     for (j = 0; j < subparams.length; j++) {
-                        data_subparams.push($(subparams[j]).attr("id"));
+                        data_subparams.push({
+                            "name": $(subparams[j]).find("#sub_text").val(),
+                            "type_subparam": $(subparams[j]).find("#type_subparam").val(),
+                            "for_formula": $(subparams[j]).find("#for_formula").is(':checked'),
+                        })
                     }
-                    alert($(params[i]).find("input").val());
-                    alert($(params[i]).find("textarea").val());
                     var param = {
                         "name": $(params[i]).find("input").val(),
                         "description": $(params[i]).find("textarea").val(),
@@ -248,12 +249,17 @@
                     };
                     data_params.push(param);
                 }
-                alert(data_params);
-
+                var result = {"params": data_params};
+                var array = decodeURI($("#form").serialize()).split("&");
+                for (i = 0; i < array.length; i++) {
+                    var values = array[i].split("=");
+                    result[values[0]] = values[1];
+                }
+                alert();
                 $.ajax({
                     type: "post",
                     url: "/fls/comp",
-                    data: {"params": data_params, 'csrfmiddlewaretoken': "{{ csrf_token }}"},
+                    data: result,
                     success: function (response) {
                         alert("Success");
                     }

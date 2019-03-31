@@ -174,7 +174,7 @@ class Param(models.Model):
                                     blank=False, null=False)
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
-    max = models.IntegerField()
+    max = models.IntegerField(blank=True, null=True)
 
     # result_weight = models.FloatField(default=0)
 
@@ -233,12 +233,12 @@ class SubParam(models.Model):
     # False - for jury
 
     for_formula = models.BooleanField()
-    type = models.IntegerField(choices=TYPE_SUBPARAM, blank=True, null=True,
-                               default=TYPE_SUBPARAM[0][0], verbose_name="Тип данных")
+    type = models.IntegerField(choices=TYPE_SUBPARAM, null=False,
+                               blank=False, default=TYPE_SUBPARAM[0][0], verbose_name="Тип данных")
     enum = models.ForeignKey(CustomEnum, related_name='subparam_enum', on_delete=models.SET_NULL,
                              blank=True, null=True, verbose_name="Перечисление")
 
-    max = models.IntegerField()
+    max = models.IntegerField(blank=True, null=True)
 
     class Meta:
         unique_together = (('param', 'name'),)
