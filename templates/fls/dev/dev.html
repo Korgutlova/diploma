@@ -23,7 +23,7 @@
             <li><a href="{% url 'fls:common' %}">Результаты</a></li>
             <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
             <li><a href="{% url 'fls:metcomp' %}">Сравнение методов</a></li>
-            <li class="active"><a href="#">Отклонения оценок</a></li>
+            <li class="active"><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
 
 
         </ul>
@@ -39,9 +39,8 @@
                     <option value={{ comp.id }}>{{ comp.name }}</option>
                 {% endfor %}
             </select>
-
             <br>
-            <br>
+            <br id="place">
             <label for="type">Выберите метод:</label>
             <br>
             <select name="type" id="type" class="selectpicker">
@@ -51,21 +50,20 @@
             <br>
             <br>
 
+            {#            <label for="reqs">Участник:</label>#}
+            {#            <br>#}
+            {#            <select name="reqs" id="reqs">#}
 
-            <label for="reqs">Участник:</label>
-            <br>
-            <select id="reqs" name="reqs" class="selectpicker">
-{#                <option value="all">Все</option>#}
+            {#            </select>#}
+            <div id="reqfil"></div>
 
-            </select>
-            {#    <button class="btn btn-success" id="send">Посмотреть</button>#}
 
             <br>
         </div>
-        <div class="col-sm-8">
-            <table id="values" class="table table-striped table-bordered">
-
-            </table>
+        <div class="col-sm-8" id="paste">
+{#            <table id="values" class="table table-striped table-bordered">#}
+{##}
+{#            </table>#}
         </div>
     </div>
 </div>
@@ -77,14 +75,14 @@
     const f = function () {
         comp_id = $('#comp').val();
         type = $('#type').val();
-        req = $('#req').val();
+        reqs = $('#req').val();
         $.ajax({
             url: '/fls/deviation/',
             type: 'get',
-            data: {'comp': comp_id, 'req': req, 'type': type},
+            data: {'comp': comp_id, 'type': type, 'reqs': reqs},
             dataType: 'json',
             success: function (data) {
-                $("#values").html(data.est)
+                $("#paste").html(data.est)
             },
             error: function () {
                 alert("error");
@@ -96,7 +94,7 @@
 
     };
 
-    function fill_reqs() {
+    const fill = function () {
         comp_id = $('#comp').val();
         $.ajax({
             url: '/fls/comp_reqs/',
@@ -104,37 +102,43 @@
             data: {'comp': comp_id},
             dataType: 'json',
             success: function (data) {
-                arr = [];
-                options = data.reqs.split('\n');
-                options.forEach(function (element) {
-                    if (element.length!=0){
-                        el = element.trim();
-                        $('#reqs').html(el);
-                        arr.push(el);
-                    }
-                    {#$('#reqs').append(el);#}
-                    {#console.log(el);#}
 
-                });
-                console.log(arr);
-                {#$("#r").html(data.reqs)#}
+                {#$('#reqs').html(data.reqs);#}
+                $("#reqfil").html(data.reqs);
+                {#$(data.reqs).insertAfter("#place");#}
             },
             error: function () {
                 alert("error");
             },
             complete: function (data) {
 
+                $('#req').addClass('selectpicker');
+                $('#req').selectpicker();
+                f();
             }
         })
-    }
 
-    select = $('select');
-    select.selectpicker();
-    $('#comp').change(fill_reqs());
-    $('#type').change(f);
-    $('#reqs').change(f);
-    {##}
-    {#$(document).ready(fill_reqs);#}
+    };
+
+    select_comp = $('#comp');
+    select_type = $('#type');
+
+
+    {#select_reqs = $('#req');#}
+
+    select_comp.selectpicker();
+    select_type.selectpicker();
+    {#select_reqs.selectpicker();#}
+    {#$('#send').click(f);#}
+    $(document).ready(fill);
+    select_comp.change(fill);
+    select_type.change(f);
+    {#select_reqs.selectpicker();#}
+
+    {#$('#req').change(alert('hh'));#}
+    $('#reqfil').on('change', '#req', function () {
+        f();
+    });
 
 
 </script>

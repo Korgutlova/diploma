@@ -378,11 +378,27 @@ def dev_page(request):
 
 
 def deviation(request):
-    pass
+    comp_id, type, req_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs'])
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    req = Request.objects.get(id=req_id)
+    params_values = {param.name: ParamValue.objects.get(request=req, param=param).value for param in params}
+    common_value = round(RequestEstimation.objects.get(request=req, type=type).value, 2)
+    jury_est_values = {}
+    jurys = CustomUser.objects.filter(role=2)
+    for jury in jurys:
+        jury_est_values[jury] = []
+        jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req).value
+        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - common_value), 2)])
+    jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
+    print(jury_est_values)
+    print(params_values)
+    data = {'est': render_to_string('fls/dev/table.html',
+                                    {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value})}
+    print(data)
+    return JsonResponse(data)
 
 
 def comp_reqs(request):
     reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
-    reqs = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
-    print(reqs)
-    return JsonResponse(reqs)
+    data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
+    return JsonResponse(data)

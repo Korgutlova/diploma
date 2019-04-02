@@ -1,3 +1,12 @@
-{% for req in reqs %}
-    <option value="{{ req.id }}">{{ req.participant }}</option>
-{% endfor %}
+<label for="req">Участник</label>
+<br>
+<select id="req" name="reqs" class="nn">
+    {% for req in reqs %}
+        <option value="{{ req.id }}">{{ req.participant }}</option>
+    {% empty %}
+        <option value="non" selected>Нет заявок</option>
+    {% endfor %}
+</select>
+
+
+
