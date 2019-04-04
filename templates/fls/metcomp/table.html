@@ -1,24 +1,16 @@
-{#{% if ests %}#}
-<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Результаты</strong></caption>
+<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Сравнение методов
+    для {{ slt_jury }}</strong>
+</caption>
 <thead class="thead thead-light">
 <tr>
     <th style="width: 50px">Участник</th>
     {% for param in params %}
         <th style="width: 50px">{{ param }}</th>
     {% endfor %}
-    {% if methods %}
-        {% for method in methods %}
-            <th style="width: 50px">{{ method }}</th>
-        {% endfor %}
-    {% endif %}
-    {% if jurys %}
-        {% for jury in jurys %}
-            <th style="width: 50px">{{ jury }}</th>
-        {% endfor %}
-    {% endif %}
-    {% if one_method %}
-        <th style="width: 50px">Общая оценка</th>
-    {% endif %}
+    {% for method in methods %}
+        <th style="width: 50px">{{ method.1 }}</th>
+    {% endfor %}
+
 
 </tr>
 </thead>
@@ -33,9 +25,7 @@
         {% for method_value in values.1 %}
             <td>{{ method_value }}</td>
         {% endfor %}
-        {% if one_method %}
-            <td>{{ values.2 }}</td>
-        {% endif %}
+
     </tr>
 {% empty %}
     <tr>
@@ -44,6 +34,3 @@
 {% endfor %}
 
 </tbody>
-
-
-{#{% endif %}#}

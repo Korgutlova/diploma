@@ -21,7 +21,9 @@
         </div>
         <ul class="nav navbar-nav">
             <li><a href="{% url 'fls:common' %}">Результаты</a></li>
-            <li class="active"><a href="#">Схожесть жюри</a></li>
+            <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
+            <li><a href="{% url 'fls:metcomp' %}">Сравнение методов</a></li>
+            <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
         </ul>
     </div>
 </nav>

@@ -1,4 +1,5 @@
 import traceback
+from operator import itemgetter
 
 import numpy as np
 from django.contrib.auth import authenticate, login, logout
@@ -288,7 +289,7 @@ def common_values(request):
             methods.append(METHOD_CHOICES[t - 1][1])
         for req in reqs:
             part_name = req.participant
-            estimation_values[part_name] = [[], []]
+            estimation_values[part_name] = ([], [])
             for param in params:
                 param_value = ParamValue.objects.get(request=req, param=param).value
                 estimation_values[part_name][0].append(param_value)
@@ -367,7 +368,7 @@ def similar_jury(request):
     estimation_values = {}
     for req in reqs:
         part_name = req.participant
-        estimation_values[part_name] = [[], []]
+        estimation_values[part_name] = ([], [])
         estimation_values[part_name][0].extend(
             ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].append(
@@ -377,4 +378,64 @@ def similar_jury(request):
     data = {'est': render_to_string('fls/sim_jury/table.html',
                                     {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
                                      'slt_jury': slt_jury})}
+    return JsonResponse(data)
+
+
+def metcomp_page(request):
+    comps = Competition.objects.all()
+    jurys = CustomUser.objects.filter(role=2)
+    return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
+
+
+def metcomp(request):
+    method_indexes = (0, 2)
+    methods = itemgetter(*method_indexes)(METHOD_CHOICES)
+    comp_id, jury_id = int(request.GET['comp']), int(request.GET['jury'])
+    reqs = Request.objects.filter(competition_id=comp_id)
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    slt_jury = CustomUser.objects.get(id=jury_id)
+    estimation_values = {}
+    for req in reqs:
+        part_name = req.participant
+        estimation_values[part_name] = ([], [])
+        estimation_values[part_name][0].extend(
+            ParamValue.objects.get(request=req, param=param).value for param in params)
+        estimation_values[part_name][1].extend(
+            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0]).value, 2) for tp in methods)
+    data = {'est': render_to_string('fls/metcomp/table.html',
+                                    {'ests': estimation_values, 'params': params,
+                                     'slt_jury': slt_jury, 'methods': methods})}
+
+    return JsonResponse(data)
+
+
+def dev_page(request):
+    comps = Competition.objects.all()
+    return render(request, 'fls/dev/dev.html', {'comps': comps})
+
+
+def deviation(request):
+    comp_id, type, req_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs'])
+    params = Competition.objects.get(id=comp_id).competition_params.all()
+    req = Request.objects.get(id=req_id)
+    params_values = {param.name: ParamValue.objects.get(request=req, param=param).value for param in params}
+    common_value = round(RequestEstimation.objects.get(request=req, type=type).value, 2)
+    jury_est_values = {}
+    jurys = CustomUser.objects.filter(role=2)
+    for jury in jurys:
+        jury_est_values[jury] = []
+        jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req).value
+        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - common_value), 2)])
+    jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
+    print(jury_est_values)
+    print(params_values)
+    data = {'est': render_to_string('fls/dev/table.html',
+                                    {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value})}
+    print(data)
+    return JsonResponse(data)
+
+
+def comp_reqs(request):
+    reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
+    data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
     return JsonResponse(data)
