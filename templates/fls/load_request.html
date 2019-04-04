@@ -8,32 +8,58 @@
     <hr>
     <form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
         {% csrf_token %}
-        {#    <h3>Выберите свою группу</h3>#}
-        {#    <select name="group">#}
-        {#        {% for g in groups %}#}
-        {#            <option value="{{ g.id }}"> {{ g.name }}</option>#}
-        {#        {% endfor %}#}
-        {#    </select>#}
-        {% for p in params %}
+        {% for c in collection %}
             <div class="card_param">
-                <h3>{{ p.name }}</h3>
-                <p><b>Описание: </b><i>{{ p.description }}</i></p>
+                <h3>{{ c.param.name }}</h3>
+                <p><b>Описание: </b><i>{{ c.param.description }}</i></p>
+                {% for sp in c.subparams %}
+                    <h4>{{ sp.name }}</h4>
+                    {% if sp.type == 1 %}
+                        <label>Введите число/значение
+                            <input type="text" class="form-control" name="sp_{{ sp.id }}">
+                        </label>
+                    {% endif %}
+                    {% if sp.type == 2 %}
+                        <label>Введите текст
+                            <input type="text" class="form-control" name="sp_{{ sp.id }}">
+                        </label>
+                    {% endif %}
+                    {% if sp.type == 3 or sp.type == 4 %}
+                        <div class="col-xs-12">
+                            <div class="file">
+                                <label>Загрузите нужный файл/фотографию
+                                    <input type="file" class="file-upload" name="file_{{ sp.id }}_0">
+                                </label>
+                            </div>
+                            <br>
+                            <a href="#" style="color: #1e7e34;font-size: 24px">
+                                <span class="glyphicon glyphicon-plus add_file_field"></span>
+                            </a>
 
-                <label>Ваше значение
-                    <input type="text" name="value_{{ p.id }}">
-                </label>
-                <br>
-                <label>Количество участвующих людей
-                    <input type="text" name="person_{{ p.id }}">
-                </label>
+                        </div>
+                    {% endif %}
+                    {% if sp.type == 5 %}
+                        {# Необходимо реализовать для перечислений #}
+                        <select name="sp_{{ sp.id }}">
+                            <label>Выберите значение из списка
+                                {% for key, value in sp.enum.get_dict %}
+                                    <option value="{{ enum_value }}">{{ enum_key }}</option>
+                                {% endfor %}
+                            </label>
+                        </select>
+                    {% endif %}
+                    {% if sp.type == 6 %}
+                        <label>Введите ссылку
+                            <input type="text" class="form-control" name="sp_{{ sp.id }}">
+                        </label>
+                    {% endif %}
+                {% endfor %}
             </div>
             <hr>
         {% endfor %}
         <br>
         <button type="submit" class="btn btn-primary labelText">
-                                <span style="font-family: 'Comic Sans MS',monospace">
-                                Добавить заявку
-                                    </span>
+            <span> Добавить заявку </span>
         </button>
         <br>
     </form>
@@ -45,6 +71,17 @@
         });
         $(".card_param").mouseout(function (event) {
             $(this).css('background-color', '#ffffff');
+        });
+
+        $('.container').on('click', '.add_file_field', function () {
+            var div_block = $(this).parent().parent().children(".file").last();
+            var name = div_block.find(".file-upload").attr("name");
+            var count = Number(name.split("_")[2]) + 1;
+            div_block.after("<div class=\"file\">\n" +
+                "                                <label>Загрузите нужный файл/фотографию\n" +
+                "                                    <input type=\"file\" class=\"file-upload\" name=\"file_{{ sp.id }}_" + count + " \">\n" +
+                "                                </label>\n" +
+                "                            </div>");
         });
     </script>
 {% endblock %}

@@ -13,7 +13,7 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
-    STATUSES
+    STATUSES, SubParamValue
 
 
 @login_required(login_url="login/")
@@ -83,19 +83,46 @@ def load_request(request, comp_id):
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
     params = Param.objects.filter(competition=comp)
+    collection = []
+    for p in params:
+        subparams = SubParam.objects.filter(param=p)
+        collection.append({"param": p, "subparams": subparams})
     if request.method == 'POST':
         print(request.POST)
         req = Request(competition=comp, participant=participant)
         req.save()
-        for p in params:
-            pv = ParamValue(request=req, param=p, value=request.POST["value_%s" % p.id],
-                            person_count=request.POST["person_%s" % p.id])
-            pv.save()
+        for c in collection:
+            for subparam in c["subparams"]:
+                sp_val = SubParamValue(subparam=subparam, request=req)
+                if subparam.type == 3 or subparam.type == 4:
+                    i = 0
+                    while True:
+                        try:
+                            # взять фотку
+                            i += 1
+                        except:
+                            break
+                    # обработка по фоткам/файлам необходимо загрузить все
+                else:
+                    val = request.POST["sp_%s" % subparam.id]
+                    if subparam.type == 1:
+                        sp_val.value = val
+                    elif subparam.type == 2 or subparam.type == 6:
+                        sp_val.text = val
+                    else:
+                        sp_val.enum_val = val
+                sp_val.save()
+
+        # не знаю как сейчас это применяется
+
         # до этого все жюри должны были выставить свои кф и эксперты должны были задать свои формулы
         # объединение по абсолютным оценкам происходит в estimate_req со своими условиями
-        process_request(req.id, union_types=(3,))
+
+        # process_request(req.id, union_types=(3,))
         print("saving")
-    return render(request, 'fls/load_request.html', {"params": params, "comp": comp})
+        return redirect("fls:profile")
+
+    return render(request, 'fls/load_request.html', {"comp": comp, "collection": collection})
 
 
 @login_required(login_url="login/")
@@ -154,7 +181,6 @@ def profile(request):
                 view_requests.append(req)
             new_requests = list(set(new_requests) - set(view_requests))
         select_comp = int(comp_id)
-    print(select_comp)
     return render(request, "fls/profile.html",
                   {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
                    'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
