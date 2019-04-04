@@ -132,6 +132,9 @@ class CustomUser(models.Model):
     def is_jury(self):
         return self.role == 2
 
+    def is_organizer(self):
+        return self.role == 3
+
 
 class Request(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_request', on_delete=models.CASCADE,

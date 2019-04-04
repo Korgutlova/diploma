@@ -4,10 +4,7 @@
 {% block content %}
     <h3>Создание конкурса</h3>
     <hr>
-
-
     <div class="row">
-
         <div class="col-xs-4">
             <form id="form">
                 {% csrf_token %}
@@ -222,7 +219,7 @@
             });
 
             $('.container').on('click', '.delete_subparam', function () {
-                var id = $(this).parent().parent().parent().attr("id");
+                var id = $(this).parent().parent().attr("id");
                 var total_element = $("#" + id + " .subparam").length;
                 if (total_element !== 1) {
                     $(this).parent().remove();
@@ -255,7 +252,6 @@
                     var values = array[i].split("=");
                     result[values[0]] = values[1];
                 }
-                alert();
                 $.ajax({
                     type: "post",
                     url: "/fls/comp",

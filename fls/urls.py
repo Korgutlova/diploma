@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^common_values/$', common_values, name="common_values"),
     url(r'^simjury/$', similar_page, name="simjury"),
     url(r'^similar_jury/$', similar_jury, name="similar_jury"),
+    url(r'^ajax_comp_status/$', ajax_comp_status, name="ajax_comp_status"),
 
 ]

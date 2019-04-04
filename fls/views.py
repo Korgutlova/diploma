@@ -11,7 +11,8 @@ from django.template.loader import render_to_string
 from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam
+    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
+    STATUSES
 
 
 @login_required(login_url="login/")
@@ -155,7 +156,16 @@ def profile(request):
     print(select_comp)
     return render(request, "fls/profile.html",
                   {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
-                   'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp})
+                   'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
+                   'statuses': STATUSES})
+
+
+def ajax_comp_status(request):
+    status = request.GET["status"]
+    comps = Competition.objects.filter(status=status)
+    return JsonResponse(
+        {'est': render_to_string('fls/part_organizer_profile.html', {"org_comps": comps, "statuses": STATUSES,
+                                                                     "selected_status": int(status)})})
 
 
 def login_view(request):
