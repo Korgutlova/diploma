@@ -39,6 +39,7 @@ TYPE = (
     (2, 'Групповой'),
 )
 
+# добавить textarea?
 TYPE_SUBPARAM = (
     (1, 'NUMBER'),
     (2, 'TEXT'),
@@ -51,7 +52,7 @@ TYPE_SUBPARAM = (
 
 class Competition(models.Model):
     # можно еще тут указать поле, групповой или же единичный (на одного человека) конкурс
-    name = models.CharField(max_length=100, unique=True, verbose_name="Название")
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название конкурса")
     year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
                                         verbose_name="Курс")
     description = models.TextField(verbose_name="Описание конкурса")
@@ -60,7 +61,7 @@ class Competition(models.Model):
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
 
     type_comp = models.IntegerField(choices=TYPE, blank=True, null=True,
-                                    default=TYPE[0][0], verbose_name="Тип конкурса")
+                                    default=TYPE[0][0], verbose_name="Тип участия")
 
     # если метод 1, то нужно указать максимум из какого числа ставится оценка
     max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл')

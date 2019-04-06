@@ -76,6 +76,12 @@ def list_comp(request):
     return render(request, 'fls/list_comp.html', {"comps": comps})
 
 
+def handle_uploaded_file(f, path=""):
+    with open('filecontent/%s' % f, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
 @login_required(login_url="login/")
 def load_request(request, comp_id):
     participant = CustomUser.objects.get(user=request.user)
@@ -95,13 +101,10 @@ def load_request(request, comp_id):
             for subparam in c["subparams"]:
                 sp_val = SubParamValue(subparam=subparam, request=req)
                 if subparam.type == 3 or subparam.type == 4:
-                    i = 0
-                    while True:
-                        try:
-                            # взять фотку
-                            i += 1
-                        except:
-                            break
+                    print(request.FILES)
+                    for f in request.FILES.getlist("file_%s" % subparam.id):
+                        print(f)
+                        handle_uploaded_file(f)
                     # обработка по фоткам/файлам необходимо загрузить все
                 else:
                     val = request.POST["sp_%s" % subparam.id]

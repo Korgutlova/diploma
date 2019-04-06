@@ -6,7 +6,7 @@
 {% block content %}
     <h3>Заявка на конкурс "{{ comp.name }}"</h3>
     <hr>
-    <form name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
+    <form  enctype="multipart/form-data" name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
         {% csrf_token %}
         {% for c in collection %}
             <div class="card_param">
@@ -28,7 +28,7 @@
                         <div class="col-xs-12">
                             <div class="file">
                                 <label>Загрузите нужный файл/фотографию
-                                    <input type="file" class="file-upload" name="file_{{ sp.id }}_0">
+                                    <input type="file" class="file-upload" name="file_{{ sp.id }}">
                                 </label>
                             </div>
                             <br>
@@ -75,11 +75,10 @@
 
         $('.container').on('click', '.add_file_field', function () {
             var div_block = $(this).parent().parent().children(".file").last();
-            var name = div_block.find(".file-upload").attr("name");
-            var count = Number(name.split("_")[2]) + 1;
+            var id = div_block.find(".file-upload").attr("name").split("_")[1];
             div_block.after("<div class=\"file\">\n" +
                 "                                <label>Загрузите нужный файл/фотографию\n" +
-                "                                    <input type=\"file\" class=\"file-upload\" name=\"file_{{ sp.id }}_" + count + " \">\n" +
+                "                                    <input type=\"file\" class=\"file-upload\" name=\"file_" + id + "\">\n" +
                 "                                </label>\n" +
                 "                            </div>");
         });
