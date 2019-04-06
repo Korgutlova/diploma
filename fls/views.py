@@ -9,7 +9,8 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
+from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests, make_ranks, \
+    dist_kemeni
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
 
@@ -311,36 +312,50 @@ def similar_jury(request):
     reqs = Request.objects.filter(competition_id=comp_id)
     params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
+    slt_ests = make_ranks([EstimationJury.objects.get(jury=slt_jury, type=type, request=req).value for req in reqs])
     rest_jury = CustomUser.objects.filter(role=2).exclude(id=jury_id)
     smt = {}
+    jury_ests = {}
     for jury in rest_jury:
         s = 0
+        jury_ests[jury.id] = []
         for req in reqs:
             slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req).value
             jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req).value
+            jury_ests[jury.id].append(jury_value)
             s += abs(slt_value - jury_value)
-        smt[jury.id] = s
-    print(smt)
-    sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
-    print(sorted_smt)
+        jury_ests[jury.id] = make_ranks(jury_ests[jury.id])
+        smt[jury.id] = round(s, 2)
+    print('smt', smt)
+    if request.GET['key'] == 'est':
+
+        sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
+    else:
+        sorted_kemeni = {key: dist_kemeni(slt_ests, jury_ests[key]) for key in smt}
+        sorted_smt = dict(sorted(sorted_kemeni.items(), key=lambda item: item[1]))
+
+    print('sorted_smt', sorted_smt)
     clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i) for i, pk in enumerate(list(sorted_smt.keys()))])
     ordering = 'CASE %s END' % clauses
     sorted_jury = CustomUser.objects.filter(pk__in=list(sorted_smt.keys())).extra(
         select={'ordering': ordering}, order_by=('ordering',))
     print(sorted_jury)
     estimation_values = {}
-    for req in reqs:
+    for i, req in enumerate(reqs):
         part_name = req.participant
         estimation_values[part_name] = ([], [])
         estimation_values[part_name][0].extend(
             ParamValue.objects.get(request=req, param=param).value for param in params)
-        estimation_values[part_name][1].append(
-            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req).value, 2))
+        estimation_values[part_name][1].append((
+            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req).value, 2), slt_ests[i]))
         estimation_values[part_name][1].extend(
-            [round(EstimationJury.objects.get(type=type, jury=jury, request=req).value, 2) for jury in sorted_jury])
+            [(round(EstimationJury.objects.get(type=type, jury=jury, request=req).value, 2), jury_ests[jury.id][i]) for
+             jury in sorted_jury])
+    diff = sorted_smt.values()
+    est_key = request.GET['key'] == 'est'
     data = {'est': render_to_string('fls/sim_jury/table.html',
                                     {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
-                                     'slt_jury': slt_jury})}
+                                     'slt_jury': slt_jury, 'diffs': diff, 'est_key': est_key})}
     return JsonResponse(data)
 
 
@@ -360,11 +375,13 @@ def metcomp(request):
     estimation_values = {}
     for req in reqs:
         part_name = req.participant
-        estimation_values[part_name] = ([], [])
+        estimation_values[part_name] = [[], []]
         estimation_values[part_name][0].extend(
             ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].extend(
             round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0]).value, 2) for tp in methods)
+        diff = round((estimation_values[part_name][1][0] - estimation_values[part_name][1][1]), 2)
+        estimation_values[part_name].append(diff)
     data = {'est': render_to_string('fls/metcomp/table.html',
                                     {'ests': estimation_values, 'params': params,
                                      'slt_jury': slt_jury, 'methods': methods})}
@@ -390,11 +407,12 @@ def deviation(request):
         jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req).value
         jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - common_value), 2)])
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
+    avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
     print(params_values)
     data = {'est': render_to_string('fls/dev/table.html',
-                                    {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value})}
-    print(data)
+                                    {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value,
+                                     'avg_dev': avg_dev})}
     return JsonResponse(data)
 
 

@@ -1,14 +1,18 @@
 {% for name, value in param_values.items %}
-    <span><b>{{ name }}</b> : {{ value }}    </span>
+    <span>   <b>{{ name }}</b> : {{ value }}    </span>
 {% endfor %}
 <br>
 <br>
 <b>Общая оценка</b> : {{ comm }}
+<br>
+<br>
+<b>Среднее отклонение</b> : {{ avg_dev }}
+<br>
 
 <table id="values" class="table table-striped table-bordered">
 
 
-    <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Рейтинг жюри</strong>
+    <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Таблица отклонений</strong>
     </caption>
     <thead class="thead thead-light">
     <tr>
@@ -25,7 +29,7 @@
         <tr>
             <td>{{ jury_name }}</td>
             <td>{{ values.0 }}</td>
-            <td>{{ values.1 }}</td>
+            <td class="paint">{{ values.1 }}</td>
 
         </tr>
     {% empty %}

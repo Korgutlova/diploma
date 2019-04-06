@@ -73,6 +73,12 @@ def make_matrix(ranking):
                 matrix[j, i] = 1
     return matrix
 
+def make_ranks(values):
+    output = [0] * len(values)
+    for i, x in enumerate(sorted(range(len(values)), key=lambda y: values[y], reverse=True)):
+        output[x] = i+1
+    return output
+
 
 # объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
 # formula_for_jury - объект CalcEstimationJury
@@ -156,3 +162,5 @@ def process_request(request_id, union_types=(1, 3)):
 # print(dist_kemeni([3, 4, 2, 1], [1, 2, 4, 3]))
 
 # print(median_kemeni([[1, 3, 2], [2, 1, 3], [3, 1, 2]]))
+
+# print(make_ranks([2,3,1,4]))

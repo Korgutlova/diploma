@@ -3,13 +3,14 @@
 </caption>
 <thead class="thead thead-light">
 <tr>
-    <th style="width: 50px">Участник</th>
+    <th style="width: 50px">Участник:</th>
     {% for param in params %}
         <th style="width: 50px">{{ param }}</th>
     {% endfor %}
     {% for method in methods %}
         <th style="width: 50px">{{ method.1 }}</th>
     {% endfor %}
+    <th style="width: 50px">Разница</th>
 
 
 </tr>
@@ -25,6 +26,8 @@
         {% for method_value in values.1 %}
             <td>{{ method_value }}</td>
         {% endfor %}
+        <td id="{{ forloop.counter0 }}" class="paint">{{ values.2}}</td>
+
 
     </tr>
 {% empty %}
