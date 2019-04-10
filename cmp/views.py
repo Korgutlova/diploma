@@ -5,7 +5,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
-from cmp.lib import cmp, fill_inputs, put_best, each_group_separately
+from cmp.lib import cmp, put_best
+from cmp.lib2 import fill_inputs
 from cmp.models import Weights
 
 
