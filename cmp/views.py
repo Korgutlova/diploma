@@ -74,7 +74,7 @@ def calc(request):
         ranking = each_group_separately(request.GET['param'])
 
     else:
-        b_w = Weights.objects.filter(type=request.GET['param']).order_by('deviations_sum').first()
+        b_w = Weights.objects.filter(type=request.GET['param'], ga=True).order_by('deviations_sum').first()
         result = cmp(list(map(int, b_w.weights.split())), request.GET['param'])
         func = lambda x: float("{0:.3f}".format(x))
         ranking = zip(result[0], map(func, result[1]), map(func, result[2]), result[3])
