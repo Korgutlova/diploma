@@ -281,12 +281,27 @@ class SubParamValue(models.Model):
     def __str__(self):
         return "%s - %s - %s" % (self.request.participant, self.subparam.name, self.value)
 
+    def is_number(self):
+        return self.subparam.type == 1
+
+    def is_file(self):
+        return self.subparam.type == 3
+
+    def is_photo(self):
+        return self.subparam.type == 4
+
+    def get_name(self):
+        return self.subparam.name
+
+    def get_files(self):
+        return self.files.all()
+
 
 class UploadData(models.Model):
     sub_param_value = models.ForeignKey(SubParamValue, related_name="files", on_delete=models.CASCADE, blank=False,
                                         null=False)
     header_for_file = models.CharField(max_length=100, null=True, blank=True)
-    link_file = models.CharField(max_length=200)
+    image = models.ImageField()
 
     def __str__(self):
         return '%s - %s - %s' % (self.sub_param_value.subparam.name, self.header_for_file, self.link_file)

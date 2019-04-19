@@ -1,6 +1,5 @@
 {% extends 'fls/base_template.html' %}
 {% block title %}Заявка{% endblock %}
-
 {% block content %}
     <h3>Заявка</h3>
     <hr>
@@ -12,9 +11,21 @@
                 <li class="list-group-item"><p>Загрузил пользователь {{ request.participant.get_username }}</p></li>
                 <li class="list-group-item"><p>Содержание заявки</p>
                     <div class="container">
-                        {% for r in  request.get_params %}
-                            <p>Параметр '{{ r.param.name }}' значение - {{ r.value }}, количество участвующих
-                                - {{ r.person_count }}</p>
+                        {% for v in  values %}
+                            {% with param=v.0 sbvalues=v.1 %}
+                                <p>Параметр '{{ param.name }}' </p>
+                                {% for sb in sbvalues %}
+                                    <p> Подпараметр {{ sb.get_name }}</p>
+                                    {% if sb.is_number %}
+                                        {{ sb.value }}
+                                    {% endif %}
+                                    {% if sb.is_photo %}
+                                        {% for f in sb.get_files %}
+                                            <img src="{{ f.image.url }}" alt="{{ f.header_for_file }}">
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
                         {% endfor %}
                     </div>
                 </li>

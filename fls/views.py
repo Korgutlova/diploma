@@ -1,10 +1,10 @@
 import traceback
 from operator import itemgetter
 
-import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -14,8 +14,6 @@ from fls.lib import parse_formula, process_3_method, process_5_method, process_r
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
     STATUSES, SubParamValue, UploadData
-
-ROOT_FILE = "filecontent"
 
 
 @login_required(login_url="login/")
@@ -78,17 +76,6 @@ def list_comp(request):
     return render(request, 'fls/list_comp.html', {"comps": comps})
 
 
-def handle_uploaded_file(f, path):
-    try:
-        with open(('%s/%s' % (ROOT_FILE, path)), 'wb+') as destination:
-            for chunk in f.chunks():
-                destination.write(chunk)
-        return True
-    except Exception as e:
-        traceback.print_exc()
-        return False
-
-
 @login_required(login_url="login/")
 def load_request(request, comp_id):
     participant = CustomUser.objects.get(user=request.user)
@@ -107,16 +94,17 @@ def load_request(request, comp_id):
         for c in collection:
             for subparam in c["subparams"]:
                 sp_val = SubParamValue(subparam=subparam, request=req)
+                sp_val.save()
                 if subparam.type == 3 or subparam.type == 4:
                     print(request.FILES)
-                    for f, h in zip(request.FILES.getlist("file_%s" % subparam.id), request.POST.getlist(
+                    for image, h in zip(request.FILES.getlist("file_%s" % subparam.id), request.POST.getlist(
                             "header_%s" % subparam.id)):
-                        print(f)
-                        link_file = "%s/%s/%s" % (participant.id, comp_id, f)
-                        u = UploadData(header_for_file=h, link_file=link_file)
-                        if handle_uploaded_file(f, link_file):
-                            u.save()
-                    # обработка по фоткам/файлам необходимо загрузить все
+                        print(image)
+                        link_file = "%s/%s/%s" % (participant.id, comp_id, image)
+                        fs = FileSystemStorage()
+                        filename = fs.save(link_file, image)
+                        u = UploadData(header_for_file=h, image=filename, sub_param_value=sp_val)
+                        u.save()
                 else:
                     val = request.POST["sp_%s" % subparam.id]
                     if subparam.type == 1:
@@ -125,8 +113,7 @@ def load_request(request, comp_id):
                         sp_val.text = val
                     else:
                         sp_val.enum_val = val
-                sp_val.save()
-
+                    sp_val.save()
         # не знаю как сейчас это применяется
 
         # до этого все жюри должны были выставить свои кф и эксперты должны были задать свои формулы
@@ -263,7 +250,15 @@ def get_request(request, id):
     cur_request = Request.objects.get(id=id)
     estimate = EstimationJury.objects.filter(request=cur_request)
     flag = False
-    dict = {'request': cur_request, 'user': CustomUser.objects.get(user=request.user)}
+    arr = []
+    params = Param.objects.filter(competition=cur_request.competition)
+    for p in params:
+        subvalues = []
+        for sb in p.subparam_params.all():
+            sbvalue = SubParamValue.objects.get(subparam=sb, request=cur_request)
+            subvalues.append(sbvalue)
+        arr.append((p, subvalues))
+    dict = {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user)}
     if len(estimate) == 1:
         flag = True
         dict['estimate_id'] = estimate[0].id
