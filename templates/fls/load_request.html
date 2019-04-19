@@ -30,6 +30,9 @@
                                 <label>Загрузите нужный файл/фотографию
                                     <input type="file" class="file-upload" name="file_{{ sp.id }}">
                                 </label>
+                                <label>Введите подпись
+                                    <input type="text" class="form-control" name="header_{{ sp.id }}">
+                                </label>
                             </div>
                             <br>
                             <a href="#" style="color: #1e7e34;font-size: 24px">
@@ -79,6 +82,9 @@
             div_block.after("<div class=\"file\">\n" +
                 "                                <label>Загрузите нужный файл/фотографию\n" +
                 "                                    <input type=\"file\" class=\"file-upload\" name=\"file_" + id + "\">\n" +
+                "                                </label>\n" +
+                "                                <label>Введите подпись\n" +
+                "                                    <input type=\"text\" class=\"form-control\" name=\"header_" + id + "\">\n" +
                 "                                </label>\n" +
                 "                            </div>");
         });

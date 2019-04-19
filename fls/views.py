@@ -13,7 +13,9 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
-    STATUSES, SubParamValue
+    STATUSES, SubParamValue, UploadData
+
+ROOT_FILE = "filecontent"
 
 
 @login_required(login_url="login/")
@@ -76,10 +78,15 @@ def list_comp(request):
     return render(request, 'fls/list_comp.html', {"comps": comps})
 
 
-def handle_uploaded_file(f, path=""):
-    with open('filecontent/%s' % f, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
+def handle_uploaded_file(f, path):
+    try:
+        with open(('%s/%s' % (ROOT_FILE, path)), 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+        return True
+    except Exception as e:
+        traceback.print_exc()
+        return False
 
 
 @login_required(login_url="login/")
@@ -102,9 +109,13 @@ def load_request(request, comp_id):
                 sp_val = SubParamValue(subparam=subparam, request=req)
                 if subparam.type == 3 or subparam.type == 4:
                     print(request.FILES)
-                    for f in request.FILES.getlist("file_%s" % subparam.id):
+                    for f, h in zip(request.FILES.getlist("file_%s" % subparam.id), request.POST.getlist(
+                            "header_%s" % subparam.id)):
                         print(f)
-                        handle_uploaded_file(f)
+                        link_file = "%s/%s/%s" % (participant.id, comp_id, f)
+                        u = UploadData(header_for_file=h, link_file=link_file)
+                        if handle_uploaded_file(f, link_file):
+                            u.save()
                     # обработка по фоткам/файлам необходимо загрузить все
                 else:
                     val = request.POST["sp_%s" % subparam.id]

@@ -64,7 +64,7 @@ class Competition(models.Model):
                                     default=TYPE[0][0], verbose_name="Тип участия")
 
     # если метод 1, то нужно указать максимум из какого числа ставится оценка
-    max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл')
+    max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл за заявку')
 
     # в каком состоянии находится конкурс
     status = models.IntegerField(choices=STATUSES, blank=True, null=True,
