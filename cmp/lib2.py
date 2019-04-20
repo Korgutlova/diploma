@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 from openpyxl import load_workbook
 
-file = '../data.xlsx'
+file = './data.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
@@ -14,7 +14,7 @@ name_groups = [cell[0].value for cell in ws['A2':'A16']]
 old_ranking = [cell[0].value for cell in ws['B2':'B16']]
 academic_performance = [cell[0].value for cell in ws['C2':'C16']]
 
-input_file_template = '../static/result/%s'
+input_file_template = './static/result/%s'
 
 
 def save_data(param='kfavg'):

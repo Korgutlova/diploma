@@ -15,7 +15,7 @@ from cmp.models import Weights, GroupWeights
 
 COUNT = 20
 
-input_file_template = '../static/result/%s'
+input_file_template = './static/result/%s'
 
 
 def smart_gen():
@@ -54,7 +54,7 @@ def cmp(weights, param='kfavg', group=-1):
         academic_performance.pop(group)
     new_ranking = calculate_est(data, weights)
 
-    return old_ranking, new_ranking, [abs(old - new) for old, new in zip(old_ranking, new_ranking)], name_groups
+    return old_ranking, new_ranking, [abs(old - new) for old, new in zip(old_ranking, new_ranking)], range(1,16)
 
 
 def put_best(weights, sum, param='kfavg'):
@@ -154,5 +154,5 @@ def genetic_algoritm(param='avg'):
 
 # print(smart_gen())
 
-for param in ['avg', 'kfavg', 'c', 'kf']:
-    genetic_algoritm(param)
+# for param in ['avg', 'kfavg', 'c', 'kf']:
+#     genetic_algoritm(param)

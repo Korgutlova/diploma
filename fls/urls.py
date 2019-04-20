@@ -28,5 +28,7 @@ urlpatterns = [
     url(r'^dev/$', dev_page, name="devpage"),
     url(r'^deviation/$', deviation, name="dev"),
     url(r'^comp_reqs/$', comp_reqs, name="compreqs"),
+    url(r'^coherence/$', coherence_page, name="coherpage"),
+    url(r'^coher/$', coherence, name="coher"),
 
 ]

@@ -1,3 +1,4 @@
+import math
 from operator import itemgetter
 
 import numpy as np
@@ -410,13 +411,47 @@ def deviation(request):
     avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
     print(params_values)
+    variation_coef = math.sqrt(
+        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / common_value
     data = {'est': render_to_string('fls/dev/table.html',
                                     {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value,
-                                     'avg_dev': avg_dev})}
+                                     'avg_dev': avg_dev, 'var_coef': round(variation_coef, 2)})}
     return JsonResponse(data)
 
 
 def comp_reqs(request):
     reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
     data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
+    return JsonResponse(data)
+
+
+def coherence_page(request):
+    comps = Competition.objects.all()
+    return render(request, 'fls/coher/coher.html', {'comps': comps})
+
+
+def coherence(request):
+    comp_id, type = int(request.GET['comp']), int(request.GET['type'])
+    reqs = Competition.objects.get(id=comp_id).competition_request.all()
+    jurys = CustomUser.objects.filter(role=2)
+    req_ests = {req: ([EstimationJury.objects.get(request=req, type=type, jury=jury).value for jury in jurys],
+                      sum([EstimationJury.objects.get(request=req, type=type, jury=jury).value for jury in
+                           jurys]) / len(
+                          jurys)) for req in
+                reqs}
+    coefs = {}
+    try:
+        for jury_num, jury in enumerate(jurys):
+            jury_ests, common_ests = 0, 0
+            for req in req_ests:
+                jury_ests += req_ests[req][0][jury_num] * req_ests[req][1]
+                common_ests += sum(req_ests[req][0]) * req_ests[req][1]
+            coefs[jury] = round(jury_ests / common_ests, 2)
+    except:
+        coefs = {}
+
+    data = {'est': render_to_string('fls/coher/table.html',
+                                    {'coefs': coefs, 'jurys': jurys})}
+    print(coefs)
+
     return JsonResponse(data)
