@@ -1,5 +1,7 @@
 <br>
-<b>Согласованность комиссии</b> : {{ kendall_coef }}
+{% if kendall_coef %}
+    <b>Согласованность комиссии</b> : {{ kendall_coef }}
+{% endif %}
 <br>
 
 <table id="values" class="table table-striped table-bordered">
