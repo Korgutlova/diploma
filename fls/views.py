@@ -440,6 +440,7 @@ def coherence(request):
                           jurys)) for req in
                 reqs}
     coefs = {}
+    print(req_ests)
     try:
         for jury_num, jury in enumerate(jurys):
             jury_ests, common_ests = 0, 0
@@ -450,8 +451,20 @@ def coherence(request):
     except:
         coefs = {}
 
+    jury_ranks = {}
+
+    for jury in jurys:
+        jury_ranks[jury] = make_ranks(
+            [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs])
+    req_values = {}
+    for idx, req in enumerate(reqs):
+        req_values[req] = sum([jury_ranks[jury][idx] for jury in jurys])
+    common_rank_req_sum_avg = sum(list(req_values.values())) / len(reqs)
+    dev_sum = 0
+    for req in req_values:
+        dev_sum += (req_values[req] - common_rank_req_sum_avg) ** 2
+    kendall_coef = 12 * dev_sum / ((len(jurys) ** 2) * (len(reqs) ** 3 - len(reqs)))
     data = {'est': render_to_string('fls/coher/table.html',
-                                    {'coefs': coefs, 'jurys': jurys})}
-    print(coefs)
+                                    {'coefs': coefs, 'jurys': jurys, 'kendall_coef': round(kendall_coef, 2)})}
 
     return JsonResponse(data)

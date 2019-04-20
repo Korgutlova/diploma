@@ -75,6 +75,7 @@ def make_matrix(ranking):
 
 def make_ranks(values):
     output = [0] * len(values)
+
     for i, x in enumerate(sorted(range(len(values)), key=lambda y: values[y], reverse=True)):
         output[x] = i+1
     return output

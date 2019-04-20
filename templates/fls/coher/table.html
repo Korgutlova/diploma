@@ -1,24 +1,30 @@
-<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Коэффициенты компетентности</strong>
-</caption>
-<thead class="thead thead-light">
-<br><br>
-<tr>
+<br>
+<b>Согласованность комиссии</b> : {{ kendall_coef }}
+<br>
 
-    {% for jury  in jurys %}
-        <th style="width: 50px">{{ jury }}</th>
-    {% endfor %}
-</tr>
-</thead>
-<tbody>
+<table id="values" class="table table-striped table-bordered">
+    <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Коэффициенты компетентности</strong>
+    </caption>
+    <thead class="thead thead-light">
+    <br><br>
+    <tr>
 
-<tr>
+        {% for jury  in jurys %}
+            <th style="width: 50px">{{ jury }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
 
-    {% for jury_name, value in coefs.items %}
-        <td style="width: 50px">{{ value }}</td>
-    {% empty %}
-        <td colspan="8" class="text-center bg-warning">Нет результатов</td>
-    {% endfor %}
-</tr>
+    <tr>
+
+        {% for jury_name, value in coefs.items %}
+            <td style="width: 50px">{{ value }}</td>
+        {% empty %}
+            <td colspan="8" class="text-center bg-warning">Нет результатов</td>
+        {% endfor %}
+    </tr>
 
 
-</tbody>
+    </tbody>
+</table>
