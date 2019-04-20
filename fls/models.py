@@ -304,7 +304,7 @@ class UploadData(models.Model):
     image = models.ImageField()
 
     def __str__(self):
-        return '%s - %s - %s' % (self.sub_param_value.subparam.name, self.header_for_file, self.link_file)
+        return '%s - %s - %s' % (self.sub_param_value.subparam.name, self.header_for_file, self.image.url)
 
 
 class Criterion(models.Model):
