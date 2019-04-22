@@ -6,6 +6,7 @@ import django
 import os
 
 import numpy as np
+from scipy.stats import rankdata
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dipl.settings")
 django.setup()
@@ -73,12 +74,14 @@ def make_matrix(ranking):
                 matrix[j, i] = 1
     return matrix
 
-def make_ranks(values):
-    output = [0] * len(values)
 
-    for i, x in enumerate(sorted(range(len(values)), key=lambda y: values[y], reverse=True)):
-        output[x] = i+1
-    return output
+def make_ranks(values):
+    # output = [0] * len(values)
+    #
+    # for i, x in enumerate(sorted(range(len(values)), key=lambda y: values[y], reverse=True)):
+    #     output[x] = i + 1
+    # return output
+    return list(rankdata([-1 * e for e in values], method='min').astype(int))
 
 
 # объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
@@ -158,10 +161,11 @@ def process_request(request_id, union_types=(1, 3)):
     for jury_formula in req.competition.competition_formula_for_jury.all():
         union_request_ests(req, jury_formula, union_types)
 
+
 # process_requests(Competition.objects.get(id=8))
 
 # print(dist_kemeni([3, 4, 2, 1], [1, 2, 4, 3]))
 
 # print(median_kemeni([[1, 3, 2], [2, 1, 3], [3, 1, 2]]))
 
-# print(make_ranks([2,3,1,4]))
+# print(make_ranks([10, 7, 8, 8]))
