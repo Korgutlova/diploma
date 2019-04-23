@@ -68,20 +68,19 @@ def make_matrix(ranking):
                 matrix[i, j] = 1
                 matrix[j, i] = 0
             elif ranking[i] == ranking[j]:
-                matrix[i, j] = 1
+                matrix[i, j] = 0.5
+                matrix[j, i] = 0.5
             else:
                 matrix[i, j] = 0
                 matrix[j, i] = 1
     return matrix
 
 
-def make_ranks(values):
-    # output = [0] * len(values)
-    #
-    # for i, x in enumerate(sorted(range(len(values)), key=lambda y: values[y], reverse=True)):
-    #     output[x] = i + 1
-    # return output
-    return list(rankdata([-1 * e for e in values], method='min').astype(int))
+def make_ranks(values, method='min', s_m=False):
+    ranks = list(rankdata([-1 * e for e in values], method=method))
+    same_groups_count = [ranks.count(rank) for rank in set(ranks) if ranks.count(rank) > 1]
+
+    return (ranks, same_groups_count) if s_m else ranks
 
 
 # объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
@@ -168,4 +167,6 @@ def process_request(request_id, union_types=(1, 3)):
 
 # print(median_kemeni([[1, 3, 2], [2, 1, 3], [3, 1, 2]]))
 
-# print(make_ranks([10, 7, 8, 8]))
+# print(make_ranks([3, 1, 2, 2], method='average', s_m=True))
+
+# print(make_matrix([1, 2.5, 2.5, 3]))
