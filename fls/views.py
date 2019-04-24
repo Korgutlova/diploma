@@ -436,7 +436,6 @@ def coherence(request):
     jurys = CustomUser.objects.filter(role=2)
     try:
         jury_ranks = {}
-
         for jury in jurys:
             jury_ranks[jury] = make_ranks(
                 [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='average',

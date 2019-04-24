@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 from itertools import permutations
 
 import cexprtk
@@ -170,3 +171,52 @@ def process_request(request_id, union_types=(1, 3)):
 # print(make_ranks([3, 1, 2, 2], method='average', s_m=True))
 
 # print(make_matrix([1, 2.5, 2.5, 3]))
+
+def distance(elem1, elem2):
+    return dist_kemeni(elem1, elem2)
+
+
+def same(prev, pres):
+    for i, j in zip(prev, pres):
+        if i != j:
+            return False
+    return True
+
+
+def define_centers(dataset, n):
+    return [dataset[i] for i in range(n)]
+
+
+def clusterization(dataset, n_clusters):
+    labels = []
+    centroids = define_centers(dataset, n_clusters)
+    prev_centroids = [[0] * len(centroids[0]) for i in range(len(centroids))]
+
+    while not same(prev_centroids, centroids):
+        labels = []
+        prev_centroids = deepcopy(centroids)
+        for ranking in dataset:
+            dists = [distance(ranking, center) for center in centroids]
+            idx = dists.index(min(dists))
+            labels.append(idx)
+        for i in range(n_clusters):
+            cluster_rankings = []
+            for k, num_label in enumerate(labels):
+                if num_label == i:
+                    cluster_rankings.append(dataset[k])
+            centroids[i] = median_kemeni(cluster_rankings)
+    print(labels)
+
+
+rankings = [
+    [1, 3, 2, 4, 6, 5, 7],
+    [3, 2, 1, 4, 5, 6, 7],
+    [6, 4, 3, 5, 1, 2, 7],
+    [1, 2, 3, 4, 6, 5, 7],
+    [3, 2, 1, 5, 4, 6, 7],
+    [6, 4, 3, 1, 5, 2, 7],
+    [6, 4, 3, 5, 2, 1, 7]
+
+]
+
+clusterization(rankings, 3)
