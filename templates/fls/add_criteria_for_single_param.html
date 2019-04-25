@@ -1,12 +1,13 @@
 {% extends 'fls/base_criteria.html' %}
 {% block title %}
-    Создание критерия
+    Создание критерия для каждого параметра
 {% endblock %}
 
 {% block cycle_and_head %}
 
-    <h3>Создание критерия</h3>
+    <h3>Создание критерия каждого параметра</h3>
     <hr>
+    <h3>Критерий для параметра {{ p.name }}</h3>
     <h4>Подпараметры</h4>
     {% for sb in subparams %}
         <button data-toggle="tooltip" data-placement="top" title="Главный параметр - {{ sb.param.name }}"
@@ -17,7 +18,7 @@
 
 
 {% block url_form %}
-    {% url 'fls:criteria' id %}
+    {% url 'fls:criteria_for_single_param' id p.id %}
 {% endblock %}
 {% block cycle_popup %}
     {% for sb in subparams %}

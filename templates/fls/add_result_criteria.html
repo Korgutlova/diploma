@@ -1,0 +1,28 @@
+{% extends 'fls/base_criteria.html' %}
+{% block title %}
+    Создание итоговой формулы критериев
+{% endblock %}
+
+{% block cycle_and_head %}
+
+    <h3>Создание итоговой формулы критериев</h3>
+    <hr>
+    <h4>Критерии</h4>
+    {% for c in criteria %}
+        <button type="button" class="btn btn-info param" id="{{ c.id }}">{{ c.name }}</button>
+    {% endfor %}
+    <hr>
+{% endblock %}
+
+
+{% block url_form %}
+    {% url 'fls:result_criteria' id %}
+{% endblock %}
+{% block cycle_popup %}
+    {% for c in criteria %}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="item" id="{{ c.id }}">
+            <label class="form-check-label" for="{{ c.id }}">{{ c.name }}</label>
+        </div>
+    {% endfor %}
+{% endblock %}

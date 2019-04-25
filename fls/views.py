@@ -15,17 +15,44 @@ from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomU
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
     STATUSES, SubParamValue, UploadData
 
+STATUS = ["SubParam", "Criteria", "SingleParam"]
+
 
 @login_required(login_url="login/")
 def criteria(request, id):
     comp = Competition.objects.get(id=id)
+    subparams = []
     params = Param.objects.filter(competition=comp)
+    for p in params:
+        [subparams.append(sb) for sb in p.subparam_params.all()]
     if request.method == "POST":
-        c = Criterion(name=request.POST["name"], formula=request.POST["formula"], competition=comp)
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"])
         c.save()
-        process_5_method(c)
         return redirect("fls:list_comp")
-    return render(request, 'fls/add_criteria.html', {"params": params, "id": id})
+    return render(request, 'fls/add_criteria.html', {"subparams": subparams, "id": id})
+
+
+@login_required(login_url="login/")
+def result_criteria(request, id):
+    comp = Competition.objects.get(id=id)
+    criteria = Criterion.objects.filter(competition=comp, result_formula=False)
+    if request.method == "POST":
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
+        c.save()
+        return redirect("fls:list_comp")
+    return render(request, 'fls/add_result_criteria.html', {"criteria": criteria, "id": id})
+
+
+@login_required(login_url="login/")
+def criteria_for_single_param(request, id, param_id):
+    comp = Competition.objects.get(id=id)
+    param = Param.objects.get(id=param_id)
+    subparams = param.subparam_params.all()
+    if request.method == "POST":
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
+        c.save()
+        return redirect("fls:list_comp")
+    return render(request, 'fls/add_criteria_for_single_param.html', {"subparams": subparams, "id": id, "p": param})
 
 
 @login_required(login_url="login/")
@@ -474,3 +501,10 @@ def comp_reqs(request):
     reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
     data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
     return JsonResponse(data)
+
+
+def change_status(request, id, val):
+    comp = Competition.objects.get(id=id)
+    comp.status = int(val)
+    comp.save()
+    return redirect("fls:get_comp", id)

@@ -9,6 +9,9 @@ urlpatterns = [
     url(r'^profile$', profile, name="profile"),
     url(r'^login/$', login_view, name="login_view"),
     url(r'^criteria/(?P<id>\d+)/$', criteria, name="criteria"),
+    url(r'^criteria/(?P<id>\d+)/result$', result_criteria, name="result_criteria"),
+    url(r'^criteria/(?P<id>\d+)/single_param/(?P<param_id>\d+)$', criteria_for_single_param,
+        name="criteria_for_single_param"),
     url(r'^comps$', list_comp, name="list_comp"),
     url(r'^comp$', comp, name="comp"),
     url(r'^comp/(?P<id>\d+)$', get_comp, name="get_comp"),
@@ -29,5 +32,6 @@ urlpatterns = [
     url(r'^dev/$', dev_page, name="devpage"),
     url(r'^deviation/$', deviation, name="dev"),
     url(r'^comp_reqs/$', comp_reqs, name="compreqs"),
+    url(r'^comp/(?P<id>\d+)/change_status/(?P<val>\d+)$', change_status, name="change_status"),
 
 ]

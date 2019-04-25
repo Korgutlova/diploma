@@ -189,6 +189,7 @@ class Param(models.Model):
         return self.name
 
 
+# дальше эту модель убираем
 class ParamValue(models.Model):
     param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
     request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
@@ -313,6 +314,15 @@ class Criterion(models.Model):
     name = models.CharField(max_length=20, unique=True)
     formula = models.TextField()
 
+    # True - итоговая формула (указываются id критериев)
+    # False - промежуточные формулы критериев (там будут указываться id сабпараметров)
+
+    result_formula = models.BooleanField(default=False)
+
+    # это критерий общий или для ранжированных вычислений
+    param = models.ForeignKey(Param, related_name='criterion_params', on_delete=models.CASCADE,
+                              blank=True, null=True, verbose_name="Критерий определенного параметра")
+
     def __str__(self):
         return self.name
 
@@ -367,6 +377,7 @@ class WeightParamJury(models.Model):
         return "Жюри %s - Параметр %s - Тип %s" % (self.jury, self.param, self.type)
 
 
+# Нужно будет удалить, так как теперь просто применяем среднее
 class CalcEstimationJury(models.Model):
     expert = models.ForeignKey(CustomUser, related_name='experts', on_delete=models.CASCADE,
                                blank=True, null=True, verbose_name='Эксперт')
