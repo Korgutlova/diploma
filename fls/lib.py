@@ -41,17 +41,44 @@ def parse_formula(formula, params_values):
 
 
 # parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
+# perms = list(permutations(range(1, len(rankings[0]) + 1)))
+# dist_sums = []
+# for perm in perms:
+#     sum = 0
+#     for ranking in rankings:
+#         sum += dist_kemeni(perm, ranking)
+#     dist_sums.append(sum)
+#
+# return perms[dist_sums.index(min(dist_sums))]
 
 def median_kemeni(rankings):
-    perms = list(permutations(range(1, len(rankings[0]) + 1)))
-    dist_sums = []
-    for perm in perms:
-        sum = 0
-        for ranking in rankings:
-            sum += dist_kemeni(perm, ranking)
-        dist_sums.append(sum)
-
-    return perms[dist_sums.index(min(dist_sums))]
+    n_reqs = len(rankings[0])
+    n_jury = len(rankings)
+    matrixes = [make_matrix(ranking) for ranking in rankings]
+    loss_matrix = np.empty(shape=(n_reqs, n_reqs))
+    indexes = list(range(0, n_reqs))
+    ranks = []
+    for i in range(n_reqs):
+        for j in range(n_reqs):
+            loss_matrix[i, j] = 0
+            for k in range(n_jury):
+                loss_matrix[i, j] += 1 - matrixes[k][i, j]
+    pen_matrix = deepcopy(loss_matrix)
+    while not pen_matrix.size == 0:
+        row_sums = np.sum(pen_matrix, axis=1)
+        idx = np.argmin(row_sums)
+        ranks.append(indexes[int(idx)])
+        indexes.pop(int(idx))
+        pen_matrix = np.delete(pen_matrix, idx, axis=0)
+        pen_matrix = np.delete(pen_matrix, idx, axis=1)
+    for k in range(n_reqs - 2, -1, -1):
+        if loss_matrix[ranks[k], ranks[k + 1]] > loss_matrix[ranks[k + 1], ranks[k]]:
+            ranks[k], ranks[k + 1] = ranks[k + 1], ranks[k]
+    median = np.empty(shape=(n_reqs))
+    for i, elem in enumerate(ranks):
+        median[elem] = i + 1
+    print('result', median)
+    return list(median)
 
 
 def dist_kemeni(ranking1, ranking2):
@@ -67,12 +94,12 @@ def make_matrix(ranking):
         for j in range(i, length):
             if ranking[i] < ranking[j]:
                 matrix[i, j] = 1
-                matrix[j, i] = 0
+                matrix[j, i] = -1
             elif ranking[i] == ranking[j]:
-                matrix[i, j] = 0.5
-                matrix[j, i] = 0.5
-            else:
                 matrix[i, j] = 0
+                matrix[j, i] = 0
+            else:
+                matrix[i, j] = -1
                 matrix[j, i] = 1
     return matrix
 
@@ -220,3 +247,7 @@ rankings = [
 ]
 
 clusterization(rankings, 3)
+
+# clusterization(rankings, 3)
+
+# median_kemeni(rankings)
