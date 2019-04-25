@@ -23,7 +23,8 @@
             <li><a href="{% url 'fls:common' %}">Результаты</a></li>
             <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
             <li class="active"><a href="#">Сравнение методов</a></li>
-            <li ><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
+            <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
+            <li><a href="{% url 'fls:coherpage' %}">Согласованность оценок</a></li>
 
 
         </ul>
@@ -32,7 +33,7 @@
 <div class="container" style="margin-top: 50px">
     <div class="row">
         <div class="col-sm-4">
-            <label for="comp">Выберите конкурс</label>
+            <label for="comp">Выберите конкурс:</label>
             <br>
             <select id="comp" name="comp" class="selectpicker">
                 {% for comp in comps %}
@@ -82,11 +83,33 @@
                 alert("error");
             },
             complete: function (data) {
-
+                color_range();
             }
         })
 
     };
+
+    const color_range = function () {
+        color_pos = ['b3ffcc', '99ffbb', '80ffaa', '66ff99', '#4dff88', '#33ff77', '#1aff66', '#00ff55', '#00e64d', '#00cc44'];
+        color_neg = ['ffe6ee', 'ffccdd', '#ffb3cc', '#ff99bb', '#ff80aa', '#ff6699', '#ff4d88', '#ff3377', '#ff1a66', '#ff0055'];
+        $(".paint").each(function (i) {
+            {#console.log($(this).text());#}
+            diff_value = parseFloat($(this).text());
+            if (diff_value >= 0) {
+
+                color = color_pos[(color_pos.length - 1) - Math.round(diff_value)];
+            }
+            else {
+                color = color_neg[(color_neg.length - 1) - Math.round(Math.abs(diff_value))];
+
+            }
+            {#$(this).css("background-color", color);#}
+            $(this).prev().css("background-color", color);
+            $(this).prev().prev().css("background-color", color);
+        })
+
+    };
+
     select = $('select');
     select.selectpicker();
     {#$('#send').click(f);#}

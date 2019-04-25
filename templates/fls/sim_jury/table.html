@@ -2,14 +2,14 @@
     для {{ slt_jury }}</strong></caption>
 <thead class="thead thead-light">
 <tr>
-    <th style="width: 50px">Участник</th>
+    <th style="width: 50px">Участник:</th>
     {% for param in params %}
         <th style="width: 50px">{{ param }}</th>
     {% endfor %}
-    <th style="width: 50px">{{ slt_jury }}</th>
+    <th style="width: 50px" colspan="2">{{ slt_jury }}</th>
     {% if jurys %}
         {% for jury in jurys %}
-            <th style="width: 50px">{{ jury }}</th>
+            <th style="width: 50px" colspan="2">{{ jury }}</th>
         {% endfor %}
     {% endif %}
 
@@ -24,15 +24,46 @@
         {% for param_value in values.0 %}
             <td>{{ param_value }}</td>
         {% endfor %}
-        {% for jury_value in values.1 %}
-            <td id="{{ est_name }}+j{{ forloop.counter0 }}">{{ jury_value }}</td>
+        {% for jury_value, jury_rank in values.1 %}
+            <td class="key_est" style="background-color: #4cae4c">{{ jury_value }}</td>
+            <td class="key_rank" style="background-color: #5bc0de">{{ jury_rank }}</td>
+
         {% endfor %}
 
     </tr>
-{% empty %}
-    <tr>
-        <td colspan="8" class="text-center bg-warning">Нет результатов</td>
-    </tr>
 {% endfor %}
+
+{#{% empty %}#}
+{#    <tr>#}
+{#        <td colspan="8" class="text-center bg-warning">Нет результатов</td>#}
+{#    </tr>#}
+{#{% endfor %}#}
+
+
+<tr style="background-color: greenyellow">
+    <td>Расстояние</td>
+    {% for param in params %}
+        <th></th>
+    {% endfor %}
+    <td></td>
+    <td></td>
+    {% for diff in diffs %}
+        {% if est_key %}
+            <td id="est_key">{{ diff }}</td>
+            <td id="rank_key"></td>
+        {% else %}
+            <td id="est_key"></td>
+            <td id="rank_key">{{ diff }}</td>
+        {% endif %}
+
+    {% endfor %}
+</tr>
+
+
+{#{% empty %}#}
+{#    <tr>#}
+{#        <td colspan="8" class="text-center bg-warning">Нет результатов</td>#}
+{#    </tr>#}
+
 
 </tbody>

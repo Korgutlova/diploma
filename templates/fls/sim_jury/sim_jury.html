@@ -24,13 +24,15 @@
             <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
             <li><a href="{% url 'fls:metcomp' %}">Сравнение методов</a></li>
             <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
+            <li><a href="{% url 'fls:coherpage' %}">Согласованность оценок</a></li>
+
         </ul>
     </div>
 </nav>
 <div class="container" style="margin-top: 50px">
     <div class="row">
         <div class="col-sm-4">
-            <label for="comp">Выберите конкурс</label>
+            <label for="comp">Выберите конкурс:</label>
             <br>
             <select id="comp" name="comp" class="selectpicker">
                 {% for comp in comps %}
@@ -42,7 +44,7 @@
             <label for="type">Выберите метод:</label>
             <br>
             <select name="type" id="type" class="selectpicker">
-                <option value="1">Абсолютная оценка</option>
+                <option value="1">Ручная оценка</option>
                 <option value="3">Сравнение параметров</option>
             </select>
             <br>
@@ -55,6 +57,19 @@
                 {% for jury in jurys %}
                     <option value={{ jury.id }}>{{ jury }}</option>
                 {% endfor %}
+            </select>
+            {#    <button class="btn btn-success" id="send">Посмотреть</button>#}
+
+            <br>
+            <br>
+
+
+            <label for="key">Сортировка:</label>
+            <br>
+            <select id="key" name="key" class="selectpicker">
+
+                <option value="est">Оценки</option>
+                <option value="rank">Ранжировки</option>
             </select>
             {#    <button class="btn btn-success" id="send">Посмотреть</button>#}
 
@@ -76,10 +91,12 @@
         type = $('#type').val();
         comp_id = $('#comp').val();
         jury = $('#jury').val();
+        key = $('#key').val();
+
         $.ajax({
             url: '/fls/similar_jury/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type, 'jury': jury},
+            data: {'comp': comp_id, 'type': type, 'jury': jury, 'key': key},
             dataType: 'json',
             success: function (data) {
                 $("#values").html(data.est)

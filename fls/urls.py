@@ -33,5 +33,6 @@ urlpatterns = [
     url(r'^deviation/$', deviation, name="dev"),
     url(r'^comp_reqs/$', comp_reqs, name="compreqs"),
     url(r'^comp/(?P<id>\d+)/change_status/(?P<val>\d+)$', change_status, name="change_status"),
-
+    url(r'^coherence/$', coherence_page, name="coherpage"),
+    url(r'^coher/$', coherence, name="coher"),
 ]
