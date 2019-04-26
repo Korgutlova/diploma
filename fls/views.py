@@ -1,4 +1,3 @@
-
 import traceback
 import math
 from operator import itemgetter
@@ -7,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -27,7 +27,7 @@ def criteria(request, id):
     subparams = []
     params = Param.objects.filter(competition=comp)
     for p in params:
-        [subparams.append(sb) for sb in p.subparam_params.all()]
+        [subparams.append(sb) for sb in p.subparam_params.all().filter(for_formula=True)]
     if request.method == "POST":
         c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"])
         c.save()
@@ -50,12 +50,40 @@ def result_criteria(request, id):
 def criteria_for_single_param(request, id, param_id):
     comp = Competition.objects.get(id=id)
     param = Param.objects.get(id=param_id)
-    subparams = param.subparam_params.all()
+    subparams = param.subparam_params.all().filter(for_formula=True)
+    len_1 = len(comp.competition_criterions.all().filter(param__isnull=False))
+    len_2 = len(comp.competition_params.all())
+    print(len_1, len_2)
+    next = True
     if request.method == "POST":
-        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True,
+                      param=param)
         c.save()
-        return redirect("fls:list_comp")
-    return render(request, 'fls/add_criteria_for_single_param.html', {"subparams": subparams, "id": id, "p": param})
+        len_1 += 1
+        if len_1 == len_2:
+            return redirect("fls:list_comp")
+    if (len_2 - len_1) == 1:
+        next = False
+    return render(request, 'fls/add_criteria_for_single_param.html',
+                  {"subparams": subparams, "id": id, "p": Param.objects.get(id=comp.get_param_for_criteria()),
+                   "next": next})
+
+
+@login_required(login_url="login/")
+def calculate_result(request, id):
+    user = CustomUser.objects.get(user=request.user)
+    comp = Competition.objects.get(id=id)
+    if user.is_organizer():
+        if comp.method_of_estimate == 1:
+            # проходимся по всем заявкам, и берем среднее по результатам жюри, затем проставление данных оценок в заявку
+            pass
+        elif comp.method_of_estimate == 4:
+            # для всех params заявки высчитываем соответсвующую формулу и умножаем на вес (параметра)  и складываем результат пишем в заявку
+            pass
+        elif comp.method_of_estimate == 5:
+            # для каждой формулы критерия подсчитываем на основе subpapramsvalue и сохраняем, после по итоговой формуле подставляем значения критериев, результат пишем в заявку
+            pass
+    return redirect("fls:get_comp", id)
 
 
 @login_required(login_url="login/")
@@ -84,17 +112,19 @@ def comp(request):
                         name_sub = request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "name")]
                         type = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "type_subparam")])
                         print(type)
-                        flag = bool(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "for_formula")])
+                        flag = False if "false" == request.POST[
+                            "%s[%s][%s]" % ((key % (i, "subparams")), k, "for_formula")] else True
+                        print(flag)
                         sub_p = SubParam(param=p, name=name_sub, type=type, for_formula=flag)
                         sub_p.save()
                         print(name_sub)
                         k += 1
                     except Exception as e:
-                        traceback.print_exc()
+                        print(e)
                         break
                 i += 1
             except Exception as e:
-                traceback.print_exc()
+                print(e)
                 break
 
     return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
@@ -525,12 +555,12 @@ def comp_reqs(request):
     return JsonResponse(data)
 
 
-
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
     comp.status = int(val)
     comp.save()
     return redirect("fls:get_comp", id)
+
 
 def coherence_page(request):
     comps = Competition.objects.all()

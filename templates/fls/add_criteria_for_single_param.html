@@ -20,6 +20,13 @@
 {% block url_form %}
     {% url 'fls:criteria_for_single_param' id p.id %}
 {% endblock %}
+{% block name_button %}
+    {% if next %}
+        Сохранить и перейти к следующему параметру
+    {% else %}
+        Завершить настройку критериев для параметров
+    {% endif %}
+{% endblock %}
 {% block cycle_popup %}
     {% for sb in subparams %}
         <div class="form-check">

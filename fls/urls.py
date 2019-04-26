@@ -35,4 +35,5 @@ urlpatterns = [
     url(r'^comp/(?P<id>\d+)/change_status/(?P<val>\d+)$', change_status, name="change_status"),
     url(r'^coherence/$', coherence_page, name="coherpage"),
     url(r'^coher/$', coherence, name="coher"),
+    url(r'^comp/(?P<id>\d+)/calculate_result$', calculate_result, name="calculate_result"),
 ]

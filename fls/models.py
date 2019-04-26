@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
 
 YEAR_CHOICES = (
     (1, '1'),
@@ -77,7 +76,7 @@ class Competition(models.Model):
         return self.name
 
     def get_params(self):
-        return Param.objects.filter(competition=self)
+        return self.competition_params.all()
 
     def get_course(self):
         for r in YEAR_CHOICES:
@@ -95,6 +94,17 @@ class Competition(models.Model):
         size = len(Request.objects.filter(competition=self))
         print(size)
         return size
+
+    def not_exists_criteria(self):
+        return len(self.competition_criterions.all()) == 0
+
+    def get_param_for_criteria(self):
+        criteria = self.competition_criterions.all().values_list('param', flat=True)
+        [print(c) for c in criteria]
+        for p in self.competition_params.all():
+            if p.id not in criteria:
+                return p.id
+        return -1
 
 
 class Group(models.Model):
@@ -143,6 +153,7 @@ class Request(models.Model):
     participant = models.ForeignKey(CustomUser, related_name='custom_user', on_delete=models.CASCADE,
                                     blank=True, null=True, verbose_name='Участник')
 
+    value = models.FloatField(default=0)
     # rang = models.IntegerField(default=0)
     # result_value = models.FloatField(default=0)
 
@@ -162,6 +173,7 @@ class RequestEstimation(models.Model):
     value = models.FloatField()
     rank = models.IntegerField(null=True, blank=True)
 
+    # я так понимаю эта формула не нужна
     # для различных формул объединения жюри в случае методов 1,2
     jury_formula = models.ForeignKey('CalcEstimationJury', related_name='formula_request_values', null=True, blank=True,
                                      on_delete=models.CASCADE)
@@ -311,7 +323,7 @@ class UploadData(models.Model):
 class Criterion(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_criterions', on_delete=models.CASCADE,
                                     blank=True, null=True)
-    name = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=20)
     formula = models.TextField()
 
     # True - итоговая формула (указываются id критериев)
@@ -322,6 +334,9 @@ class Criterion(models.Model):
     # это критерий общий или для ранжированных вычислений
     param = models.ForeignKey(Param, related_name='criterion_params', on_delete=models.CASCADE,
                               blank=True, null=True, verbose_name="Критерий определенного параметра")
+
+    class Meta:
+        unique_together = (('competition', 'name'),)
 
     def __str__(self):
         return self.name
