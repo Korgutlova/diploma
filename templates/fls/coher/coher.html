@@ -48,6 +48,15 @@
                 <option value="1">Ручная оценка</option>
                 <option value="3">Сравнение параметров</option>
             </select>
+            <br>
+            <br>
+            <label for="clusts">Количество групп:</label>
+            <br>
+            <select name="clusts" id="clusts" class="selectpicker">
+                {% for i in jury_count %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
 
             {#    <button class="btn btn-success" id="send">Посмотреть</button>#}
 
@@ -68,10 +77,11 @@
     const fill_coefs = function () {
         comp_id = $('#comp').val();
         type = $('#type').val();
+        clusts = $('#clusts').val();
         $.ajax({
             url: '/fls/coher/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type},
+            data: {'comp': comp_id, 'type': type, 'clusts': clusts},
             dataType: 'json',
             success: function (data) {
                 $("#put").html(data.est)

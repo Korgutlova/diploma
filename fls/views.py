@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests, make_ranks, \
-    dist_kemeni
+    dist_kemeni, clusterization
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
     STATUSES, SubParamValue, UploadData
@@ -564,22 +564,23 @@ def change_status(request, id, val):
 
 def coherence_page(request):
     comps = Competition.objects.all()
-    return render(request, 'fls/coher/coher.html', {'comps': comps})
+    jury_count = list(range(1, CustomUser.objects.filter(role=2).count()))
+    return render(request, 'fls/coher/coher.html', {'comps': comps, 'jury_count': jury_count})
 
 
 def coherence(request):
-    comp_id, type = int(request.GET['comp']), int(request.GET['type'])
+    comp_id, type, clusts = int(request.GET['comp']), int(request.GET['type']), int(request.GET['clusts'])
     reqs = Competition.objects.get(id=comp_id).competition_request.all()
     jurys = CustomUser.objects.filter(role=2)
+    jury_ranks = {}
+    for jury in jurys:
+        jury_ranks[jury] = make_ranks(
+            [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='average',
+            s_m=True)
+    req_values = {}
+    for idx, req in enumerate(reqs):
+        req_values[req] = sum([jury_ranks[jury][0][idx] for jury in jurys])
     try:
-        jury_ranks = {}
-        for jury in jurys:
-            jury_ranks[jury] = make_ranks(
-                [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='average',
-                s_m=True)
-        req_values = {}
-        for idx, req in enumerate(reqs):
-            req_values[req] = sum([jury_ranks[jury][0][idx] for jury in jurys])
         common_rank_req_sum_avg = sum(list(req_values.values())) / len(reqs)
         dev_sum = 0
         for req in req_values:
@@ -590,9 +591,31 @@ def coherence(request):
         kendall_coef = round((12 * dev_sum / ((len(jurys) ** 2) * (len(reqs) ** 3 - len(reqs)) - len(jurys) * sum_T)),
                              2)
     except:
-        coefs = {}
         kendall_coef = None
+
+    jury_rankings = [make_ranks(
+        [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='min') for
+        jury in jurys]
+    labels, centroids = clusterization(jury_rankings, clusts)
+    clusters_jury = {}
+    clusters = {}
+    for label in set(labels):
+        clusters[label] = []
+        clusters_jury[label] = []
+        clusters[label].append(centroids[label])
+    for idx, label in enumerate(labels):
+        clusters[label].append(jury_rankings[idx])
+        clusters_jury[label].append(jurys[idx])
+    req_ranks = {}
+    for idx, req in enumerate(reqs):
+        req_ranks[req.participant] = []
+        for label in clusters:
+            label_values = []
+            for ranking in clusters[label]:
+                label_values.append(ranking[idx])
+            req_ranks[req.participant].append(label_values)
     data = {'est': render_to_string('fls/coher/table.html',
-                                    {'jurys': jurys, 'kendall_coef': kendall_coef})}
+                                    {'req_ranks': req_ranks, 'kendall_coef': kendall_coef,
+                                     'clusters_jury': clusters_jury})}
 
     return JsonResponse(data)

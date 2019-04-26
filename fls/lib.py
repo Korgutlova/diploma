@@ -68,75 +68,6 @@ custom_parse_formula("5*a_11 + func1(a_23, a_21)/log(a_31)")
 
 
 # parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
-# perms = list(permutations(range(1, len(rankings[0]) + 1)))
-# dist_sums = []
-# for perm in perms:
-#     sum = 0
-#     for ranking in rankings:
-#         sum += dist_kemeni(perm, ranking)
-#     dist_sums.append(sum)
-#
-# return perms[dist_sums.index(min(dist_sums))]
-
-
-def median_kemeni(rankings):
-    n_reqs = len(rankings[0])
-    n_jury = len(rankings)
-    matrixes = [make_matrix(ranking) for ranking in rankings]
-    loss_matrix = np.empty(shape=(n_reqs, n_reqs))
-    indexes = list(range(0, n_reqs))
-    ranks = []
-    for i in range(n_reqs):
-        for j in range(n_reqs):
-            loss_matrix[i, j] = 0
-            for k in range(n_jury):
-                loss_matrix[i, j] += 1 - matrixes[k][i, j]
-    pen_matrix = deepcopy(loss_matrix)
-    while not pen_matrix.size == 0:
-        row_sums = np.sum(pen_matrix, axis=1)
-        idx = np.argmin(row_sums)
-        ranks.append(indexes[int(idx)])
-        indexes.pop(int(idx))
-        pen_matrix = np.delete(pen_matrix, idx, axis=0)
-        pen_matrix = np.delete(pen_matrix, idx, axis=1)
-    for k in range(n_reqs - 2, -1, -1):
-        if loss_matrix[ranks[k], ranks[k + 1]] > loss_matrix[ranks[k + 1], ranks[k]]:
-            ranks[k], ranks[k + 1] = ranks[k + 1], ranks[k]
-    median = np.empty(shape=(n_reqs))
-    for i, elem in enumerate(ranks):
-        median[elem] = i + 1
-    print('result', median)
-    return list(median)
-
-
-def dist_kemeni(ranking1, ranking2):
-    matrix1, matrix2 = make_matrix(ranking1), make_matrix(ranking2)
-    result_matrix = matrix1 - matrix2
-    return int(np.sum(np.absolute(result_matrix)))
-
-
-def make_matrix(ranking):
-    length = len(ranking)
-    matrix = np.empty(shape=(length, length))
-    for i in range(length):
-        for j in range(i, length):
-            if ranking[i] < ranking[j]:
-                matrix[i, j] = 1
-                matrix[j, i] = -1
-            elif ranking[i] == ranking[j]:
-                matrix[i, j] = 0
-                matrix[j, i] = 0
-            else:
-                matrix[i, j] = -1
-                matrix[j, i] = 1
-    return matrix
-
-
-def make_ranks(values, method='min', s_m=False):
-    ranks = list(rankdata([-1 * e for e in values], method=method))
-    same_groups_count = [ranks.count(rank) for rank in set(ranks) if ranks.count(rank) > 1]
-
-    return (ranks, same_groups_count) if s_m else ranks
 
 
 # объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
@@ -217,15 +148,64 @@ def process_request(request_id, union_types=(1, 3)):
         union_request_ests(req, jury_formula, union_types)
 
 
-# process_requests(Competition.objects.get(id=8))
+def median_kemeni(rankings):
+    n_reqs = len(rankings[0])
+    n_jury = len(rankings)
+    matrixes = [make_matrix(ranking) for ranking in rankings]
+    loss_matrix = np.empty(shape=(n_reqs, n_reqs))
+    indexes = list(range(0, n_reqs))
+    ranks = []
+    for i in range(n_reqs):
+        for j in range(n_reqs):
+            loss_matrix[i, j] = 0
+            for k in range(n_jury):
+                loss_matrix[i, j] += 1 - matrixes[k][i, j]
+    pen_matrix = deepcopy(loss_matrix)
+    while not pen_matrix.size == 0:
+        row_sums = np.sum(pen_matrix, axis=1)
+        idx = np.argmin(row_sums)
+        ranks.append(indexes[int(idx)])
+        indexes.pop(int(idx))
+        pen_matrix = np.delete(pen_matrix, idx, axis=0)
+        pen_matrix = np.delete(pen_matrix, idx, axis=1)
+    for k in range(n_reqs - 2, -1, -1):
+        if loss_matrix[ranks[k], ranks[k + 1]] > loss_matrix[ranks[k + 1], ranks[k]]:
+            ranks[k], ranks[k + 1] = ranks[k + 1], ranks[k]
+    median = np.empty(shape=(n_reqs))
+    for i, elem in enumerate(ranks):
+        median[elem] = i + 1
+    return list(map(int, median))
 
-# print(dist_kemeni([3, 4, 2, 1], [1, 2, 4, 3]))
 
-# print(median_kemeni([[1, 3, 2], [2, 1, 3], [3, 1, 2]]))
+def dist_kemeni(ranking1, ranking2):
+    matrix1, matrix2 = make_matrix(ranking1), make_matrix(ranking2)
+    result_matrix = matrix1 - matrix2
+    return int(np.sum(np.absolute(result_matrix)))
 
-# print(make_ranks([3, 1, 2, 2], method='average', s_m=True))
 
-# print(make_matrix([1, 2.5, 2.5, 3]))
+def make_matrix(ranking):
+    length = len(ranking)
+    matrix = np.empty(shape=(length, length))
+    for i in range(length):
+        for j in range(i, length):
+            if ranking[i] < ranking[j]:
+                matrix[i, j] = 1
+                matrix[j, i] = -1
+            elif ranking[i] == ranking[j]:
+                matrix[i, j] = 0
+                matrix[j, i] = 0
+            else:
+                matrix[i, j] = -1
+                matrix[j, i] = 1
+    return matrix
+
+
+def make_ranks(values, method='min', s_m=False):
+    ranks = list(rankdata([-1 * e for e in values], method=method))
+    same_groups_count = [ranks.count(rank) for rank in set(ranks) if ranks.count(rank) > 1]
+
+    return (ranks, same_groups_count) if s_m else ranks
+
 
 def distance(elem1, elem2):
     return dist_kemeni(elem1, elem2)
@@ -239,7 +219,15 @@ def same(prev, pres):
 
 
 def define_centers(dataset, n):
-    return [dataset[i] for i in range(n)]
+    centers = [dataset[0]]
+    for i in range(1, n):
+        dist_list = []
+        for ranking in dataset:
+            dist = [distance(ranking, center) for center in centers]
+            min_dist = min(dist)
+            dist_list.append(min_dist)
+        centers.append(dataset[dist_list.index(max(dist_list))])
+    return centers
 
 
 def clusterization(dataset, n_clusters):
@@ -260,22 +248,17 @@ def clusterization(dataset, n_clusters):
                 if num_label == i:
                     cluster_rankings.append(dataset[k])
             centroids[i] = median_kemeni(cluster_rankings)
-    print(labels)
-
-
-rankings = [
-    [1, 3, 2, 4, 6, 5, 7],
-    [3, 2, 1, 4, 5, 6, 7],
-    [6, 4, 3, 5, 1, 2, 7],
-    [1, 2, 3, 4, 6, 5, 7],
-    [3, 2, 1, 5, 4, 6, 7],
-    [6, 4, 3, 1, 5, 2, 7],
-    [6, 4, 3, 5, 2, 1, 7]
-
-]
-
-clusterization(rankings, 3)
+    return labels, centroids
+#
+# rankings = [
+#     [6, 4, 3, 1, 5, 2, 7],
+#     [6, 4, 3, 5, 2, 1, 7],
+#     [1, 3, 2, 4, 6, 5, 7],
+#     [1, 2, 3, 4, 6, 5, 7],
+#     [3, 2, 1, 4, 5, 6, 7],
+#     [6, 4, 3, 5, 1, 2, 7],
+#     [3, 2, 1, 5, 4, 6, 7],
+#
+# ]
 
 # clusterization(rankings, 3)
-
-# median_kemeni(rankings)
