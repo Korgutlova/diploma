@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %}
-    <h3><b>Конкурс: </b>{{ comp.name }}</h3>
+    <h3 xmlns="http://www.w3.org/1999/html"><b>Конкурс: </b>{{ comp.name }}</h3>
     <hr>
     <p><b>Курс: </b> {{ comp.get_course }}</p>
     <p><b>Описание </b> <br>{{ comp.description }}</p>
@@ -17,14 +17,48 @@
         {% endfor %}
     </ul>
     {% if  comp.get_count  == 0 %}
-        {% if user.is_participant %}
+        {% if user.is_participant  and comp.status == 2 %}
             <h4>На конкурс еще не подано ни одной заявки! Будь первым!</h4>
         {% endif %}
     {% else %}
-        <h4>На конкурс уже подано <b>{{ comp.get_count }} </b> заявки !</h4>
+        <h4>На конкурс подано <b>{{ comp.get_count }} </b> заявки !</h4>
     {% endif %}
     <br>
-    {% if user.is_participant %}
+    {% if user.is_participant and comp.status == 2 %}
         <a href="{% url 'fls:load_request' comp.id %}" class="btn btn-success"> Участвовать</a>
+    {% endif %}
+    {% if user.is_organizer %}
+        {% if comp.status == 1 %}
+            {% if comp.method_of_estimate == 5 %}
+                <a href="{% url 'fls:criteria' comp.id %}" class="btn btn-success">Добавить критерии</a>
+                <a href="{% url 'fls:result_criteria' comp.id %}"
+                   class="btn btn-success {% if comp.not_exists_criteria %} disabled {% endif %}">Итоговая формула
+                    подсчета критериев</a>
+            {% endif %}
+            {% if comp.method_of_estimate == 4 %}
+                {% with param_id=comp.get_param_for_criteria %}
+                    <a href="{% if param_id == -1 %}#{% else %}{% url 'fls:criteria_for_single_param' comp.id param_id %}{% endif %}"
+                       class="btn btn-success  {% if param_id == -1 %} disabled{% endif %}">Добавить
+                        критерии</a>
+                {% endwith %}
+            {% endif %}
+            <h4><a href="{% url 'fls:change_status' comp.id 2 %}"> Поменять статус конкурса на Открыт</a></h4>
+        {% endif %}
+        {% if comp.status == 2 %}
+            <h4><a href="{% url 'fls:change_status' comp.id 3 %}"> Поменять статус конкурса на Оценивание</a></h4>
+        {% endif %}
+        {% if comp.status == 3 %}
+            {% if comp.method_of_estimate == 4 or comp.method_of_estimate == 1 %}
+                <h3>Информация о голосовании жюри</h3>
+                <h6>Тут будет ссылка</h6>
+            {% endif %}
+            <a href="{% url 'fls:calculate_result' comp.id %}" class="btn btn-success">Подсчитать результаты</a>
+            <h3>Ссылка на просмотр предварительных результатов</h3>
+            <h4><a href="{% url 'fls:change_status' comp.id 4 %}"> Поменять статус конкурса на Закрыт</a></h4>
+        {% endif %}
+        {% if comp.status == 4 %}
+            <a href="{% url 'fls:calculate_result' comp.id %}" class="btn btn-success">Подсчитать результаты</a>
+            <h4><a href="#"> Ссылка на просмотр результатов (в будущем будет)</a></h4>
+        {% endif %}
     {% endif %}
 {% endblock %}

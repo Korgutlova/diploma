@@ -4,10 +4,10 @@
 {% block content %}
     <h3>Создание конкурса</h3>
     <hr>
-    <form name="form" action="{% url 'fls:comp' %}" method="post">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-xs-6">
+    <div class="row">
+        <div class="col-xs-4">
+            <form id="form">
+                {% csrf_token %}
                 <div style="width: 300px">
                     {% for field in form %}
                         <div class="form-group{% if field.errors %} has-error{% endif %}">
@@ -21,62 +21,194 @@
                     {% for error in form.non_field_errors %}
                         <p class="help-block">{{ error }}</p>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary labelText">
-                                <span>Сохранить</span>
-                    </button>
                 </div>
-            </div>
-            <div class="col-xs-6">
-                <h3>Создание параметров</h3>
-                <hr>
-
-                <div class="param" id="param_1">
+            </form>
+            <button id="submit" class="btn btn-primary labelText">
+                <span>Сохранить</span>
+            </button>
+        </div>
+        <div class="col-xs-8">
+            <h3>Конструирование заявки</h3>
+            <div class="param" id="param_1">
+                <div class="col-xs-12">
+                    <hr>
                     <h4>Параметр </h4>
-                    <label>Название *
-                        <input class="form-control" type="text" name="text">
-                    </label><br>
-                    <label>Описание
-                        <textarea class="form-control rounded-0" rows="5" name="description"></textarea>
-                    </label><br>
-                    <label>Ограничение сверху
-                        <input class="form-control" type="text" name="max">
-                    </label>
-                    <br>
-                    <a href="#" class="btn btn-danger delete_param" role="button"><span>Удалить параметр</span></a>
-                    <br>
+                    <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
+                       role="button">&times;</a>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Название
+                                <input class="form-control" type="text" name="text">
+                            </label><br>
+                        </div>
+                        <div class="form-group">
+                            <label>Описание
+                                <textarea class="form-control rounded-0" rows="3" cols="70" name="description"></textarea>
+                            </label>
+                        </div>
+                    </div>
                     <hr>
                 </div>
-                <a href="#" class="btn btn-info add_param" role="button"><span>Добавить параметр</span></a>
-                <br>
-                <hr>
+                <div class="col-xs-12">
+                    <h5>Подпараметры </h5>
+                    <a href="#" style="color: #1e7e34;font-size: 24px">
+                        <span class="glyphicon glyphicon-plus add_subparam"></span>
+                    </a>
+                </div>
+                <div class="subparam" id="subparam_1">
+                    <a href="#" class="close delete_subparam" style="color: red;font-size: 34px;" aria-label="Close"
+                       role="button">&times;</a>
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label>Название
+                                <input class="form-control" type="text" id="sub_text">
+                            </label>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Тип данных
+                                <select class="form-control" id="type_subparam">
+                                    {% for t in types %}
+                                        <option value="{{ t | first }}">{{ t | last }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </label>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="for_formula">
+                                <label class="form-check-label" for="gridCheck">
+                                    Для формулы
+                                </label>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                    </div>
+                </div>
             </div>
+            <br>
+            <div class="col-xs-12">
+                <a href="#" class="btn btn-info add_param" role="button"><span>Добавить параметр</span></a>
+            </div>
+            <br>
+            <br>
         </div>
-    </form>
+    </div>
 
 {% endblock %}
 {% block script %}
     <script>
         $(document).ready(function () {
+            $.fn.scrollView = function () {
+                return this.each(function () {
+                    $('html, body').animate({
+                        scrollTop: $(this).offset().top
+                    }, 1000);
+                });
+            };
+
             $(".add_param").click(function () {
                 var lastid = $(".param:last").attr("id");
                 var nextindex = Number(lastid.split('_')[1]) + 1;
-                $(".param:last").after(" <div class=\"param\" id=\"param_" + nextindex + "\"></div>");
-                $("#param_" + nextindex).append("<div class=\"param\" id=\"param_1\">\n" +
+                $(".param:last").after("<div class=\"param\" id=\"param_" + nextindex + "\"></div>");
+                $("#param_" + nextindex).append("<div class=\"col-xs-12\">\n" +
+                    "                    <hr>\n" +
                     "                    <h4>Параметр </h4>\n" +
-                    "                    <label>Название *\n" +
-                    "                        <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
-                    "                    </label><br>\n" +
-                    "                    <label>Описание\n" +
-                    "                        <textarea class=\"form-control rounded-0\" rows=\"5\" name=\"description\"></textarea>\n" +
-                    "                    </label><br>\n" +
-                    "                    <label>Ограничение сверху\n" +
-                    "                        <input class=\"form-control\" type=\"text\" name=\"max\">\n" +
-                    "                    </label>\n" +
-                    "                    <br>\n" +
-                    "                    <a href=\"#\" class=\"btn btn-danger delete_param\" role=\"button\"><span\n" +
-                    "                            style=\"font-family: 'Comic Sans MS',monospace\">Удалить параметр</span></a>\n" +
-                    "                    <br>\n" +
-                    "                    <hr>");
+                    "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
+                    "                            </label><br>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group\">\n" +
+                    "                            <label>Описание\n" +
+                    "                                <textarea class=\"form-control rounded-0\" rows=\"3\" cols=\"70\" name=\"description\"></textarea>" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                    <hr>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"col-xs-12\">\n" +
+                    "                    <h5>Подпараметры </h5>\n" +
+                    "                    <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
+                    "                        <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
+                    "                    </a>\n" +
+                    "                </div>");
+
+                var lastid = $(".subparam:last").attr("id");
+                var newindex = Number(lastid.split('_')[1]) + 1;
+                $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
+                $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group col-md-5\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-3\">\n" +
+                    "                            <label>Тип данных\n" +
+                    "                                <select class=\"form-control\" id=\"type_subparam\">\n" +
+                    "                                    {% for t in types %}\n"+
+                        "                                        <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
+                        +
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-4\">\n" +
+                    "                            <div class=\"form-check\">\n" +
+                    "                                <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
+                    "                                <label class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                    Для формулы\n" +
+                    "                                </label>\n" +
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                        <br>\n" +
+                    "                        <br>\n" +
+                    "                    </div>");
+            });
+
+
+            $('.container').on('click', '.add_subparam', function () {
+                var lastid = $(".subparam:last").attr("id");
+                var id = "subparam_" + (Number(lastid.split('_')[1]) + 1);
+                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
+                $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                    "                       role=\"button\">&times;</a>\n" +
+                    "                    <div class=\"form-row\">\n" +
+                    "                        <div class=\"form-group col-md-5\">\n" +
+                    "                            <label>Название\n" +
+                    "                                <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-3\">\n" +
+                    "                            <label>Тип данных\n" +
+                    "                                <select class=\"form-control\" id=\"type_subparam\">\n" +
+                    "                                    {% for t in types %}\n"+
+                        "                                        <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
+                        +
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                        <div class=\"form-group col-md-4\">\n" +
+                    "                            <div class=\"form-check\">\n" +
+                    "                                <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
+                    "                                <label class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                    Для формулы\n" +
+                    "                                </label>\n" +
+                    "                            </div>\n" +
+                    "                        </div>\n" +
+                    "                        <br>\n" +
+                    "                        <br>\n" +
+                    "                    </div>");
+
             });
 
             $('.container').on('click', '.delete_param', function () {
@@ -85,6 +217,52 @@
                     $(this).parent().remove();
                 }
             });
+
+            $('.container').on('click', '.delete_subparam', function () {
+                var id = $(this).parent().parent().attr("id");
+                var total_element = $("#" + id + " .subparam").length;
+                if (total_element !== 1) {
+                    $(this).parent().remove();
+                }
+            });
+
+            $(".container").on('click', '#submit', function () {
+                var data_params = [];
+                var params = $('.param');
+                for (i = 0; i < params.length; i++) {
+                    var subparams = $("#" + $(params[i]).attr("id") + " .subparam");
+                    var data_subparams = [];
+                    for (j = 0; j < subparams.length; j++) {
+                        data_subparams.push({
+                            "name": $(subparams[j]).find("#sub_text").val(),
+                            "type_subparam": $(subparams[j]).find("#type_subparam").val(),
+                            "for_formula": $(subparams[j]).find("#for_formula").is(':checked'),
+                        })
+                    }
+                    var param = {
+                        "name": $(params[i]).find("input").val(),
+                        "description": $(params[i]).find("textarea").val(),
+                        "subparams": data_subparams,
+                    };
+                    data_params.push(param);
+                }
+                var result = {"params": data_params};
+                var array = decodeURI($("#form").serialize()).split("&");
+                for (i = 0; i < array.length; i++) {
+                    var values = array[i].split("=");
+                    result[values[0]] = values[1];
+                }
+                $.ajax({
+                    type: "post",
+                    url: "/fls/comp",
+                    data: result,
+                    success: function (response) {
+                        alert("Success");
+                    }
+                });
+            });
+
+
         });
     </script>
 {% endblock %}

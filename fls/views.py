@@ -1,10 +1,12 @@
+import traceback
 import math
 from operator import itemgetter
 
-import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -13,35 +15,119 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests, make_ranks, \
     dist_kemeni, clusterization
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES
+    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
+    STATUSES, SubParamValue, UploadData
+
+STATUS = ["SubParam", "Criteria", "SingleParam"]
 
 
 @login_required(login_url="login/")
 def criteria(request, id):
     comp = Competition.objects.get(id=id)
+    subparams = []
     params = Param.objects.filter(competition=comp)
+    for p in params:
+        [subparams.append(sb) for sb in p.subparam_params.all().filter(for_formula=True)]
     if request.method == "POST":
-        c = Criterion(name=request.POST["name"], formula=request.POST["formula"], competition=comp)
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"])
         c.save()
-        process_5_method(c)
         return redirect("fls:list_comp")
-    return render(request, 'fls/add_criteria.html', {"params": params, "id": id})
+    return render(request, 'fls/add_criteria.html', {"subparams": subparams, "id": id})
+
+
+@login_required(login_url="login/")
+def result_criteria(request, id):
+    comp = Competition.objects.get(id=id)
+    criteria = Criterion.objects.filter(competition=comp, result_formula=False)
+    if request.method == "POST":
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
+        c.save()
+        return redirect("fls:list_comp")
+    return render(request, 'fls/add_result_criteria.html', {"criteria": criteria, "id": id})
+
+
+@login_required(login_url="login/")
+def criteria_for_single_param(request, id, param_id):
+    comp = Competition.objects.get(id=id)
+    param = Param.objects.get(id=param_id)
+    subparams = param.subparam_params.all().filter(for_formula=True)
+    len_1 = len(comp.competition_criterions.all().filter(param__isnull=False))
+    len_2 = len(comp.competition_params.all())
+    print(len_1, len_2)
+    next = True
+    if request.method == "POST":
+        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True,
+                      param=param)
+        c.save()
+        len_1 += 1
+        if len_1 == len_2:
+            return redirect("fls:list_comp")
+    if (len_2 - len_1) == 1:
+        next = False
+    return render(request, 'fls/add_criteria_for_single_param.html',
+                  {"subparams": subparams, "id": id, "p": Param.objects.get(id=comp.get_param_for_criteria()),
+                   "next": next})
+
+
+@login_required(login_url="login/")
+def calculate_result(request, id):
+    user = CustomUser.objects.get(user=request.user)
+    comp = Competition.objects.get(id=id)
+    if user.is_organizer():
+        if comp.method_of_estimate == 1:
+            # проходимся по всем заявкам, и берем среднее по результатам жюри, затем проставление данных оценок в заявку
+            pass
+        elif comp.method_of_estimate == 4:
+            # для всех params заявки высчитываем соответсвующую формулу и умножаем на вес (параметра)  и складываем результат пишем в заявку
+            pass
+        elif comp.method_of_estimate == 5:
+            # для каждой формулы критерия подсчитываем на основе subpapramsvalue и сохраняем, после по итоговой формуле подставляем значения критериев, результат пишем в заявку
+            pass
+    return redirect("fls:get_comp", id)
 
 
 @login_required(login_url="login/")
 def comp(request):
     form = CompetitionForm()
     if request.method == 'POST':
+        key = "params[%s][%s]"
+        print(request.POST)
         form = CompetitionForm(request.POST)
         if form.is_valid():
+            print("create comp")
             comp = form.save()
+        else:
+            return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
+        i = 0
+        while True:
+            try:
+                name = request.POST[key % (i, "name")]
+                desc = request.POST[key % (i, "description")]
+                p = Param(competition=comp, name=name, description=desc)
+                p.save()
+                print(name)
+                k = 0
+                while True:
+                    try:
+                        name_sub = request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "name")]
+                        type = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "type_subparam")])
+                        print(type)
+                        flag = False if "false" == request.POST[
+                            "%s[%s][%s]" % ((key % (i, "subparams")), k, "for_formula")] else True
+                        print(flag)
+                        sub_p = SubParam(param=p, name=name_sub, type=type, for_formula=flag)
+                        sub_p.save()
+                        print(name_sub)
+                        k += 1
+                    except Exception as e:
+                        print(e)
+                        break
+                i += 1
+            except Exception as e:
+                print(e)
+                break
 
-            for text, desc, max in zip(request.POST.getlist('text'), request.POST.getlist('description'),
-                                       request.POST.getlist('max')):
-                Param.objects.create(name=text, description=desc, max=max, competition=comp)
-            return redirect("fls:list_comp")
-
-    return render(request, 'fls/add_comp.html', {"form": form})
+    return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
 
 
 @login_required(login_url="login/")
@@ -57,19 +143,47 @@ def load_request(request, comp_id):
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
     params = Param.objects.filter(competition=comp)
+    collection = []
+    for p in params:
+        subparams = SubParam.objects.filter(param=p)
+        collection.append({"param": p, "subparams": subparams})
     if request.method == 'POST':
         print(request.POST)
         req = Request(competition=comp, participant=participant)
         req.save()
-        for p in params:
-            pv = ParamValue(request=req, param=p, value=request.POST["value_%s" % p.id],
-                            person_count=request.POST["person_%s" % p.id])
-            pv.save()
+        for c in collection:
+            for subparam in c["subparams"]:
+                sp_val = SubParamValue(subparam=subparam, request=req)
+                sp_val.save()
+                if subparam.type == 3 or subparam.type == 4:
+                    print(request.FILES)
+                    for image, h in zip(request.FILES.getlist("file_%s" % subparam.id), request.POST.getlist(
+                            "header_%s" % subparam.id)):
+                        print(image)
+                        link_file = "%s/%s/%s" % (participant.id, comp_id, image)
+                        fs = FileSystemStorage()
+                        filename = fs.save(link_file, image)
+                        u = UploadData(header_for_file=h, image=filename, sub_param_value=sp_val)
+                        u.save()
+                else:
+                    val = request.POST["sp_%s" % subparam.id]
+                    if subparam.type == 1:
+                        sp_val.value = val
+                    elif subparam.type == 2 or subparam.type == 6:
+                        sp_val.text = val
+                    else:
+                        sp_val.enum_val = val
+                    sp_val.save()
+        # не знаю как сейчас это применяется
+
         # до этого все жюри должны были выставить свои кф и эксперты должны были задать свои формулы
         # объединение по абсолютным оценкам происходит в estimate_req со своими условиями
-        process_request(req.id, union_types=(3,))
+
+        # process_request(req.id, union_types=(3,))
         print("saving")
-    return render(request, 'fls/load_request.html', {"params": params, "comp": comp})
+        return redirect("fls:profile")
+
+    return render(request, 'fls/load_request.html', {"comp": comp, "collection": collection})
 
 
 @login_required(login_url="login/")
@@ -128,10 +242,18 @@ def profile(request):
                 view_requests.append(req)
             new_requests = list(set(new_requests) - set(view_requests))
         select_comp = int(comp_id)
-    print(select_comp)
     return render(request, "fls/profile.html",
                   {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
-                   'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp})
+                   'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
+                   'statuses': STATUSES})
+
+
+def ajax_comp_status(request):
+    status = request.GET["status"]
+    comps = Competition.objects.filter(status=status)
+    return JsonResponse(
+        {'est': render_to_string('fls/part_organizer_profile.html', {"org_comps": comps, "statuses": STATUSES,
+                                                                     "selected_status": int(status)})})
 
 
 def login_view(request):
@@ -188,7 +310,15 @@ def get_request(request, id):
     cur_request = Request.objects.get(id=id)
     estimate = EstimationJury.objects.filter(request=cur_request)
     flag = False
-    dict = {'request': cur_request, 'user': CustomUser.objects.get(user=request.user)}
+    arr = []
+    params = Param.objects.filter(competition=cur_request.competition)
+    for p in params:
+        subvalues = []
+        for sb in p.subparam_params.all():
+            sbvalue = SubParamValue.objects.get(subparam=sb, request=cur_request)
+            subvalues.append(sbvalue)
+        arr.append((p, subvalues))
+    dict = {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user)}
     if len(estimate) == 1:
         flag = True
         dict['estimate_id'] = estimate[0].id
@@ -423,6 +553,13 @@ def comp_reqs(request):
     reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
     data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
     return JsonResponse(data)
+
+
+def change_status(request, id, val):
+    comp = Competition.objects.get(id=id)
+    comp.status = int(val)
+    comp.save()
+    return redirect("fls:get_comp", id)
 
 
 def coherence_page(request):

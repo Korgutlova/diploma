@@ -1,0 +1,30 @@
+<div class="col-xl-3">
+    <br>
+    <a href="{% url "fls:comp" %}" class="btn btn-info">Новый конкрус</a>
+    <br>
+    <hr>
+    <h3>Конкурсы</h3>
+    <br>
+    <div class="row form-inline">
+        <div class="col-md-2 my-1">
+            <label for="status">Фильтр</label><select class="form-control" name="status" id="status">
+            {% for s in statuses %}
+                {% with val=s|first %}
+                    <option  {% if selected_status == val %} selected {% endif %}
+                                                             value="{{ val }}">{{ s| last }}</option>
+                {% endwith %}
+            {% endfor %}
+        </select>
+        </div>
+        <div class="col-md-2 my-1">
+            <button id="status_comp" class="btn btn-primary" style="margin-top:15%">
+                <span>Применить</span>
+            </button>
+        </div>
+    </div>
+    <br>
+    {% for c in org_comps %}
+        <hr>
+        <h4><a href="{% url 'fls:get_comp' c.id %}">{{ c.name }} </a></h4>
+    {% endfor %}
+</div>

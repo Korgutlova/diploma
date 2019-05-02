@@ -26,17 +26,24 @@
             </ul>
         </div>
     {% endif %}
+    {% if cust_user.is_organizer %}
+        <div class="part_org">
+            {% include "fls/part_organizer_profile.html" %}
+        </div>
+
+    {% endif %}
     {% if cust_user.is_jury %}
         <hr>
         <h4>Доступные конкурсы</h4>
         <br>
         <form action="{% url 'fls:profile' %}" method="post">
             {% csrf_token %}
-            <select name="comp">
+            <select class="form-control" name="comp">
                 {% for c in comps %}
                     <option {% if select_comp == c.id %} selected {% endif %} value="{{ c.id }}">{{ c.name }}</option>
                 {% endfor %}
             </select>
+            <br>
             <button type="submit" class="btn btn-primary labelText">
                 <span>Применить</span>
             </button>
@@ -68,6 +75,23 @@
     <script>
         $("#my_requests").click(function () {
             $(".requests").show();
+        });
+
+        $(document).on('click', '#status_comp', function () {
+            $.ajax({
+                type: "get",
+                url: "/fls/ajax_comp_status",
+                data: {"status": $("#status").val()},
+                success: function (response) {
+                    $('.part_org').html(response.est);
+                },
+                error: function () {
+                    alert("error");
+                },
+                complete: function (response) {
+
+                }
+            });
         });
     </script>
 {% endblock %}
