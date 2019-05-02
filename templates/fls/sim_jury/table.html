@@ -3,9 +3,9 @@
 <thead class="thead thead-light">
 <tr>
     <th style="width: 50px">Участник:</th>
-    {% for param in params %}
-        <th style="width: 50px">{{ param }}</th>
-    {% endfor %}
+{#    {% for param in params %}#}
+{#        <th style="width: 50px">{{ param }}</th>#}
+{#    {% endfor %}#}
     <th style="width: 50px" colspan="2">{{ slt_jury }}</th>
     {% if jurys %}
         {% for jury in jurys %}
@@ -21,9 +21,9 @@
 {% for est_name, values in ests.items %}
     <tr>
         <td>{{ est_name }}</td>
-        {% for param_value in values.0 %}
-            <td>{{ param_value }}</td>
-        {% endfor %}
+{#        {% for param_value in values.0 %}#}
+{#            <td>{{ param_value }}</td>#}
+{#        {% endfor %}#}
         {% for jury_value, jury_rank in values.1 %}
             <td class="key_est" style="background-color: #4cae4c">{{ jury_value }}</td>
             <td class="key_rank" style="background-color: #5bc0de">{{ jury_rank }}</td>
@@ -41,10 +41,10 @@
 
 
 <tr style="background-color: greenyellow">
-    <td>Расстояние</td>
-    {% for param in params %}
-        <th></th>
-    {% endfor %}
+    <td>Схожесть</td>
+{#    {% for param in params %}#}
+{#        <th></th>#}
+{#    {% endfor %}#}
     <td></td>
     <td></td>
     {% for diff in diffs %}
