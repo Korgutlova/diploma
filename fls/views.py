@@ -1,3 +1,6 @@
+import numpy as np
+
+import cexprtk
 import traceback
 import math
 from operator import itemgetter
@@ -17,8 +20,10 @@ from fls.lib import parse_formula, process_3_method, process_5_method, process_r
 from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
     CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
     STATUSES, SubParamValue, UploadData
+from py_expression_eval import Parser
 
 STATUS = ["SubParam", "Criteria", "SingleParam"]
+parser = Parser()
 
 
 @login_required(login_url="login/")
@@ -69,6 +74,89 @@ def criteria_for_single_param(request, id, param_id):
                    "next": next})
 
 
+def average(*args):
+    return np.average(args)
+
+
+def summa(*args):
+    return np.sum(args)
+
+
+def calculate_avg_request(comp):
+    pass
+
+
+def calculate_result_for_ranking(comp):
+    pass
+
+
+def get_vars_and_funcs(formula):
+    print(formula)
+    vars_func = parser.parse(formula).variables()
+    print(vars_func)
+    vars = list(filter(lambda x: x.find('_') != -1, vars_func))
+    print(vars)
+    funcs = list(filter(lambda x: x.find('_') == -1, vars_func))
+    print(funcs)
+    return vars, funcs
+
+
+def execute_formula(array, funcs, formula):
+    st = cexprtk.Symbol_Table(array)
+    for func in funcs:
+        st.functions[func] = globals()[func]
+    calc_exp = cexprtk.Expression(formula, st)
+    return calc_exp()
+
+
+def calculate_result_criteria(comp):
+    requests = comp.competition_request.all()
+    criteria = comp.competition_criterions.all().filter(result_formula=False)
+    result_criteria = comp.competition_criterions.all().get(result_formula=True)
+    for c in criteria:
+        vars, funcs = get_vars_and_funcs(c.formula)
+        for r in requests:
+            array = {}
+            for v in vars:
+                id = int(v[2:])
+                print(id)
+                subparam = SubParam.objects.get(id=id)
+                print(subparam)
+                spv = SubParamValue.objects.get(subparam=subparam, request=r)
+                print(spv)
+                if subparam.type == 1:
+                    array[v] = spv.value
+                elif subparam.type == 5:
+                    array[v] = spv.enum_val
+                else:
+                    print("Неверный формат")
+            result = execute_formula(array, funcs, c.formula)
+            cv = CriterionValue.objects.filter(criterion=c, request=r)
+            if cv.exists():
+                cv[0].value = result
+                cv[0].save()
+            else:
+                cv = CriterionValue(criterion=c, request=r, value=result)
+                cv.save()
+            print("result %s" % result)
+
+    print("result criteria %s " % result_criteria.formula)
+    vars, funcs = get_vars_and_funcs(result_criteria.formula)
+    for r in requests:
+        array = {}
+        for v in vars:
+            id = int(v[2:])
+            print(id)
+            criterion = Criterion.objects.get(id=id)
+            print(criterion)
+            cv = CriterionValue.objects.get(request=r, criterion=criterion)
+            array[v] = cv.value
+        result = execute_formula(array, funcs, result_criteria.formula)
+        r.result_value = result
+        r.save()
+    print("done")
+
+
 @login_required(login_url="login/")
 def calculate_result(request, id):
     user = CustomUser.objects.get(user=request.user)
@@ -76,13 +164,13 @@ def calculate_result(request, id):
     if user.is_organizer():
         if comp.method_of_estimate == 1:
             # проходимся по всем заявкам, и берем среднее по результатам жюри, затем проставление данных оценок в заявку
-            pass
+            calculate_avg_request(comp)
         elif comp.method_of_estimate == 4:
+            calculate_result_for_ranking(comp)
             # для всех params заявки высчитываем соответсвующую формулу и умножаем на вес (параметра)  и складываем результат пишем в заявку
-            pass
         elif comp.method_of_estimate == 5:
+            calculate_result_criteria(comp)
             # для каждой формулы критерия подсчитываем на основе subpapramsvalue и сохраняем, после по итоговой формуле подставляем значения критериев, результат пишем в заявку
-            pass
     return redirect("fls:get_comp", id)
 
 

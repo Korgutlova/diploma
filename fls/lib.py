@@ -46,29 +46,6 @@ def parse_formula(formula, params_values):
 
 parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
 
-MAIN_DICTIONARY = {"a_11": 2, "a_23": 8, "a_21": 7, "a_31": 5}
-
-
-def custom_parse_formula(formula):
-    vars_func = parser.parse(formula).variables()
-    print(vars_func)
-    vars = list(filter(lambda x: x.find('_') != -1, vars_func))
-    # исходя из id будет вытягиваться соответсвующий subпараметр value заявки и формироваться такой словарь MAIN_DICTIONARY
-    funcs = list(filter(lambda x: x.find('_') == -1, vars_func))
-    print(funcs)
-    st = cexprtk.Symbol_Table(MAIN_DICTIONARY)
-    for func in funcs:
-        st.functions[func] = globals()[func]
-    calc_exp = cexprtk.Expression(formula, st)
-    print(calc_exp())
-    return calc_exp()
-
-
-custom_parse_formula("5*a_11 + func1(a_23, a_21)/log(a_31)")
-
-
-# parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
-
 
 # объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
 # formula_for_jury - объект CalcEstimationJury

@@ -155,7 +155,7 @@ class Request(models.Model):
 
     value = models.FloatField(default=0)
     # rang = models.IntegerField(default=0)
-    # result_value = models.FloatField(default=0)
+    result_value = models.FloatField(default=0)
 
     def __str__(self):
         return "Заявка %s - %s" % (self.participant, self.competition.name)
