@@ -14,8 +14,7 @@ django.setup()
 
 from py_expression_eval import Parser
 
-from fls.models import CriterionValue, ParamValue, Request, CustomUser, WeightParamJury, EstimationJury, \
-    RequestEstimation, Competition
+from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition
 
 parser = Parser()
 
@@ -45,107 +44,6 @@ def parse_formula(formula, params_values):
 
 
 parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
-
-MAIN_DICTIONARY = {"a_11": 2, "a_23": 8, "a_21": 7, "a_31": 5}
-
-
-def custom_parse_formula(formula):
-    vars_func = parser.parse(formula).variables()
-    print(vars_func)
-    vars = list(filter(lambda x: x.find('_') != -1, vars_func))
-    # исходя из id будет вытягиваться соответсвующий subпараметр value заявки и формироваться такой словарь MAIN_DICTIONARY
-    funcs = list(filter(lambda x: x.find('_') == -1, vars_func))
-    print(funcs)
-    st = cexprtk.Symbol_Table(MAIN_DICTIONARY)
-    for func in funcs:
-        st.functions[func] = globals()[func]
-    calc_exp = cexprtk.Expression(formula, st)
-    print(calc_exp())
-    return calc_exp()
-
-
-custom_parse_formula("5*a_11 + func1(a_23, a_21)/log(a_31)")
-
-
-# parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
-
-
-# объединение оценок жюри для методов 1,3 по заданной (созданной/обновленной) формуле
-# formula_for_jury - объект CalcEstimationJury
-def union_jury_estimations(formula_for_jury):
-    for req in formula_for_jury.competition.competition_request.all():
-        union_request_ests(req, formula_for_jury)
-
-
-def union_request_ests(req, formula_for_jury, types=(1, 3)):
-    jurys = CustomUser.objects.filter(role=2)
-    for type in types:
-        jury_values = []
-        for jury in jurys:
-            jury_values.append(EstimationJury.objects.get(type=type, jury=jury, request=req).value)
-        common_jury_value = parse_formula(formula_for_jury.formula, jury_values)
-        if not RequestEstimation.objects.filter(request=req, jury_formula=formula_for_jury, type=type).exists():
-            RequestEstimation.objects.create(type=type, request=req, value=common_jury_value,
-                                             jury_formula=formula_for_jury)
-        else:
-            est = RequestEstimation.objects.get(type=type, request=req,
-                                                jury_formula=formula_for_jury)
-            est.value = common_jury_value
-            est.save()
-
-
-# для вызова после создания/обновления попар.кф. у жюри
-def process_3_method(jury, comp):
-    for req in comp.competition_request.all():
-        process_3_method_request(req, jury)
-
-
-def process_3_method_request(req, jury):
-    params = req.competition.competition_params.all()
-    jury_value = 0
-
-    for param in params:
-        param_value = ParamValue.objects.get(param=param, request=req).value
-        weight = WeightParamJury.objects.get(type=3, param=param, jury=jury).value
-        jury_value += weight * param_value
-
-    if EstimationJury.objects.filter(type=3, request=req, jury=jury).exists():
-        est = EstimationJury.objects.get(type=3, request=req, jury=jury)
-        est.value = jury_value
-        est.save()
-    else:
-        EstimationJury.objects.create(type=3, request=req, jury=jury, value=jury_value)
-
-
-# для вызова после создания/обновления Criterion конкурса
-def process_5_method(criterion):
-    for req in criterion.competition.competition_request.all():
-        process_5_method_request(req, criterion)
-
-
-def process_5_method_request(req, criterion):
-    param_values = []
-    for param in criterion.competition.competition_params.all():
-        param_values.append(ParamValue.objects.get(param=param, request=req).value)
-
-    value = parse_formula(criterion.formula, param_values)
-    if CriterionValue.objects.filter(criterion=criterion, request=req).exists():
-        crit_value = CriterionValue.objects.get(criterion=criterion, request=req)
-        crit_value.value = value
-        crit_value.save()
-    else:
-        CriterionValue.objects.create(criterion=criterion, request=req, value=value)
-
-
-# для всех подсчётов после создания/обновления заявки
-def process_request(request_id, union_types=(1, 3)):
-    req = Request.objects.get(id=request_id)
-    for jury in CustomUser.objects.filter(role=2):
-        process_3_method_request(req, jury)
-    for criterion in req.competition.competition_criterions.all():
-        process_5_method_request(req, criterion)
-    for jury_formula in req.competition.competition_formula_for_jury.all():
-        union_request_ests(req, jury_formula, union_types)
 
 
 def median_kemeni(rankings):

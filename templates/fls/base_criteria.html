@@ -19,8 +19,8 @@
     <div class="func">
         <button type="button" class="btn btn-warning" id="max">max</button>
         <button type="button" class="btn btn-warning" id="min">min</button>
-        <button type="button" class="btn btn-warning" id="avg">avg</button>
-        <button type="button" class="btn btn-warning" id="sum">sum</button>
+        <button type="button" class="btn btn-warning" id="average">average</button>
+        <button type="button" class="btn btn-warning" id="summa">summa</button>
     </div>
     <hr>
 
@@ -94,6 +94,7 @@
             var array = [];
             $(document).on('click', '.param', function () {
                 var str = "a_" + $(this).attr("id") + " ";
+                {#var str = $(this).text();#}
                 if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
                     && false === array[array.length - 1].endsWith(") "))) {
                     array.push(str);
@@ -132,6 +133,7 @@
                 var params = [];
                 $.each($("input[name='item']:checked"), function () {
                     params.push("a_" + $(this).attr("id"));
+                    {#params.push($("label[for='" + $(this).attr("id") + "']").text());#}
                     $(this).prop('checked', false);
                 });
                 array.push($("#insert").text() + "(" + params + ") ");

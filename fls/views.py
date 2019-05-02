@@ -1,3 +1,6 @@
+import numpy as np
+
+import cexprtk
 import traceback
 import math
 from operator import itemgetter
@@ -12,27 +15,27 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, process_3_method, process_5_method, process_request, union_request_ests, make_ranks, \
-    dist_kemeni, clusterization
-from fls.models import Param, Competition, Criterion, Group, ParamValue, CustomUser, WeightParamJury, Request, \
-    CriterionValue, ParamResultWeight, RequestEstimation, EstimationJury, METHOD_CHOICES, TYPE_SUBPARAM, SubParam, \
-    STATUSES, SubParamValue, UploadData
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization
+from fls.models import Competition, Criterion, Group, CustomUser, CriterionWeight, Request, \
+    CriterionValue, CriterionWeight, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
+    STATUSES, ParamValue, UploadData, RequestEstimation
+from py_expression_eval import Parser
 
-STATUS = ["SubParam", "Criteria", "SingleParam"]
+parser = Parser()
 
 
 @login_required(login_url="login/")
 def criteria(request, id):
     comp = Competition.objects.get(id=id)
-    subparams = []
-    params = Param.objects.filter(competition=comp)
-    for p in params:
-        [subparams.append(sb) for sb in p.subparam_params.all().filter(for_formula=True)]
+    params = []
+    criteria = Criterion.objects.filter(competition=comp)
+    for c in criteria:
+        [params.append(sb) for sb in c.param_criterion.all().filter(for_formula=True)]
     if request.method == "POST":
         c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"])
         c.save()
         return redirect("fls:list_comp")
-    return render(request, 'fls/add_criteria.html', {"subparams": subparams, "id": id})
+    return render(request, 'fls/add_criteria.html', {"subparams": params, "id": id})
 
 
 @login_required(login_url="login/")
@@ -49,24 +52,107 @@ def result_criteria(request, id):
 @login_required(login_url="login/")
 def criteria_for_single_param(request, id, param_id):
     comp = Competition.objects.get(id=id)
-    param = Param.objects.get(id=param_id)
-    subparams = param.subparam_params.all().filter(for_formula=True)
-    len_1 = len(comp.competition_criterions.all().filter(param__isnull=False))
-    len_2 = len(comp.competition_params.all())
-    print(len_1, len_2)
+    # param = Param.objects.get(id=param_id)
+    # subparams = param.subparam_params.all().filter(for_formula=True)
+    # len_1 = len(comp.competition_criterions.all().filter(param__isnull=False))
+    # len_2 = len(comp.competition_params.all())
+    # print(len_1, len_2)
     next = True
-    if request.method == "POST":
-        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True,
-                      param=param)
-        c.save()
-        len_1 += 1
-        if len_1 == len_2:
-            return redirect("fls:list_comp")
-    if (len_2 - len_1) == 1:
-        next = False
+    # if request.method == "POST":
+    #     c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True,
+    #                   param=param)
+    #     c.save()
+    #     len_1 += 1
+    #     if len_1 == len_2:
+    #         return redirect("fls:list_comp")
+    # if (len_2 - len_1) == 1:
+    #     next = False
+    # реализовать по-другому
     return render(request, 'fls/add_criteria_for_single_param.html',
-                  {"subparams": subparams, "id": id, "p": Param.objects.get(id=comp.get_param_for_criteria()),
-                   "next": next})
+                  {"subparams": [], "id": id, "p": None, "next": next})
+
+
+def average(*args):
+    return np.average(args)
+
+
+def summa(*args):
+    return np.sum(args)
+
+
+def calculate_avg_request(comp):
+    pass
+
+
+def calculate_result_for_ranking(comp):
+    pass
+
+
+def get_vars_and_funcs(formula):
+    print(formula)
+    vars_func = parser.parse(formula).variables()
+    print(vars_func)
+    vars = list(filter(lambda x: x.find('_') != -1, vars_func))
+    print(vars)
+    funcs = list(filter(lambda x: x.find('_') == -1, vars_func))
+    print(funcs)
+    return vars, funcs
+
+
+def execute_formula(array, funcs, formula):
+    st = cexprtk.Symbol_Table(array)
+    for func in funcs:
+        st.functions[func] = globals()[func]
+    calc_exp = cexprtk.Expression(formula, st)
+    return calc_exp()
+
+
+def calculate_result_criteria(comp):
+    requests = comp.competition_request.all()
+    criteria = comp.competition_criterions.all().filter(result_formula=False)
+    result_criteria = comp.competition_criterions.all().get(result_formula=True)
+    for c in criteria:
+        vars, funcs = get_vars_and_funcs(c.formula)
+        for r in requests:
+            array = {}
+            for v in vars:
+                id = int(v[2:])
+                print(id)
+                param = Param.objects.get(id=id)
+                print(param)
+                spv = ParamValue.objects.get(param=param, request=r)
+                print(spv)
+                if param.type == 1:
+                    array[v] = spv.value
+                elif param.type == 5:
+                    array[v] = spv.enum_val
+                else:
+                    print("Неверный формат")
+            result = execute_formula(array, funcs, c.formula)
+            cv = CriterionValue.objects.filter(criterion=c, request=r)
+            if cv.exists():
+                cv[0].value = result
+                cv[0].save()
+            else:
+                cv = CriterionValue(criterion=c, request=r, value=result)
+                cv.save()
+            print("result %s" % result)
+
+    print("result criteria %s " % result_criteria.formula)
+    vars, funcs = get_vars_and_funcs(result_criteria.formula)
+    for r in requests:
+        array = {}
+        for v in vars:
+            id = int(v[2:])
+            print(id)
+            criterion = Criterion.objects.get(id=id)
+            print(criterion)
+            cv = CriterionValue.objects.get(request=r, criterion=criterion)
+            array[v] = cv.value
+        result = execute_formula(array, funcs, result_criteria.formula)
+        r.result_value = result
+        r.save()
+    print("done")
 
 
 @login_required(login_url="login/")
@@ -76,13 +162,13 @@ def calculate_result(request, id):
     if user.is_organizer():
         if comp.method_of_estimate == 1:
             # проходимся по всем заявкам, и берем среднее по результатам жюри, затем проставление данных оценок в заявку
-            pass
-        elif comp.method_of_estimate == 4:
+            calculate_avg_request(comp)
+        elif comp.method_of_estimate == 2:
+            calculate_result_for_ranking(comp)
             # для всех params заявки высчитываем соответсвующую формулу и умножаем на вес (параметра)  и складываем результат пишем в заявку
-            pass
-        elif comp.method_of_estimate == 5:
+        elif comp.method_of_estimate == 3:
+            calculate_result_criteria(comp)
             # для каждой формулы критерия подсчитываем на основе subpapramsvalue и сохраняем, после по итоговой формуле подставляем значения критериев, результат пишем в заявку
-            pass
     return redirect("fls:get_comp", id)
 
 
@@ -97,14 +183,14 @@ def comp(request):
             print("create comp")
             comp = form.save()
         else:
-            return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
+            return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_PARAM})
         i = 0
         while True:
             try:
                 name = request.POST[key % (i, "name")]
                 desc = request.POST[key % (i, "description")]
-                p = Param(competition=comp, name=name, description=desc)
-                p.save()
+                c = Criterion(competition=comp, name=name, description=desc)
+                c.save()
                 print(name)
                 k = 0
                 while True:
@@ -115,7 +201,7 @@ def comp(request):
                         flag = False if "false" == request.POST[
                             "%s[%s][%s]" % ((key % (i, "subparams")), k, "for_formula")] else True
                         print(flag)
-                        sub_p = SubParam(param=p, name=name_sub, type=type, for_formula=flag)
+                        sub_p = Param(criterion=c, name=name_sub, type=type, for_formula=flag)
                         sub_p.save()
                         print(name_sub)
                         k += 1
@@ -127,7 +213,7 @@ def comp(request):
                 print(e)
                 break
 
-    return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_SUBPARAM})
+    return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_PARAM})
 
 
 @login_required(login_url="login/")
@@ -142,23 +228,23 @@ def load_request(request, comp_id):
     if participant.role != 1:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
-    params = Param.objects.filter(competition=comp)
+    criteria = Criterion.objects.filter(competition=comp)
     collection = []
-    for p in params:
-        subparams = SubParam.objects.filter(param=p)
-        collection.append({"param": p, "subparams": subparams})
+    for cr in criteria:
+        params = Param.objects.filter(criterion=cr)
+        collection.append({"param": cr, "subparams": params})
     if request.method == 'POST':
         print(request.POST)
         req = Request(competition=comp, participant=participant)
         req.save()
         for c in collection:
-            for subparam in c["subparams"]:
-                sp_val = SubParamValue(subparam=subparam, request=req)
+            for param in c["subparams"]:
+                sp_val = ParamValue(param=param, request=req)
                 sp_val.save()
-                if subparam.type == 3 or subparam.type == 4:
+                if param.type == 3 or param.type == 4:
                     print(request.FILES)
-                    for image, h in zip(request.FILES.getlist("file_%s" % subparam.id), request.POST.getlist(
-                            "header_%s" % subparam.id)):
+                    for image, h in zip(request.FILES.getlist("file_%s" % param.id), request.POST.getlist(
+                            "header_%s" % param.id)):
                         print(image)
                         link_file = "%s/%s/%s" % (participant.id, comp_id, image)
                         fs = FileSystemStorage()
@@ -166,20 +252,15 @@ def load_request(request, comp_id):
                         u = UploadData(header_for_file=h, image=filename, sub_param_value=sp_val)
                         u.save()
                 else:
-                    val = request.POST["sp_%s" % subparam.id]
-                    if subparam.type == 1:
+                    val = request.POST["sp_%s" % param.id]
+                    if param.type == 1:
                         sp_val.value = val
-                    elif subparam.type == 2 or subparam.type == 6:
+                    elif param.type == 2 or param.type == 6:
                         sp_val.text = val
                     else:
                         sp_val.enum_val = val
                     sp_val.save()
-        # не знаю как сейчас это применяется
 
-        # до этого все жюри должны были выставить свои кф и эксперты должны были задать свои формулы
-        # объединение по абсолютным оценкам происходит в estimate_req со своими условиями
-
-        # process_request(req.id, union_types=(3,))
         print("saving")
         return redirect("fls:profile")
 
@@ -192,36 +273,37 @@ def pairwise_comparison(request, comp_id):
     if jury.role != 2:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
-    params = Param.objects.filter(competition=comp)
+    criteria = Criterion.objects.filter(competition=comp)
     params_modif = {}
-    for p in params:
+    for p in criteria:
         arr = []
-        for f in params:
+        for f in criteria:
             arr.append("%s_%s" % (p.id, f.id))
         params_modif[p.name] = arr
 
     if request.method == 'POST':
+
+        #  это нужно проверить
         print(request.POST)
         values = dict(request.POST)
         del values['csrfmiddlewaretoken']
-        param_rows = {}
+        criterion_rows = {}
         for key in values:
             param_id = key.split('_')[0].replace('rank', '')
-            if not param_id in param_rows:
-                param_rows[param_id] = [0.5]
-            param_rows[param_id].append(float(values[key][0]))
-        elems = sum(param_rows.values(), [])
-        for key in param_rows:
-            param = Param.objects.get(id=int(key))
-            param_value = sum(param_rows[key]) / sum(elems)
-            print(key, param_value, sep=' : ')
-            if not WeightParamJury.objects.filter(type=3, param=param, jury=jury).exists():
-                WeightParamJury.objects.create(type=3, param=param, jury=jury, value=param_value)
+            if not param_id in criterion_rows:
+                criterion_rows[param_id] = [0.5]
+            criterion_rows[param_id].append(float(values[key][0]))
+        elems = sum(criterion_rows.values(), [])
+        for key in criterion_rows:
+            criterion = Criterion.objects.get(id=int(key))
+            criterion_value = sum(criterion_rows[key]) / sum(elems)
+            print(key, criterion_value, sep=' : ')
+            if not CriterionWeight.objects.filter(criterion=criterion).exists():
+                CriterionWeight.objects.create(criterion=criterion, weight_value=criterion_value)
             else:
-                w = WeightParamJury.objects.get(type=3, param=param, jury=jury)
-                w.value = param_value
+                w = CriterionWeight.objects.get(criterion=criterion)
+                w.value = criterion_value
                 w.save()
-        process_3_method(jury, comp)
         return HttpResponse("Ваши оценки параметров сохранены")
     return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp": comp})
 
@@ -282,28 +364,6 @@ def logout_page(request):
     return redirect("fls:login_view")
 
 
-def results(request):
-    comps = Competition.objects.all()
-    # method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
-    return render(request, 'fls/results.html', {'comps': comps})
-
-
-def values(request):
-    comp_id, type = int(request.GET['comp']), int(request.GET['type'])
-    comp = Competition.objects.get(id=comp_id)
-    estimations = EstimationJury.objects.filter(type=type, jury=request.user.custom_user,
-                                                request__competition=comp).order_by('-value')
-    estimation_values = {}
-    params = comp.competition_params.all()
-    for est in estimations:
-        part_name = est.request.participant
-        estimation_values[part_name] = [[], est.value]
-        for param in params:
-            param_value = ParamValue.objects.get(request=est.request, param=param).value
-            estimation_values[part_name][0].append(param_value)
-    data = {'est': render_to_string('fls/rank_table.html', {'ests': estimation_values, 'params': params})}
-    return JsonResponse(data)
-
 
 @login_required(login_url="login/")
 def get_request(request, id):
@@ -311,13 +371,13 @@ def get_request(request, id):
     estimate = EstimationJury.objects.filter(request=cur_request)
     flag = False
     arr = []
-    params = Param.objects.filter(competition=cur_request.competition)
-    for p in params:
+    criteria = Criterion.objects.filter(competition=cur_request.competition)
+    for c in criteria:
         subvalues = []
-        for sb in p.subparam_params.all():
-            sbvalue = SubParamValue.objects.get(subparam=sb, request=cur_request)
+        for sb in c.param_criterion.all():
+            sbvalue = ParamValue.objects.get(param=sb, request=cur_request)
             subvalues.append(sbvalue)
-        arr.append((p, subvalues))
+        arr.append((c, subvalues))
     dict = {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user)}
     if len(estimate) == 1:
         flag = True
@@ -344,9 +404,13 @@ def estimate_req(request, req_id):
         request_estimations_count = EstimationJury.objects.filter(request=req,
                                                                   type=1).count()
         if request_estimations_count == jurys_count:
+            pass
+            #  это нужно проверить
 
-            for jury_formula in req.competition.competition_formula_for_jury.all():
-                union_request_ests(req, jury_formula, types=(1,))
+            #  формулы для requestestimation  уже нет
+
+            # for jury_formula in req.competition.competition_formula_for_jury.all():
+            #     union_request_ests(req, jury_formula, types=(1,))
 
     return redirect("fls:get_request", req_id)
 
@@ -363,73 +427,6 @@ def get_comp(request, id):
     user = CustomUser.objects.get(user=request.user)
     requests = Request.objects.filter(competition=Competition.objects.get(id=id))
     return render(request, 'fls/comp.html', {'comp': comp, 'user': user, 'requests': requests})
-
-
-def common_results(request):
-    comps = Competition.objects.all()
-    jurys = CustomUser.objects.filter(role=2)
-    # method_choices = list(np.array(METHOD_CHOICES)[:, 1])[:-1]
-    return render(request, 'fls/common/results.html', {'comps': comps, 'jurys': jurys})
-
-
-def common_values(request):
-    comp_id, type = int(request.GET['comp']), request.GET['type']
-    print(request.GET['type'])
-    reqs = Request.objects.filter(competition_id=comp_id)
-    params = Competition.objects.get(id=comp_id).competition_params.all()
-    estimation_values = {}
-    if type == 'all':
-        methods = []
-        for t in [1, 3, 5]:
-            methods.append(METHOD_CHOICES[t - 1][1])
-        for req in reqs:
-            part_name = req.participant
-            estimation_values[part_name] = ([], [])
-            for param in params:
-                param_value = ParamValue.objects.get(request=req, param=param).value
-                estimation_values[part_name][0].append(param_value)
-            for t in [1, 3]:
-                estimation_values[part_name][1].append(
-                    round(RequestEstimation.objects.get(type=t, request=req).value, 2))
-                # hc
-            criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
-                request=req).value
-            estimation_values[part_name][1].append(round(criterion_value, 2))
-        data = {'est': render_to_string('fls/common/table.html',
-                                        {'ests': estimation_values, 'params': params, 'methods': methods})}
-    else:
-        jury = request.GET['jury']
-        jurys = CustomUser.objects.filter(role=2) if jury == 'all' else [CustomUser.objects.get(
-            id=int(jury))]
-        one_method = True
-        methods = []
-        for req in reqs:
-            part_name = req.participant
-            estimation_values[part_name] = [[], []]
-            for param in params:
-                param_value = ParamValue.objects.get(request=req, param=param).value
-                estimation_values[part_name][0].append(param_value)
-            if type != '5':
-                for jury in jurys:
-                    estimation_values[part_name][1].append(
-                        round(EstimationJury.objects.get(type=int(type), request=req, jury=jury).value, 2))
-                estimation_values[part_name].append(
-                    round(RequestEstimation.objects.get(type=int(type), request=req).value, 2))
-                print(estimation_values)
-            else:
-                jurys = []
-                one_method = False
-                # methods.append(METHOD_CHOICES[int(type) - 1][1])
-                # print(methods)
-                criterion_value = Criterion.objects.filter(competition_id=comp_id).first().criterion_values.get(
-                    request=req).value
-                estimation_values[part_name][1].append(round(criterion_value, 2))
-        if type == '5':
-            methods.append(METHOD_CHOICES[int(type) - 1][1])
-        data = {'est': render_to_string('fls/common/table.html',
-                                        {'ests': estimation_values, 'params': params,
-                                         'jurys': jurys, 'one_method': one_method, 'methods': methods})}
-    return JsonResponse(data)
 
 
 def similar_page(request):
@@ -475,8 +472,10 @@ def similar_jury(request):
     for i, req in enumerate(reqs):
         part_name = req.participant
         estimation_values[part_name] = ([], [])
-        estimation_values[part_name][0].extend(
-            ParamValue.objects.get(request=req, param=param).value for param in params)
+        # это нужно проверить
+
+        # estimation_values[part_name][0].extend(
+        #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].append((
             round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req).value, 2), slt_ests[i]))
         estimation_values[part_name][1].extend(
@@ -507,8 +506,11 @@ def metcomp(request):
     for req in reqs:
         part_name = req.participant
         estimation_values[part_name] = [[], []]
-        estimation_values[part_name][0].extend(
-            ParamValue.objects.get(request=req, param=param).value for param in params)
+
+        # это нужно проверить
+
+        # estimation_values[part_name][0].extend(
+        #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].extend(
             round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0]).value, 2) for tp in methods)
         diff = round((estimation_values[part_name][1][0] - estimation_values[part_name][1][1]), 2)
@@ -529,7 +531,9 @@ def deviation(request):
     comp_id, type, req_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs'])
     params = Competition.objects.get(id=comp_id).competition_params.all()
     req = Request.objects.get(id=req_id)
-    params_values = {param.name: ParamValue.objects.get(request=req, param=param).value for param in params}
+    #  это нужно проверить
+    params_values = []
+    # params_values = {param.name: ParamValue.objects.get(request=req, param=param).value for param in params}
     common_value = round(RequestEstimation.objects.get(request=req, type=type).value, 2)
     jury_est_values = {}
     jurys = CustomUser.objects.filter(role=2)
@@ -540,7 +544,7 @@ def deviation(request):
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
     avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
-    print(params_values)
+    # print(params_values)
     variation_coef = math.sqrt(
         sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / common_value
     data = {'est': render_to_string('fls/dev/table.html',

@@ -29,18 +29,19 @@
     {% endif %}
     {% if user.is_organizer %}
         {% if comp.status == 1 %}
-            {% if comp.method_of_estimate == 5 %}
+            {% if comp.method_of_estimate == 3 %}
                 <a href="{% url 'fls:criteria' comp.id %}" class="btn btn-success">Добавить критерии</a>
                 <a href="{% url 'fls:result_criteria' comp.id %}"
                    class="btn btn-success {% if comp.not_exists_criteria %} disabled {% endif %}">Итоговая формула
                     подсчета критериев</a>
             {% endif %}
-            {% if comp.method_of_estimate == 4 %}
-                {% with param_id=comp.get_param_for_criteria %}
-                    <a href="{% if param_id == -1 %}#{% else %}{% url 'fls:criteria_for_single_param' comp.id param_id %}{% endif %}"
-                       class="btn btn-success  {% if param_id == -1 %} disabled{% endif %}">Добавить
-                        критерии</a>
-                {% endwith %}
+            {% if comp.method_of_estimate == 2 %}
+{#                {% with param_id=comp.get_param_for_criteria %}#}
+{#                    <a href="{% if param_id == -1 %}#{% else %}{% url 'fls:criteria_for_single_param' comp.id param_id %}{% endif %}"#}
+{#                       class="btn btn-success  {% if param_id == -1 %} disabled{% endif %}">Добавить#}
+{#                        критерии</a>#}
+{#                {% endwith %}#}
+{#                change link#}
             {% endif %}
             <h4><a href="{% url 'fls:change_status' comp.id 2 %}"> Поменять статус конкурса на Открыт</a></h4>
         {% endif %}
@@ -48,7 +49,7 @@
             <h4><a href="{% url 'fls:change_status' comp.id 3 %}"> Поменять статус конкурса на Оценивание</a></h4>
         {% endif %}
         {% if comp.status == 3 %}
-            {% if comp.method_of_estimate == 4 or comp.method_of_estimate == 1 %}
+            {% if comp.method_of_estimate == 2 or comp.method_of_estimate == 1 %}
                 <h3>Информация о голосовании жюри</h3>
                 <h6>Тут будет ссылка</h6>
             {% endif %}
