@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-
 YEAR_CHOICES = (
     (1, '1'),
     (2, '2'),
@@ -154,6 +153,7 @@ class Request(models.Model):
                                     blank=True, null=True, verbose_name='Участник')
 
     value = models.FloatField(default=0)
+
     # rang = models.IntegerField(default=0)
     # result_value = models.FloatField(default=0)
 
@@ -336,7 +336,7 @@ class Criterion(models.Model):
                               blank=True, null=True, verbose_name="Критерий определенного параметра")
 
     class Meta:
-        unique_together = (('competition', 'name'),)
+        unique_together = (('competition', 'name', 'formula', 'result_formula'),)
 
     def __str__(self):
         return self.name
