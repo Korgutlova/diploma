@@ -14,8 +14,7 @@ django.setup()
 
 from py_expression_eval import Parser
 
-from fls.models import CriterionValue, ParamValue, Request, CustomUser, WeightParamJury, EstimationJury, \
-    RequestEstimation, Competition
+from fls.models import CriterionValue, Request, CustomUser, WeightCriterionJury, EstimationJury, Competition
 
 parser = Parser()
 
@@ -61,14 +60,20 @@ def union_request_ests(req, formula_for_jury, types=(1, 3)):
         for jury in jurys:
             jury_values.append(EstimationJury.objects.get(type=type, jury=jury, request=req).value)
         common_jury_value = parse_formula(formula_for_jury.formula, jury_values)
-        if not RequestEstimation.objects.filter(request=req, jury_formula=formula_for_jury, type=type).exists():
-            RequestEstimation.objects.create(type=type, request=req, value=common_jury_value,
-                                             jury_formula=formula_for_jury)
-        else:
-            est = RequestEstimation.objects.get(type=type, request=req,
-                                                jury_formula=formula_for_jury)
-            est.value = common_jury_value
-            est.save()
+
+        #  это нужно проверить
+
+        #  формулы для requestestimation  уже нет
+
+
+        # if not RequestEstimation.objects.filter(request=req, jury_formula=formula_for_jury, type=type).exists():
+        #     RequestEstimation.objects.create(type=type, request=req, value=common_jury_value,
+        #                                      jury_formula=formula_for_jury)
+        # else:
+        #     est = RequestEstimation.objects.get(type=type, request=req,
+        #                                         jury_formula=formula_for_jury)
+        #     est.value = common_jury_value
+        #     est.save()
 
 
 # для вызова после создания/обновления попар.кф. у жюри
@@ -82,9 +87,9 @@ def process_3_method_request(req, jury):
     jury_value = 0
 
     for param in params:
-        param_value = ParamValue.objects.get(param=param, request=req).value
-        weight = WeightParamJury.objects.get(type=3, param=param, jury=jury).value
-        jury_value += weight * param_value
+        # param_value = ParamValue.objects.get(param=param, request=req).value
+        weight = WeightCriterionJury.objects.get(type=3, param=param, jury=jury).value
+        # jury_value += weight * param_value
 
     if EstimationJury.objects.filter(type=3, request=req, jury=jury).exists():
         est = EstimationJury.objects.get(type=3, request=req, jury=jury)
@@ -103,7 +108,8 @@ def process_5_method(criterion):
 def process_5_method_request(req, criterion):
     param_values = []
     for param in criterion.competition.competition_params.all():
-        param_values.append(ParamValue.objects.get(param=param, request=req).value)
+        pass
+        # param_values.append(ParamValue.objects.get(param=param, request=req).value)
 
     value = parse_formula(criterion.formula, param_values)
     if CriterionValue.objects.filter(criterion=criterion, request=req).exists():
@@ -121,8 +127,13 @@ def process_request(request_id, union_types=(1, 3)):
         process_3_method_request(req, jury)
     for criterion in req.competition.competition_criterions.all():
         process_5_method_request(req, criterion)
-    for jury_formula in req.competition.competition_formula_for_jury.all():
-        union_request_ests(req, jury_formula, union_types)
+
+    #  это нужно проверить
+
+    #  формулы для requestestimation  уже нет
+
+    # for jury_formula in req.competition.competition_formula_for_jury.all():
+    #     union_request_ests(req, jury_formula, union_types)
 
 
 def median_kemeni(rankings):

@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-
 YEAR_CHOICES = (
     (1, '1'),
     (2, '2'),
@@ -13,17 +12,14 @@ YEAR_CHOICES = (
 
 METHOD_CHOICES = (
     (1, 'Ручная оценка'),
-    (2, 'Попарное сравнение заявок'),
-    (3, 'Попарные сравнения параметров'),
-    (4, 'Ранжирование параметров'),
-    (5, 'Автоматически'),
+    (2, 'Попарные сравнения параметров'),
+    (3, 'Автоматически'),
 )
 
 ROLE_CHOICES = (
     (1, 'Участник'),
     (2, 'Жюри'),
-    (3, 'Эксперт-организатор'),
-    (4, 'Эксперт оценок жюри'),
+    (3, 'Органзитор'),
 )
 
 STATUSES = (
@@ -39,7 +35,7 @@ TYPE = (
 )
 
 # добавить textarea?
-TYPE_SUBPARAM = (
+TYPE_PARAM = (
     (1, 'NUMBER'),
     (2, 'TEXT'),
     (3, 'FILE'),
@@ -75,8 +71,8 @@ class Competition(models.Model):
     def __str__(self):
         return self.name
 
-    def get_params(self):
-        return self.competition_params.all()
+    def get_criteria(self):
+        return self.competition_criterions.all()
 
     def get_course(self):
         for r in YEAR_CHOICES:
@@ -97,14 +93,6 @@ class Competition(models.Model):
 
     def not_exists_criteria(self):
         return len(self.competition_criterions.all()) == 0
-
-    def get_param_for_criteria(self):
-        criteria = self.competition_criterions.all().values_list('param', flat=True)
-        [print(c) for c in criteria]
-        for p in self.competition_params.all():
-            if p.id not in criteria:
-                return p.id
-        return -1
 
 
 class Group(models.Model):
@@ -160,60 +148,20 @@ class Request(models.Model):
     def __str__(self):
         return "Заявка %s - %s" % (self.participant, self.competition.name)
 
-    def get_params(self):
-        params = ParamValue.objects.filter(request=self.id)
-        return params
-
 
 class RequestEstimation(models.Model):
     request = models.ForeignKey(Request, related_name='request_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
-    type = models.IntegerField(choices=METHOD_CHOICES[:4], default=METHOD_CHOICES[0][0], null=False,
+    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[0][0], null=False,
                                blank=False, verbose_name='Тип оценивания')
     value = models.FloatField()
     rank = models.IntegerField(null=True, blank=True)
-
-    # я так понимаю эта формула не нужна
-    # для различных формул объединения жюри в случае методов 1,2
-    jury_formula = models.ForeignKey('CalcEstimationJury', related_name='formula_request_values', null=True, blank=True,
-                                     on_delete=models.CASCADE)
 
     def __str__(self):
         return "Заявка %s - %s - %s" % (self.request.participant, self.type, self.value)
 
     class Meta:
-        unique_together = (('request', 'type', 'jury_formula'),)
-
-
-class Param(models.Model):
-    competition = models.ForeignKey(Competition, related_name='competition_params', on_delete=models.CASCADE,
-                                    blank=False, null=False)
-    name = models.CharField(max_length=50)
-    description = models.TextField(blank=True, null=True)
-    max = models.IntegerField(blank=True, null=True)
-
-    # result_weight = models.FloatField(default=0)
-
-    class Meta:
-        unique_together = (('name', 'description', 'competition'),)
-
-    def __str__(self):
-        return self.name
-
-
-# дальше эту модель убираем
-class ParamValue(models.Model):
-    param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False, null=False)
-    request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
-                                null=False)
-    value = models.FloatField(default=0)
-    person_count = models.IntegerField()
-
-    class Meta:
-        unique_together = (('param', 'request'),)
-
-    def __str__(self):
-        return "%s - %s" % (self.param.name, self.value)
+        unique_together = (('request', 'type'),)
 
 
 class CustomEnum(models.Model):
@@ -241,89 +189,12 @@ class ValuesForEnum(models.Model):
         return "%s - %s" % (self.enum_key, self.enum_value)
 
 
-class SubParam(models.Model):
-    param = models.ForeignKey(Param, related_name='subparam_params', on_delete=models.CASCADE,
-                              blank=False, null=False, verbose_name="Ссылка на параметр")
-    name = models.CharField(max_length=50)
-
-    # True - for formula
-    # False - for jury
-
-    for_formula = models.BooleanField()
-    type = models.IntegerField(choices=TYPE_SUBPARAM, null=False,
-                               blank=False, default=TYPE_SUBPARAM[0][0], verbose_name="Тип данных")
-    enum = models.ForeignKey(CustomEnum, related_name='subparam_enum', on_delete=models.SET_NULL,
-                             blank=True, null=True, verbose_name="Перечисление")
-
-    max = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        unique_together = (('param', 'name'),)
-
-    def __str__(self):
-        return "Параметр %s - подпараметр %s" % (self.param.name, self.name)
-
-
-class ParamResultWeight(models.Model):
-    param = models.ForeignKey(Param, related_name='param_weights', on_delete=models.CASCADE,
-                              blank=False, null=False)
-    type = models.IntegerField(choices=METHOD_CHOICES[2:4], default=METHOD_CHOICES[2][0], null=False,
-                               blank=False, verbose_name='Тип оценивания')
-    weight_value = models.FloatField(default=0)
-
-    class Meta:
-        unique_together = (('param', 'type'),)
-
-    def __str__(self):
-        return '%s - %s' % (self.param, self.type)
-
-
-class SubParamValue(models.Model):
-    subparam = models.ForeignKey(SubParam, related_name='subparam_values', on_delete=models.CASCADE, blank=False,
-                                 null=False)
-    request = models.ForeignKey(Request, related_name='request_subparam_values', on_delete=models.CASCADE, blank=False,
-                                null=False)
-    value = models.FloatField(default=0, blank=True, null=True)
-    text = models.TextField(blank=True, null=True)
-    enum_val = models.ForeignKey(ValuesForEnum, related_name='cur_value_enum_values', on_delete=models.SET_NULL,
-                                 blank=True, null=True)
-
-    class Meta:
-        unique_together = (('subparam', 'request'),)
-
-    def __str__(self):
-        return "%s - %s - %s" % (self.request.participant, self.subparam.name, self.value)
-
-    def is_number(self):
-        return self.subparam.type == 1
-
-    def is_file(self):
-        return self.subparam.type == 3
-
-    def is_photo(self):
-        return self.subparam.type == 4
-
-    def get_name(self):
-        return self.subparam.name
-
-    def get_files(self):
-        return self.files.all()
-
-
-class UploadData(models.Model):
-    sub_param_value = models.ForeignKey(SubParamValue, related_name="files", on_delete=models.CASCADE, blank=False,
-                                        null=False)
-    header_for_file = models.CharField(max_length=100, null=True, blank=True)
-    image = models.ImageField()
-
-    def __str__(self):
-        return '%s - %s - %s' % (self.sub_param_value.subparam.name, self.header_for_file, self.image.url)
-
-
 class Criterion(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_criterions', on_delete=models.CASCADE,
                                     blank=True, null=True)
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    max_for_jury = models.IntegerField(blank=True, null=True)
     formula = models.TextField()
 
     # True - итоговая формула (указываются id критериев)
@@ -331,15 +202,72 @@ class Criterion(models.Model):
 
     result_formula = models.BooleanField(default=False)
 
-    # это критерий общий или для ранжированных вычислений
-    param = models.ForeignKey(Param, related_name='criterion_params', on_delete=models.CASCADE,
-                              blank=True, null=True, verbose_name="Критерий определенного параметра")
-
     class Meta:
         unique_together = (('competition', 'name'),)
 
     def __str__(self):
         return self.name
+
+
+class Param(models.Model):
+    criterion = models.ForeignKey(Criterion, related_name='param_criterion', on_delete=models.CASCADE,
+                                  blank=False, null=False, verbose_name="Ссылка на параметр")
+    name = models.CharField(max_length=50)
+    # True - for formula
+    # False - for jury
+
+    for_formula = models.BooleanField()
+    type = models.IntegerField(choices=TYPE_PARAM, null=False,
+                               blank=False, default=TYPE_PARAM[0][0], verbose_name="Тип данных")
+    enum = models.ForeignKey(CustomEnum, related_name='param_enum', on_delete=models.SET_NULL,
+                             blank=True, null=True, verbose_name="Перечисление")
+
+    max = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return "Критерий %s - параметр критерия %s" % (self.criterion.name, self.name)
+
+
+class ParamValue(models.Model):
+    param = models.ForeignKey(Param, related_name='param_values', on_delete=models.CASCADE, blank=False,
+                              null=False)
+    request = models.ForeignKey(Request, related_name='request_param_values', on_delete=models.CASCADE, blank=False,
+                                null=False)
+    value = models.FloatField(default=0, blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    enum_val = models.ForeignKey(ValuesForEnum, related_name='cur_value_enum_values', on_delete=models.SET_NULL,
+                                 blank=True, null=True)
+
+    class Meta:
+        unique_together = (('param', 'request'),)
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.request.participant, self.param.name, self.value)
+
+    def is_number(self):
+        return self.param.type == 1
+
+    def is_file(self):
+        return self.param.type == 3
+
+    def is_photo(self):
+        return self.param.type == 4
+
+    def get_name(self):
+        return self.param.name
+
+    def get_files(self):
+        return self.files.all()
+
+
+class UploadData(models.Model):
+    sub_param_value = models.ForeignKey(ParamValue, related_name="files", on_delete=models.CASCADE, blank=False,
+                                        null=False)
+    header_for_file = models.CharField(max_length=100, null=True, blank=True)
+    image = models.ImageField()
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.sub_param_value.param.name, self.header_for_file, self.image.url)
 
 
 class CriterionValue(models.Model):
@@ -356,16 +284,29 @@ class CriterionValue(models.Model):
         return "%s - %s" % (self.criterion.name, self.value)
 
 
+class CriterionWeight(models.Model):
+    criterion = models.ForeignKey(Criterion, related_name='criterion_weights', on_delete=models.CASCADE,
+                                  blank=False, null=False)
+    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[2][0], null=False,
+                               blank=False, verbose_name='Тип оценивания')
+    weight_value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('criterion', 'type'),)
+
+    def __str__(self):
+        return '%s - %s' % (self.criterion, self.type)
+
+
 class EstimationJury(models.Model):
-    # method_choices[:4], значения последнего типа в criterion_value
-    # пока пусть null
-    type = models.IntegerField(choices=METHOD_CHOICES[:4], default=METHOD_CHOICES[0][0], null=True,
+    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[0][0], null=True,
                                blank=True, verbose_name='Тип оценивания')
     request = models.ForeignKey(Request, related_name='request_jury_values', on_delete=models.CASCADE, blank=False,
                                 null=False)
     jury = models.ForeignKey(CustomUser, related_name='jury_values', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name='Жюри')
-
+    criterion = models.ForeignKey(Criterion, related_name='criterion_value_for_request', on_delete=models.CASCADE, blank=False,
+                                  null=False)
     value = models.FloatField(default=0)
 
     class Meta:
@@ -375,36 +316,18 @@ class EstimationJury(models.Model):
         return "%s - %s - %s" % (self.jury, self.request, self.type)
 
 
-class WeightParamJury(models.Model):
-    type = models.IntegerField(choices=METHOD_CHOICES[2:4], default=METHOD_CHOICES[2][0], null=True,
+class WeightCriterionJury(models.Model):
+    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[2][0], null=True,
                                blank=True, verbose_name='Тип оценивания')
-    param = models.ForeignKey(Param, related_name='param_for_jury', on_delete=models.CASCADE, blank=False, null=False)
+    criterion = models.ForeignKey(Criterion, related_name='criterion_for_jury', on_delete=models.CASCADE, blank=False,
+                                  null=False)
     jury = models.ForeignKey(CustomUser, related_name='jury2', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name='Жюри')
 
-    # это ранг или попарные в зависимости от метода
     value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('jury', 'param', 'type'),)
+        unique_together = (('jury', 'criterion', 'type'),)
 
     def __str__(self):
-        return "Жюри %s - Параметр %s - Тип %s" % (self.jury, self.param, self.type)
-
-
-# Нужно будет удалить, так как теперь просто применяем среднее
-class CalcEstimationJury(models.Model):
-    expert = models.ForeignKey(CustomUser, related_name='experts', on_delete=models.CASCADE,
-                               blank=True, null=True, verbose_name='Эксперт')
-    competition = models.ForeignKey(Competition, related_name='competition_formula_for_jury', on_delete=models.CASCADE,
-                                    blank=True, null=True)
-    name = models.CharField(max_length=20, unique=True)
-
-    formula = models.TextField()
-
-    # для попарных или рнажированных методов
-    param = models.ForeignKey(Param, related_name='param_for_formula_jury', on_delete=models.SET_NULL, blank=True,
-                              null=True)
-
-    def __str__(self):
-        return self.name
+        return "Жюри %s - Критерий %s - Тип %s" % (self.jury, self.criterion, self.type)
