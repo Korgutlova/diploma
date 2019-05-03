@@ -41,7 +41,8 @@
             </select>
             <br>
             <br>
-
+            <div id="critfil"></div>
+            <br>
 
             <label for="jury">Выберите члена жюри:</label>
             <br>
@@ -67,7 +68,7 @@
 </body>
 <script>
 
-    const f = function () {
+    const fill_estimations = function () {
         comp_id = $('#comp').val();
         jury = $('#jury').val();
         $.ajax({
@@ -109,11 +110,50 @@
 
     };
 
-    select = $('select');
-    select.selectpicker();
-    {#$('#send').click(f);#}
-    select.change(f);
-    $(document).ready(f);
+    const fill_criterions = function () {
+        comp_id = $('#comp').val();
+        $.ajax({
+            url: '/fls/comp_crits/',
+            type: 'get',
+            data: {'comp': comp_id},
+            dataType: 'json',
+            success: function (data) {
+
+                {#$('#reqs').html(data.reqs);#}
+                $("#critfil").html(data.crits);
+                {#$(data.reqs).insertAfter("#place");#}
+            },
+            error: function () {
+                alert("error");
+            },
+            complete: function (data) {
+
+                $('#crit').addClass('selectpicker');
+                $('#crit').selectpicker();
+                fill_estimations();
+            }
+        })
+
+    };
+
+
+    select_comp = $('#comp');
+    select_type = $('#jury');
+
+
+    select_comp.selectpicker();
+    select_type.selectpicker();
+    {#select_reqs.selectpicker();#}
+    {#$('#send').click(fill_estimations);#}
+    $(document).ready(fill_criterions);
+    select_comp.change(fill_criterions);
+    select_type.change(fill_estimations);
+    {#select_reqs.selectpicker();#}
+
+    {#$('#req').change(alert('hh'));#}
+    $('#critfil').on('change', '#crit', function () {
+        fill_estimations();
+    });
 
 
 </script>

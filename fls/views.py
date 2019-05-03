@@ -586,8 +586,11 @@ def deviation(request):
 
 
 def comp_reqs(request):
-    reqs = Competition.objects.get(id=request.GET['comp']).competition_request.all()
-    data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs})}
+    comp = Competition.objects.get(id=request.GET['comp'])
+    reqs = comp.competition_request.all()
+    criterions = comp.competition_criterions.all()
+    data = {'reqs': render_to_string('fls/dev/reqs.html', {'reqs': reqs}),
+            'crits': render_to_string('fls/sim_jury/criterions.html', {'criterions': criterions})}
     return JsonResponse(data)
 
 
@@ -655,4 +658,10 @@ def coherence(request):
                                     {'req_ranks': req_ranks, 'kendall_coef': kendall_coef,
                                      'clusters_jury': clusters_jury})}
 
+    return JsonResponse(data)
+
+
+def comp_criterions(request):
+    criterions = Competition.objects.get(id=request.GET['comp']).competition_criterions.all()
+    data = {'crits': render_to_string('fls/sim_jury/criterions.html', {'criterions': criterions})}
     return JsonResponse(data)

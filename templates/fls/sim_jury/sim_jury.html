@@ -40,6 +40,9 @@
             </select>
             <br>
             <br>
+            <div id="critfil"></div>
+            <br>
+
             <label for="type">Выберите метод:</label>
             <br>
             <select name="type" id="type" class="selectpicker">
@@ -86,16 +89,17 @@
 </body>
 <script>
 
-    const f = function () {
+    const fill_estimations = function () {
         type = $('#type').val();
         comp_id = $('#comp').val();
         jury = $('#jury').val();
         key = $('#key').val();
+        crit = $('#crit').val();
 
         $.ajax({
             url: '/fls/similar_jury/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type, 'jury': jury, 'key': key},
+            data: {'comp': comp_id, 'type': type, 'jury': jury, 'key': key, 'crit': crit},
             dataType: 'json',
             success: function (data) {
                 $("#values").html(data.est)
@@ -109,11 +113,54 @@
         })
 
     };
-    select = $('select');
-    select.selectpicker();
-    {#$('#send').click(f);#}
-    select.change(f);
-    $(document).ready(f);
+
+    const fill_criterions = function () {
+        comp_id = $('#comp').val();
+        $.ajax({
+            url: '/fls/comp_crits/',
+            type: 'get',
+            data: {'comp': comp_id},
+            dataType: 'json',
+            success: function (data) {
+
+                {#$('#reqs').html(data.reqs);#}
+                $("#critfil").html(data.crits);
+                {#$(data.reqs).insertAfter("#place");#}
+            },
+            error: function () {
+                alert("error");
+            },
+            complete: function (data) {
+
+                $('#crit').addClass('selectpicker');
+                $('#crit').selectpicker();
+                fill_estimations();
+            }
+        })
+
+    };
+
+    select_comp = $('#comp');
+    select_type = $('#type');
+    select_key = $('#key');
+
+
+    {#select_reqs = $('#req');#}
+
+    select_comp.selectpicker();
+    select_type.selectpicker();
+    {#select_reqs.selectpicker();#}
+    {#$('#send').click(fill_estimations);#}
+    $(document).ready(fill_criterions);
+    select_comp.change(fill_criterions);
+    select_type.change(fill_estimations);
+    select_key.change(fill_estimations);
+    {#select_reqs.selectpicker();#}
+
+    {#$('#req').change(alert('hh'));#}
+    $('#critfil').on('change', '#crit', function () {
+        fill_estimations();
+    });
 
 
 </script>

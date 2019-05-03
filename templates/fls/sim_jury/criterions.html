@@ -1,0 +1,15 @@
+<label for="crit">Выберите критерий:</label>
+<br>
+<select id="crit" name="crit" class="nn">
+    <option value="all"> Итоговый</option>
+    {% for criterion in criterions %}
+        {% if forloop.first %}
+            <option value="{{ criterion.id }}" selected>{{ criterion }}</option>
+        {% else %}
+            <option value="{{ criterion.id }}">{{ criterion }}</option>
+        {% endif %}
+    {% empty %}
+        <option value="non" selected>Нет заявок</option>
+    {% endfor %}
+</select>
+

@@ -307,7 +307,7 @@ class EstimationJury(models.Model):
     value = models.FloatField(default=0)
 
     class Meta:
-        unique_together = (('jury', 'request', 'type'),)
+        unique_together = (('jury', 'request', 'type', 'criterion'),)
 
     def __str__(self):
         return "%s - %s - %s" % (self.jury, self.request, self.type)
