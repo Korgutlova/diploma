@@ -1,0 +1,36 @@
+{% extends 'fls/base_criteria.html' %}
+{% block title %}
+    Создание формулы для критерия {{ p.name }}
+{% endblock %}
+
+{% block cycle_and_head %}
+
+    <h3>Создание формулы для критерия {{ p.name }}</h3>
+    <hr>
+    <h4>Параметры критерия</h4>
+    {% for p in params %}
+        <button data-toggle="tooltip" data-placement="top" title="Главный параметр - {{ c.name }}"
+                type="button" class="btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
+    {% endfor %}
+    <hr>
+{% endblock %}
+
+
+{% block url_form %}
+    {% url 'fls:formula_for_single_criteria' id c.id %}
+{% endblock %}
+{% block name_button %}
+    {% if next %}
+        Сохранить и перейти к следующему параметру
+    {% else %}
+        Завершить настройку формул для критериев
+    {% endif %}
+{% endblock %}
+{% block cycle_popup %}
+    {% for p in params %}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="item" id="{{ p.id }}">
+            <label class="form-check-label" for="{{ p.id }}">{{ p.name }}</label>
+        </div>
+    {% endfor %}
+{% endblock %}

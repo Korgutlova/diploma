@@ -91,8 +91,14 @@ class Competition(models.Model):
         print(size)
         return size
 
-    def not_exists_criteria(self):
-        return len(self.competition_criterions.all()) == 0
+    def not_exists_formula(self):
+        return len(self.competition_criterions.all().filter(formula=not "")) == 0
+
+    def get_next_criterion(self):
+        criteria = self.competition_criterions.all().filter(formula="")
+        if len(criteria) > 0:
+            return criteria[0].id
+        return -1
 
 
 class Group(models.Model):

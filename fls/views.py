@@ -1,7 +1,6 @@
 import numpy as np
 
 import cexprtk
-import traceback
 import math
 from operator import itemgetter
 
@@ -9,33 +8,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization
+from fls.lib import make_ranks, dist_kemeni, clusterization
 from fls.models import Competition, Criterion, Group, CustomUser, CriterionWeight, Request, \
     CriterionValue, CriterionWeight, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, RequestEstimation, WeightParamJury
 from py_expression_eval import Parser
 
 parser = Parser()
-
-
-@login_required(login_url="login/")
-def criteria(request, id):
-    comp = Competition.objects.get(id=id)
-    params = []
-    criteria = Criterion.objects.filter(competition=comp)
-    for c in criteria:
-        [params.append(sb) for sb in c.param_criterion.all().filter(for_formula=True)]
-    if request.method == "POST":
-        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"])
-        c.save()
-        return redirect("fls:list_comp")
-    return render(request, 'fls/add_criteria.html', {"subparams": params, "id": id})
 
 
 @login_required(login_url="login/")
@@ -46,30 +30,30 @@ def result_criteria(request, id):
         c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
         c.save()
         return redirect("fls:list_comp")
-    return render(request, 'fls/add_result_criteria.html', {"criteria": criteria, "id": id})
+    return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id})
 
 
 @login_required(login_url="login/")
-def criteria_for_single_param(request, id, param_id):
+def formula_for_single_criteria(request, id, cr_id):
     comp = Competition.objects.get(id=id)
-    # param = Param.objects.get(id=param_id)
-    # subparams = param.subparam_params.all().filter(for_formula=True)
-    # len_1 = len(comp.competition_criterions.all().filter(param__isnull=False))
-    # len_2 = len(comp.competition_params.all())
-    # print(len_1, len_2)
+    criteria = Criterion.objects.get(id=cr_id)
+    params = criteria.param_criterion.all().filter(for_formula=True)
+    len_1 = len(comp.competition_criterions.all().filter(formula=not ""))
+    len_2 = len(comp.competition_criterions.all())
+    print(len_1, len_2)
+    print(params)
+    print(cr_id)
     next = True
-    # if request.method == "POST":
-    #     c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True,
-    #                   param=param)
-    #     c.save()
-    #     len_1 += 1
-    #     if len_1 == len_2:
-    #         return redirect("fls:list_comp")
-    # if (len_2 - len_1) == 1:
-    #     next = False
-    # реализовать по-другому
-    return render(request, 'fls/add_criteria_for_single_param.html',
-                  {"subparams": [], "id": id, "p": None, "next": next})
+    if request.method == "POST":
+        criteria.formula = request.POST["formula"]
+        criteria.save()
+        len_1 += 1
+        if len_1 == len_2:
+            return redirect("fls:list_comp")
+    if (len_2 - len_1) == 1:
+        next = False
+    return render(request, 'fls/add_formula.html',
+                  {"params": params, "id": id, "c": Criterion.objects.get(id=comp.get_next_criterion()), "next": next})
 
 
 def average(*args):
