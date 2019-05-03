@@ -18,7 +18,7 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization
 from fls.models import Competition, Criterion, Group, CustomUser, CriterionWeight, Request, \
     CriterionValue, CriterionWeight, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, RequestEstimation
+    STATUSES, ParamValue, UploadData, RequestEstimation, WeightParamJury
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -267,37 +267,43 @@ def load_request(request, comp_id):
     return render(request, 'fls/load_request.html', {"comp": comp, "collection": collection})
 
 
+def make_pairs(objects):
+    params_modif = {}
+    for p in objects:
+        arr = []
+        for f in objects:
+            arr.append("%s_%s" % (p.id, f.id))
+        params_modif[p.name] = arr
+    return params_modif
+
+
+def make_pair_matrix(values):
+    criterion_rows = {}
+    for key in values:
+        param_id = key.split('_')[0].replace('rank', '')
+        if not param_id in criterion_rows:
+            criterion_rows[param_id] = [0.5]
+        criterion_rows[param_id].append(float(values[key][0]))
+    return criterion_rows
+
+
 @login_required(login_url="login/")
 def pairwise_comparison(request, comp_id):
     jury = CustomUser.objects.get(user=request.user)
-    if jury.role != 2:
+    if jury.role != 3:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
     criteria = Criterion.objects.filter(competition=comp)
-    params_modif = {}
-    for p in criteria:
-        arr = []
-        for f in criteria:
-            arr.append("%s_%s" % (p.id, f.id))
-        params_modif[p.name] = arr
+    criteria_modif = make_pairs(criteria)
 
     if request.method == 'POST':
-
-        #  это нужно проверить
-        print(request.POST)
         values = dict(request.POST)
         del values['csrfmiddlewaretoken']
-        criterion_rows = {}
-        for key in values:
-            param_id = key.split('_')[0].replace('rank', '')
-            if not param_id in criterion_rows:
-                criterion_rows[param_id] = [0.5]
-            criterion_rows[param_id].append(float(values[key][0]))
+        criterion_rows = make_pair_matrix(values)
         elems = sum(criterion_rows.values(), [])
         for key in criterion_rows:
             criterion = Criterion.objects.get(id=int(key))
             criterion_value = sum(criterion_rows[key]) / sum(elems)
-            print(key, criterion_value, sep=' : ')
             if not CriterionWeight.objects.filter(criterion=criterion).exists():
                 CriterionWeight.objects.create(criterion=criterion, weight_value=criterion_value)
             else:
@@ -305,7 +311,32 @@ def pairwise_comparison(request, comp_id):
                 w.value = criterion_value
                 w.save()
         return HttpResponse("Ваши оценки параметров сохранены")
-    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, "comp": comp})
+    return render(request, 'fls/pairwise_comparison_table.html', {"params": criteria_modif, "comp": comp})
+
+
+def pairwise_comparison_param(request, crit_id):
+    jury = CustomUser.objects.get(user=request.user)
+    if jury.role != 2:
+        return HttpResponse("Данная страница для Вас недоступна")
+    params = Criterion.objects.get(id=crit_id).param_criterion.all()
+    params_modif = make_pairs(params)
+
+    if request.method == 'POST':
+        values = dict(request.POST)
+        del values['csrfmiddlewaretoken']
+        criterion_rows = make_pair_matrix(values)
+        elems = sum(criterion_rows.values(), [])
+        for key in criterion_rows:
+            param = Param.objects.get(id=int(key))
+            param_value = sum(criterion_rows[key]) / sum(elems)
+            if not WeightParamJury.objects.filter(param=param, jury=jury).exists():
+                WeightParamJury.objects.create(param=param, weight_value=param_value, jury=jury)
+            else:
+                w = WeightParamJury.objects.get(param=param, jury=jury)
+                w.value = param_value
+                w.save()
+        return HttpResponse("Ваши оценки параметров сохранены")
+    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, 'crit': crit_id})
 
 
 @login_required(login_url="login/")
@@ -362,7 +393,6 @@ def login_view(request):
 def logout_page(request):
     logout(request)
     return redirect("fls:login_view")
-
 
 
 @login_required(login_url="login/")
@@ -436,7 +466,8 @@ def similar_page(request):
 
 
 def similar_jury(request):
-    comp_id, type, jury_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury'])
+    comp_id, type, jury_id, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
+        request.GET['crit'])
     reqs = Request.objects.filter(competition_id=comp_id)
     params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
@@ -496,9 +527,9 @@ def metcomp_page(request):
 
 
 def metcomp(request):
-    method_indexes = (0, 2)
+    method_indexes = (0, 1)
     methods = itemgetter(*method_indexes)(METHOD_CHOICES)
-    comp_id, jury_id = int(request.GET['comp']), int(request.GET['jury'])
+    comp_id, jury_id, crit = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
     reqs = Request.objects.filter(competition_id=comp_id)
     params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
@@ -528,7 +559,8 @@ def dev_page(request):
 
 
 def deviation(request):
-    comp_id, type, req_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs'])
+    comp_id, type, req_id, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
+        request.GET['crit'])
     params = Competition.objects.get(id=comp_id).competition_params.all()
     req = Request.objects.get(id=req_id)
     #  это нужно проверить
@@ -573,7 +605,8 @@ def coherence_page(request):
 
 
 def coherence(request):
-    comp_id, type, clusts = int(request.GET['comp']), int(request.GET['type']), int(request.GET['clusts'])
+    comp_id, type, clusts, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['clusts']), int(
+        request.GET['crit']),
     reqs = Competition.objects.get(id=comp_id).competition_request.all()
     jurys = CustomUser.objects.filter(role=2)
     jury_ranks = {}

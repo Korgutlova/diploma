@@ -314,7 +314,7 @@ class EstimationJury(models.Model):
 
 
 class WeightParamJury(models.Model):
-    param = models.ForeignKey(Criterion, related_name='param_weights', on_delete=models.CASCADE, blank=False,
+    param = models.ForeignKey(Param, related_name='param_weights', on_delete=models.CASCADE, blank=False,
                               null=False)
     jury = models.ForeignKey(CustomUser, related_name='jury_param_weights', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name='Жюри')
