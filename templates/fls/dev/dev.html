@@ -76,12 +76,14 @@
 
     const fill_estimations = function () {
         comp_id = $('#comp').val();
+        crit_id = $('#crit').val();
         type = $('#type').val();
-        reqs = $('#req').val();
+        req_id = $('#req').val();
+
         $.ajax({
             url: '/fls/deviation/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type, 'reqs': reqs},
+            data: {'comp': comp_id, 'type': type, 'reqs': req_id, 'crit': crit_id},
             dataType: 'json',
             success: function (data) {
                 $("#paste").html(data.est)
@@ -111,7 +113,7 @@
                 {#$(data.reqs).insertAfter("#place");#}
             },
             error: function () {
-                alert("error");
+                alert("Результаты не готовы");
             },
             complete: function (data) {
 

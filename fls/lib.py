@@ -14,7 +14,7 @@ django.setup()
 
 from py_expression_eval import Parser
 
-from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition
+from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury
 
 parser = Parser()
 
@@ -147,16 +147,43 @@ def clusterization(dataset, n_clusters):
                     cluster_rankings.append(dataset[k])
             centroids[i] = median_kemeni(cluster_rankings)
     return labels, centroids
-#
-# rankings = [
-#     [6, 4, 3, 1, 5, 2, 7],
-#     [6, 4, 3, 5, 2, 1, 7],
-#     [1, 3, 2, 4, 6, 5, 7],
-#     [1, 2, 3, 4, 6, 5, 7],
-#     [3, 2, 1, 4, 5, 6, 7],
-#     [6, 4, 3, 5, 1, 2, 7],
-#     [3, 2, 1, 5, 4, 6, 7],
-#
-# ]
 
-# clusterization(rankings, 3)
+
+
+def normalize_crit_values(crit):
+    reqs = crit.competition.competition_request.all()
+    params = crit.param_criterion.filter(type__in=(1, 3, 4, 5))
+    req_param_values = []
+    for req in reqs:
+        req_values = []
+        for param in params:
+            if param.type == 1:
+                value = ParamValue.objects.get(param=param, request=req).value
+                req_values.append(value)
+            elif param.type == 5:
+                req_values.append(ParamValue.objects.get(param=param, request=req).enum_val.enum_value)
+            else:
+                req_values.append(ParamValue.objects.get(param=param, request=req).get_files().count())
+        req_param_values.append(req_values)
+    req_param_values = np.array(req_param_values)
+    for i in range(len(params)):
+        max_v, min_v = np.max(req_param_values[:, i]), np.min(req_param_values[:, i])
+        for k in range(len(reqs)):
+            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.max_for_jury-1)
+    return req_param_values, reqs, params
+
+
+def aut_est_jury(jury, crit):
+    req_param_values, reqs, params = normalize_crit_values(crit)
+    for i, req in enumerate(reqs):
+        sum_value = 0
+        for j, param in enumerate(params):
+            weight_value = WeightParamJury.objects.get(jury=jury, param=param).weight_value
+            param_value = ParamValue.objects.get(param=param, request=req).value
+            sum_value += param_value * weight_value
+        if EstimationJury.objects.filter(jury=jury, type=2, request=req, criterion=crit).exists():
+            estimaion_jury = EstimationJury.objects.get(jury=jury, type=2, request=req, criterion=crit)
+            estimaion_jury.value = sum_value
+            estimaion_jury.save()
+        else:
+            EstimationJury.objects.create(jury=jury, type=2, request=req, criterion=crit, value=sum_value)

@@ -15,7 +15,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, aut_est_jury
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, WeightParamJury
@@ -465,7 +465,7 @@ def similar_jury(request):
     comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
         request.GET['crit'])
     reqs = Request.objects.filter(competition_id=comp_id)
-    params = Competition.objects.get(id=comp_id).competition_params.all()
+    # params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
     slt_ests = make_ranks(
         [EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value for req in reqs])
@@ -513,7 +513,7 @@ def similar_jury(request):
     diff = sorted_smt.values()
     est_key = request.GET['key'] == 'est'
     data = {'est': render_to_string('fls/sim_jury/table.html',
-                                    {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
+                                    {'ests': estimation_values, 'jurys': sorted_jury,
                                      'slt_jury': slt_jury, 'diffs': diff, 'est_key': est_key})}
     return JsonResponse(data)
 
@@ -524,47 +524,42 @@ def metcomp_page(request):
     return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
 
 
-def metcomp(request):
+def method_comparison(request):
     method_indexes = (0, 1)
     methods = itemgetter(*method_indexes)(METHOD_CHOICES)
     comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
-    reqs = Request.objects.filter(competition_id=comp_id)
-    params = Competition.objects.get(id=comp_id).competition_params.all()
+    criterion = Criterion.objects.get(id=crit_id)
     slt_jury = CustomUser.objects.get(id=jury_id)
+    aut_est_jury(slt_jury, criterion)
+    reqs = Request.objects.filter(competition_id=comp_id)
     estimation_values = {}
     for req in reqs:
         part_name = req.participant
         estimation_values[part_name] = [[], []]
-
-        # это нужно проверить
-
-        # estimation_values[part_name][0].extend(
-        #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].extend(
             round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0], criterion_id=crit_id).value, 2) for
             tp in methods)
         diff = round((estimation_values[part_name][1][0] - estimation_values[part_name][1][1]), 2)
         estimation_values[part_name].append(diff)
     data = {'est': render_to_string('fls/metcomp/table.html',
-                                    {'ests': estimation_values, 'params': params,
+                                    {'ests': estimation_values,
                                      'slt_jury': slt_jury, 'methods': methods})}
 
     return JsonResponse(data)
 
 
-def dev_page(request):
+def deviations_page(request):
     comps = Competition.objects.all()
     return render(request, 'fls/dev/dev.html', {'comps': comps})
 
 
-def deviation(request):
+def est_deviations(request):
     comp_id, type, req_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
         request.GET['crit'])
     req = Request.objects.get(id=req_id)
-    # переделать
-    avg_value = 0
-    jury_est_values = {}
     jurys = CustomUser.objects.filter(role=2)
+    avg_value = sum([EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
+    jury_est_values = {}
     for jury in jurys:
         jury_est_values[jury] = []
         jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
