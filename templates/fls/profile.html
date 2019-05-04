@@ -8,7 +8,6 @@
     <h4><b>Имя:</b> {{ cust_user }}</h4>
     <h4><b>Статус:</b> {{ cust_user.get_role }}</h4>
     {% if cust_user.is_participant %}
-        <h4><b>Группа:</b> {{ cust_user.group.name }}</h4>
         <hr>
         <br>
 
@@ -51,8 +50,8 @@
             <h4>Новые (непросмотренные) заявки</h4>
             <ul>
                 {% for r in new_requests %}
-                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
-                        группы {{ r.participant.group }} {{ r.participant.group.faculty }}</p>
+                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка участника
+                        {{ r.participant.get_username }}</p>
                     </a></li>
                 {% endfor %}
             </ul>
@@ -62,7 +61,7 @@
             <ul>
                 {% for r in view_requests %}
                     <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
-                        группы {{ r.participant.group }} {{ r.participant.group.faculty }}</p>
+                        участника {{ r.participant.get_username}} </p>
                     </a></li>
                 {% endfor %}
             </ul>

@@ -14,7 +14,11 @@
     <hr>
 {% endblock %}
 
-
+{% block name %}
+<label>Название *
+                    <input class="form-control" type="text" name="name">
+                </label><br>
+{% endblock %}
 {% block url_form %}
     {% url 'fls:result_criteria' id %}
 {% endblock %}

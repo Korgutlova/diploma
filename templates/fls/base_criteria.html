@@ -28,6 +28,8 @@
         {% csrf_token %}
         <div class="row">
             <div class="col-md-5">
+                {% block name %}
+                    {% endblock %}
                 <label>Формула
                     <textarea style="resize: none;" name="formula" class="form-control rounded-0" rows="5" cols="40"
                               id="desc" readonly></textarea>

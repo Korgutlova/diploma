@@ -20,11 +20,6 @@ STATUSES = (
     (4, 'Закрыт'),
 )
 
-TYPE = (
-    (1, 'Одиночный'),
-    (2, 'Групповой'),
-)
-
 # добавить textarea?
 TYPE_PARAM = (
     (1, 'NUMBER'),
@@ -43,10 +38,6 @@ class Competition(models.Model):
 
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
-
-    type_comp = models.IntegerField(choices=TYPE, blank=True, null=True,
-                                    default=TYPE[0][0], verbose_name="Тип участия")
-
     # в каком состоянии находится конкурс
     status = models.IntegerField(choices=STATUSES, blank=True, null=True,
                                  default=STATUSES[0][0], verbose_name="Статус конкурса")
@@ -58,7 +49,7 @@ class Competition(models.Model):
         return self.name
 
     def get_criteria(self):
-        return self.competition_criterions.all()
+        return self.competition_criterions.all().exclude(result_formula=True)
 
     def get_status(self):
         for r in STATUSES:
@@ -72,7 +63,7 @@ class Competition(models.Model):
         return size
 
     def not_exists_formula(self):
-        return len(self.competition_criterions.all().filter(formula=not "")) == 0
+        return len(self.competition_criterions.all().exclude(formula="")) == 0
 
     def get_next_criterion(self):
         criteria = self.competition_criterions.all().filter(formula="")

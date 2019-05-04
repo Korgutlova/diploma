@@ -27,8 +27,15 @@ def result_criteria(request, id):
     comp = Competition.objects.get(id=id)
     criteria = Criterion.objects.filter(competition=comp, result_formula=False)
     if request.method == "POST":
-        c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"], result_formula=True)
-        c.save()
+        cr = Criterion.objects.filter(result_formula=True)
+        if len(cr) > 0:
+            cr[0].name = request.POST["name"]
+            cr[0].formula = request.POST["formula"]
+            cr[0].save()
+        else:
+            c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"],
+                          result_formula=True)
+            c.save()
         return redirect("fls:list_comp")
     return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id})
 
@@ -399,17 +406,23 @@ def get_request(request, id):
 
 def estimate_req(request, req_id):
     req = Request.objects.get(id=req_id)
+    criteria = req.competition.competition_criterions.all().filter(result_formula=False)
     if request.method == "POST":
-        try:
-            estimate = EstimationJury.objects.get(jury=CustomUser.objects.get(user=request.user),
-                                                  request=req, type=1)
-            estimate.value = request.POST["est_val"]
+        for c in criteria:
+            val = request.POST["est_val_%s" % c.id]
+            estimate = EstimationJury.objects.filter(jury=CustomUser.objects.get(user=request.user),
+                                                     request=req, type=1, criterion=c)
+            if len(estimate) > 0:
+                estimate = estimate[0]
+                estimate.value = val
+            else:
+                estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
+                                          request=req, criterion=c, value=val, type=1)
+            estimate.save()
 
-        except:
-            estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
-                                      request=req,
-                                      value=request.POST["est_val"], type=1)
-        estimate.save()
+
+        # что ниже это для твоих вычислений ?
+
         jurys_count = CustomUser.objects.filter(role=2).count()
         request_estimations_count = EstimationJury.objects.filter(request=req,
                                                                   type=1).count()

@@ -10,10 +10,10 @@
         {% csrf_token %}
         {% for c in collection %}
             <div class="card_param">
-                <h3>{{ c.param.name }}</h3>
+                <h3>Критерий {{ c.param.name }}</h3>
                 <p><b>Описание: </b><i>{{ c.param.description }}</i></p>
                 {% for sp in c.subparams %}
-                    <h4>{{ sp.name }}</h4>
+                    <h4>Параметр - {{ sp.name }}</h4>
                     {% if sp.type == 1 %}
                         <label>Введите число/значение
                             <input type="text" class="form-control" name="sp_{{ sp.id }}">
