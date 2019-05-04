@@ -13,10 +13,10 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import make_ranks, dist_kemeni, clusterization
-from fls.models import Competition, Criterion, Group, CustomUser, CriterionWeight, Request, \
-    CriterionValue, CriterionWeight, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, RequestEstimation, WeightParamJury
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, aut_est_jury
+from fls.models import Competition, Criterion, CustomUser, Request, \
+    CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
+    STATUSES, ParamValue, UploadData, WeightParamJury
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -274,6 +274,7 @@ def make_pair_matrix(values):
 @login_required(login_url="login/")
 def pairwise_comparison(request, comp_id):
     jury = CustomUser.objects.get(user=request.user)
+    # пока для организатора, возможно эксперт нужен какой-то
     if jury.role != 3:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
@@ -287,13 +288,8 @@ def pairwise_comparison(request, comp_id):
         elems = sum(criterion_rows.values(), [])
         for key in criterion_rows:
             criterion = Criterion.objects.get(id=int(key))
-            criterion_value = sum(criterion_rows[key]) / sum(elems)
-            if not CriterionWeight.objects.filter(criterion=criterion).exists():
-                CriterionWeight.objects.create(criterion=criterion, weight_value=criterion_value)
-            else:
-                w = CriterionWeight.objects.get(criterion=criterion)
-                w.value = criterion_value
-                w.save()
+            criterion.weight_value = sum(criterion_rows[key]) / sum(elems)
+            criterion.save()
         return HttpResponse("Ваши оценки параметров сохранены")
     return render(request, 'fls/pairwise_comparison_table.html', {"params": criteria_modif, "comp": comp})
 
@@ -450,12 +446,13 @@ def similar_page(request):
 
 
 def similar_jury(request):
-    comp_id, type, jury_id, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
+    comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
         request.GET['crit'])
     reqs = Request.objects.filter(competition_id=comp_id)
-    params = Competition.objects.get(id=comp_id).competition_params.all()
+    # params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
-    slt_ests = make_ranks([EstimationJury.objects.get(jury=slt_jury, type=type, request=req).value for req in reqs])
+    slt_ests = make_ranks(
+        [EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value for req in reqs])
     rest_jury = CustomUser.objects.filter(role=2).exclude(id=jury_id)
     smt = {}
     jury_ests = {}
@@ -463,15 +460,14 @@ def similar_jury(request):
         s = 0
         jury_ests[jury.id] = []
         for req in reqs:
-            slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req).value
-            jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req).value
+            slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value
+            jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
             jury_ests[jury.id].append(jury_value)
             s += abs(slt_value - jury_value)
         jury_ests[jury.id] = make_ranks(jury_ests[jury.id])
         smt[jury.id] = round(s, 2)
     print('smt', smt)
     if request.GET['key'] == 'est':
-
         sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
     else:
         sorted_kemeni = {key: dist_kemeni(slt_ests, jury_ests[key]) for key in smt}
@@ -492,14 +488,16 @@ def similar_jury(request):
         # estimation_values[part_name][0].extend(
         #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].append((
-            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req).value, 2), slt_ests[i]))
+            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
+            slt_ests[i]))
         estimation_values[part_name][1].extend(
-            [(round(EstimationJury.objects.get(type=type, jury=jury, request=req).value, 2), jury_ests[jury.id][i]) for
+            [(round(EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value, 2),
+              jury_ests[jury.id][i]) for
              jury in sorted_jury])
     diff = sorted_smt.values()
     est_key = request.GET['key'] == 'est'
     data = {'est': render_to_string('fls/sim_jury/table.html',
-                                    {'ests': estimation_values, 'jurys': sorted_jury, 'params': params,
+                                    {'ests': estimation_values, 'jurys': sorted_jury,
                                      'slt_jury': slt_jury, 'diffs': diff, 'est_key': est_key})}
     return JsonResponse(data)
 
@@ -510,61 +508,54 @@ def metcomp_page(request):
     return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
 
 
-def metcomp(request):
+def method_comparison(request):
     method_indexes = (0, 1)
     methods = itemgetter(*method_indexes)(METHOD_CHOICES)
-    comp_id, jury_id, crit = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
-    reqs = Request.objects.filter(competition_id=comp_id)
-    params = Competition.objects.get(id=comp_id).competition_params.all()
+    comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
+    criterion = Criterion.objects.get(id=crit_id)
     slt_jury = CustomUser.objects.get(id=jury_id)
+    aut_est_jury(slt_jury, criterion)
+    reqs = Request.objects.filter(competition_id=comp_id)
     estimation_values = {}
     for req in reqs:
         part_name = req.participant
         estimation_values[part_name] = [[], []]
-
-        # это нужно проверить
-
-        # estimation_values[part_name][0].extend(
-        #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].extend(
-            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0]).value, 2) for tp in methods)
+            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0], criterion_id=crit_id).value, 2) for
+            tp in methods)
         diff = round((estimation_values[part_name][1][0] - estimation_values[part_name][1][1]), 2)
         estimation_values[part_name].append(diff)
     data = {'est': render_to_string('fls/metcomp/table.html',
-                                    {'ests': estimation_values, 'params': params,
+                                    {'ests': estimation_values,
                                      'slt_jury': slt_jury, 'methods': methods})}
 
     return JsonResponse(data)
 
 
-def dev_page(request):
+def deviations_page(request):
     comps = Competition.objects.all()
     return render(request, 'fls/dev/dev.html', {'comps': comps})
 
 
-def deviation(request):
-    comp_id, type, req_id, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
+def est_deviations(request):
+    comp_id, type, req_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
         request.GET['crit'])
-    params = Competition.objects.get(id=comp_id).competition_params.all()
     req = Request.objects.get(id=req_id)
-    #  это нужно проверить
-    params_values = []
-    # params_values = {param.name: ParamValue.objects.get(request=req, param=param).value for param in params}
-    common_value = round(RequestEstimation.objects.get(request=req, type=type).value, 2)
-    jury_est_values = {}
     jurys = CustomUser.objects.filter(role=2)
+    avg_value = sum([EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
+    jury_est_values = {}
     for jury in jurys:
         jury_est_values[jury] = []
-        jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req).value
-        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - common_value), 2)])
+        jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
+        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - avg_value), 2)])
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
     avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
     # print(params_values)
     variation_coef = math.sqrt(
-        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / common_value
+        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / avg_value
     data = {'est': render_to_string('fls/dev/table.html',
-                                    {'ests': jury_est_values, 'param_values': params_values, 'comm': common_value,
+                                    {'ests': jury_est_values, 'param_values': [], 'comm': avg_value,
                                      'avg_dev': avg_dev, 'var_coef': round(variation_coef, 2)})}
     return JsonResponse(data)
 
@@ -592,14 +583,16 @@ def coherence_page(request):
 
 
 def coherence(request):
-    comp_id, type, clusts, crit = int(request.GET['comp']), int(request.GET['type']), int(request.GET['clusts']), int(
+    comp_id, type, clusts, crit_id = int(request.GET['comp']), int(request.GET['type']), int(
+        request.GET['clusts']), int(
         request.GET['crit']),
     reqs = Competition.objects.get(id=comp_id).competition_request.all()
     jurys = CustomUser.objects.filter(role=2)
     jury_ranks = {}
     for jury in jurys:
         jury_ranks[jury] = make_ranks(
-            [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='average',
+            [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
+            method='average',
             s_m=True)
     req_values = {}
     for idx, req in enumerate(reqs):
@@ -618,7 +611,8 @@ def coherence(request):
         kendall_coef = None
 
     jury_rankings = [make_ranks(
-        [EstimationJury.objects.get(type=type, jury=jury, request=req).value for req in reqs], method='min') for
+        [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
+        method='min') for
         jury in jurys]
     labels, centroids = clusterization(jury_rankings, clusts)
     clusters_jury = {}

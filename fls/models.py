@@ -1,15 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-YEAR_CHOICES = (
-    (1, '1'),
-    (2, '2'),
-    (3, '3'),
-    (4, '4'),
-    (5, '1(магистратура)'),
-    (6, '2(магистратура)'),
-)
-
 METHOD_CHOICES = (
     (1, 'Ручная оценка'),
     (2, 'Взвешенное суммирование'),
@@ -46,10 +37,8 @@ TYPE_PARAM = (
 
 
 class Competition(models.Model):
-    # можно еще тут указать поле, групповой или же единичный (на одного человека) конкурс
     name = models.CharField(max_length=100, unique=True, verbose_name="Название конкурса")
-    year_of_study = models.IntegerField(choices=YEAR_CHOICES, blank=True, null=True, default=YEAR_CHOICES[0][0],
-                                        verbose_name="Курс")
+
     description = models.TextField(verbose_name="Описание конкурса")
 
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
@@ -57,9 +46,6 @@ class Competition(models.Model):
 
     type_comp = models.IntegerField(choices=TYPE, blank=True, null=True,
                                     default=TYPE[0][0], verbose_name="Тип участия")
-
-    # если метод 1, то нужно указать максимум из какого числа ставится оценка
-    max_limit = models.IntegerField(default=10, verbose_name='Максимальный балл за заявку')
 
     # в каком состоянии находится конкурс
     status = models.IntegerField(choices=STATUSES, blank=True, null=True,
@@ -73,12 +59,6 @@ class Competition(models.Model):
 
     def get_criteria(self):
         return self.competition_criterions.all()
-
-    def get_course(self):
-        for r in YEAR_CHOICES:
-            if r[0] == self.year_of_study:
-                return r[1]
-        return "Не указано"
 
     def get_status(self):
         for r in STATUSES:
@@ -101,21 +81,8 @@ class Competition(models.Model):
         return -1
 
 
-class Group(models.Model):
-    year_of_study = models.IntegerField(choices=YEAR_CHOICES)
-    faculty = models.CharField(max_length=50)
-    person_number = models.IntegerField()
-    name = models.CharField(max_length=10, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
 class CustomUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_user')
-    # exists if role=participant
-    group = models.ForeignKey(Group, related_name="current_group", on_delete=models.SET_NULL,
-                              blank=True, null=True, verbose_name="Группа участника")
     role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=ROLE_CHOICES[0][0],
                                verbose_name="Роль")
 
@@ -156,21 +123,6 @@ class Request(models.Model):
         return "Заявка %s - %s" % (self.participant, self.competition.name)
 
 
-class RequestEstimation(models.Model):
-    request = models.ForeignKey(Request, related_name='request_values', on_delete=models.CASCADE, blank=False,
-                                null=False)
-    type = models.IntegerField(choices=METHOD_CHOICES, default=METHOD_CHOICES[0][0], null=False,
-                               blank=False, verbose_name='Тип оценивания')
-    value = models.FloatField()
-    rank = models.IntegerField(null=True, blank=True)
-
-    def __str__(self):
-        return "Заявка %s - %s - %s" % (self.request.participant, self.type, self.value)
-
-    class Meta:
-        unique_together = (('request', 'type'),)
-
-
 class CustomEnum(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_enums', on_delete=models.CASCADE,
                                     blank=True, null=True)
@@ -208,6 +160,9 @@ class Criterion(models.Model):
     # False - промежуточные формулы критериев (там будут указываться id сабпараметров)
 
     result_formula = models.BooleanField(default=False)
+
+    # для взвешенного суммирования, если это не итоговый критерий
+    weight_value = models.FloatField(null=True, blank=True)
 
     class Meta:
         unique_together = (('competition', 'name'),)
@@ -289,15 +244,6 @@ class CriterionValue(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.criterion.name, self.value)
-
-
-class CriterionWeight(models.Model):
-    criterion = models.ForeignKey(Criterion, related_name='criterion_weights', on_delete=models.CASCADE,
-                                  blank=False, null=False, unique=True)
-    weight_value = models.FloatField(default=0)
-
-    def __str__(self):
-        return '%s - %s' % (self.criterion, self.weight_value)
 
 
 class EstimationJury(models.Model):

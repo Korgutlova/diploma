@@ -77,18 +77,19 @@
 
     const fill_estimations = function () {
         comp_id = $('#comp').val();
+        crit_id = $('#crit').val();
         type = $('#type').val();
         clusts = $('#clusts').val();
         $.ajax({
             url: '/fls/coher/',
             type: 'get',
-            data: {'comp': comp_id, 'type': type, 'clusts': clusts},
+            data: {'comp': comp_id, 'type': type, 'clusts': clusts, 'crit': crit_id},
             dataType: 'json',
             success: function (data) {
                 $("#put").html(data.est)
             },
             error: function () {
-                alert("error");
+                alert("Результаты не готовы");
             },
             complete: function (data) {
             }

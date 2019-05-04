@@ -70,11 +70,12 @@
 
     const fill_estimations = function () {
         comp_id = $('#comp').val();
-        jury = $('#jury').val();
+        crit_id = $('#crit').val();
+        jury_id = $('#jury').val();
         $.ajax({
             url: '/fls/method_comp/',
             type: 'get',
-            data: {'comp': comp_id, 'jury': jury},
+            data: {'comp': comp_id, 'jury': jury_id, 'crit': crit_id},
             dataType: 'json',
             success: function (data) {
                 $("#values").html(data.est)
@@ -124,7 +125,7 @@
                 {#$(data.reqs).insertAfter("#place");#}
             },
             error: function () {
-                alert("error");
+                alert("Результаты не готовы");
             },
             complete: function (data) {
 
