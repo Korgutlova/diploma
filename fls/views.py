@@ -18,7 +18,7 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, AvgEstimationJury, WeightParamJury
+    STATUSES, ParamValue, UploadData, WeightParamJury
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -561,7 +561,8 @@ def deviation(request):
     comp_id, type, req_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
         request.GET['crit'])
     req = Request.objects.get(id=req_id)
-    avg_value = round(AvgEstimationJury.objects.get(request=req, type=type, criterion_id=crit_id).value, 2)
+    # переделать
+    avg_value = 0
     jury_est_values = {}
     jurys = CustomUser.objects.filter(role=2)
     for jury in jurys:

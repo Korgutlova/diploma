@@ -117,22 +117,6 @@ class Request(models.Model):
         return "Заявка %s - %s" % (self.participant, self.competition.name)
 
 
-class AvgEstimationJury(models.Model):
-    request = models.ForeignKey(Request, related_name='request_avg_estimations', on_delete=models.CASCADE, blank=False,
-                                null=False)
-    type = models.IntegerField(choices=METHOD_CHOICES[:2], default=METHOD_CHOICES[0][0], null=False,
-                               blank=False, verbose_name='Тип оценивания')
-    criterion = models.ForeignKey('Criterion', related_name='criterion_avg_estimations', on_delete=models.CASCADE,
-                                  blank=False, null=False)
-
-    value = models.FloatField()
-
-    def __str__(self):
-        return "Заявка %s - %s - %s" % (self.request.participant, self.type, self.value)
-
-    class Meta:
-        unique_together = (('request', 'type', 'criterion'),)
-
 
 class CustomEnum(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_enums', on_delete=models.CASCADE,
