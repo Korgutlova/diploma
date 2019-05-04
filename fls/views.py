@@ -290,6 +290,7 @@ def make_pair_matrix(values):
 @login_required(login_url="login/")
 def pairwise_comparison(request, comp_id):
     jury = CustomUser.objects.get(user=request.user)
+    # пока для организатора, возможно эксперт нужен какой-то
     if jury.role != 3:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
@@ -304,6 +305,7 @@ def pairwise_comparison(request, comp_id):
         for key in criterion_rows:
             criterion = Criterion.objects.get(id=int(key))
             criterion.weight_value = sum(criterion_rows[key]) / sum(elems)
+            criterion.save()
         return HttpResponse("Ваши оценки параметров сохранены")
     return render(request, 'fls/pairwise_comparison_table.html', {"params": criteria_modif, "comp": comp})
 
