@@ -16,7 +16,7 @@ from fls.forms import CompetitionForm
 from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, aut_est_jury
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, WeightParamJury
+    STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -164,7 +164,7 @@ def calculate_result(request, id):
 
 
 @login_required(login_url="login/")
-def comp(request):
+def comp_first_step(request):
     form = CompetitionForm()
     if request.method == 'POST':
         key = "params[%s][%s]"
@@ -174,7 +174,42 @@ def comp(request):
             print("create comp")
             comp = form.save()
         else:
-            return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_PARAM})
+            return render(request, 'fls/add_comp_first.html', {"form": form})
+        i = 0
+        while True:
+            try:
+                name = request.POST[key % (i, "name")]
+                en = CustomEnum(competition=comp, name=name)
+                en.save()
+                print(name)
+                k = 0
+                while True:
+                    try:
+                        text_enum = request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "text")]
+                        value_enum = float(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "value")])
+                        print(text_enum, value_enum)
+                        vfe = ValuesForEnum(enum=en, enum_key=text_enum, enum_value=value_enum)
+                        vfe.save()
+                        print(vfe)
+                        k += 1
+                    except Exception as e:
+                        print(e)
+                        break
+                i += 1
+            except Exception as e:
+                print(e)
+                break
+        return JsonResponse({"comp_id": comp.id})
+    return render(request, 'fls/add_comp_first.html', {"form": form})
+
+
+@login_required(login_url="login/")
+def comp_second_step(request, comp_id):
+    comp = Competition.objects.get(id=comp_id)
+    enums = CustomEnum.objects.filter(competition=comp)
+    if request.method == 'POST':
+        key = "params[%s][%s]"
+        print(request.POST)
         i = 0
         while True:
             try:
@@ -194,6 +229,10 @@ def comp(request):
                         print(flag)
                         sub_p = Param(criterion=c, name=name_sub, type=type, for_formula=flag)
                         sub_p.save()
+                        if type == 5:
+                            enum_id = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "enum_id")])
+                            sub_p.enum = CustomEnum.objects.get(id=enum_id)
+                        sub_p.save()
                         print(name_sub)
                         k += 1
                     except Exception as e:
@@ -203,8 +242,7 @@ def comp(request):
             except Exception as e:
                 print(e)
                 break
-
-    return render(request, 'fls/add_comp.html', {"form": form, "types": TYPE_PARAM})
+    return render(request, 'fls/add_comp_second.html', {"types": TYPE_PARAM, "comp": comp, "enums": enums})
 
 
 @login_required(login_url="login/")
@@ -419,7 +457,6 @@ def estimate_req(request, req_id):
                 estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
                                           request=req, criterion=c, value=val, type=1)
             estimate.save()
-
 
         # что ниже это для твоих вычислений ?
 
