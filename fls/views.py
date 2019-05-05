@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, aut_est_jury
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum
@@ -242,6 +242,8 @@ def comp_second_step(request, comp_id):
             except Exception as e:
                 print(e)
                 break
+        Criterion.objects.create(competition=comp, name='Итоговый', description='Итоговый критерий',
+                                 result_formula=True)
     return render(request, 'fls/add_comp_second.html', {"types": TYPE_PARAM, "comp": comp, "enums": enums})
 
 
@@ -323,7 +325,7 @@ def pairwise_comparison(request, comp_id):
     if jury.role != 3:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
-    criteria = Criterion.objects.filter(competition=comp)
+    criteria = Criterion.objects.filter(competition=comp, result_formula=False)
     criteria_modif = make_pairs(criteria)
 
     if request.method == 'POST':
@@ -426,7 +428,7 @@ def get_request(request, id):
     estimate = EstimationJury.objects.filter(request=cur_request)
     flag = False
     arr = []
-    criteria = Criterion.objects.filter(competition=cur_request.competition)
+    criteria = Criterion.objects.filter(competition=cur_request.competition, result_formula=False)
     for c in criteria:
         subvalues = []
         for sb in c.param_criterion.all():
@@ -445,32 +447,34 @@ def get_request(request, id):
 def estimate_req(request, req_id):
     req = Request.objects.get(id=req_id)
     criteria = req.competition.competition_criterions.all().filter(result_formula=False)
+    final_criteria = req.competition.competition_criterions.get(result_formula=True)
+    jury = CustomUser.objects.get(user=request.user)
     if request.method == "POST":
+        jury_final_estimate = 0
         for c in criteria:
             val = request.POST["est_val_%s" % c.id]
-            estimate = EstimationJury.objects.filter(jury=CustomUser.objects.get(user=request.user),
+            estimate = EstimationJury.objects.filter(jury=jury,
                                                      request=req, type=1, criterion=c)
             if len(estimate) > 0:
                 estimate = estimate[0]
                 estimate.value = val
             else:
-                estimate = EstimationJury(jury=CustomUser.objects.get(user=request.user),
+                estimate = EstimationJury(jury=jury,
                                           request=req, criterion=c, value=val, type=1)
             estimate.save()
 
-        # что ниже это для твоих вычислений ?
+            jury_final_estimate += c.weight_value * float(val)
 
-        jurys_count = CustomUser.objects.filter(role=2).count()
-        request_estimations_count = EstimationJury.objects.filter(request=req,
-                                                                  type=1).count()
-        if request_estimations_count == jurys_count:
-            pass
-            #  это нужно проверить
-
-            #  формулы для requestestimation  уже нет
-
-            # for jury_formula in req.competition.competition_formula_for_jury.all():
-            #     union_request_ests(req, jury_formula, types=(1,))
+        final_estimate = EstimationJury.objects.filter(jury=jury, request=req,
+                                                       type=1,
+                                                       criterion=final_criteria)
+        if final_estimate.exists():
+            final_estimate = final_estimate[0]
+            final_estimate.value = jury_final_estimate
+        else:
+            final_estimate = EstimationJury(jury=jury, request=req, type=1, criterion=final_criteria,
+                                            value=jury_final_estimate)
+        final_estimate.save()
 
     return redirect("fls:get_request", req_id)
 
@@ -564,7 +568,6 @@ def method_comparison(request):
     comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
     criterion = Criterion.objects.get(id=crit_id)
     slt_jury = CustomUser.objects.get(id=jury_id)
-    aut_est_jury(slt_jury, criterion)
     reqs = Request.objects.filter(competition_id=comp_id)
     estimation_values = {}
     for req in reqs:
@@ -621,6 +624,8 @@ def comp_reqs(request):
 
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
+    if int(val) == 3:
+        calculate_jury_automate_ests(id)
     comp.status = int(val)
     comp.save()
     return redirect("fls:get_comp", id)
