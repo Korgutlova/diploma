@@ -11,8 +11,8 @@
             <ul class="nav navbar-nav">
                 <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
                 <li><a href="#">Отклонения от правил</a></li>
-                <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
-                <li class="active"><a href="{% url 'fls:coherpage' %}">Согласованность оценок</a></li>
+                <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
+                <li class="active"><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
 
 
             </ul>
@@ -36,7 +36,7 @@
                 <br>
                 <select name="type" id="type" class="selectpicker">
                     <option value="1">Ручная оценка</option>
-                    <option value="2">Сравнение параметров</option>
+                    <option value="2">Автоматическая оценка</option>
                 </select>
                 <br>
                 <br>

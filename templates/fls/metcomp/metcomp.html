@@ -12,8 +12,8 @@
             <ul class="nav navbar-nav">
                 <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
                 <li class="active"><a href="#">Отклонения от правил</a></li>
-                <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
-                <li><a href="{% url 'fls:coherpage' %}">Согласованность оценок</a></li>
+                <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
+                <li><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
 
 
             </ul>
@@ -91,7 +91,6 @@
                     color = color_neg[(color_neg.length - 1) - Math.round(Math.abs(diff_value))];
 
                 }
-                {#$(this).css("background-color", color);#}
                 $(this).prev().css("background-color", color);
                 $(this).prev().prev().css("background-color", color);
             })

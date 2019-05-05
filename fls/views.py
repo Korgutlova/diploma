@@ -503,7 +503,6 @@ def similar_jury(request):
     comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
         request.GET['crit'])
     reqs = Request.objects.filter(competition_id=comp_id)
-    # params = Competition.objects.get(id=comp_id).competition_params.all()
     slt_jury = CustomUser.objects.get(id=jury_id)
     slt_ests = make_ranks(
         [EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value for req in reqs])
@@ -537,10 +536,6 @@ def similar_jury(request):
     for i, req in enumerate(reqs):
         part_name = req.participant
         estimation_values[part_name] = ([], [])
-        # это нужно проверить
-
-        # estimation_values[part_name][0].extend(
-        #     ParamValue.objects.get(request=req, param=param).value for param in params)
         estimation_values[part_name][1].append((
             round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
             slt_ests[i]))

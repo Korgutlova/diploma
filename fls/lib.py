@@ -190,7 +190,8 @@ def jury_weight_sum_ests(jury, crit, req_param_values, reqs, params):
 
 def calculate_jury_automate_ests(comp_id):
     jurys = CustomUser.objects.filter(role=2)
-    final_criterion = Criterion.objects.get(result_formula=True)
+    comp = Competition.objects.get(id=comp_id)
+    final_criterion = Criterion.objects.get(competition=comp, cresult_formula=True)
     criterions = Competition.objects.get(id=comp_id).competition_criterions.filter(result_formula=False)
     for crit in criterions:
         req_param_values, reqs, params = normalize_crit_params_values(crit)

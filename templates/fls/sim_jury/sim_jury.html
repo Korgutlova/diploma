@@ -13,8 +13,8 @@
             <ul class="nav navbar-nav">
                 <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
                 <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                <li><a href="{% url 'fls:devpage' %}">Отклонения оценок</a></li>
-                <li><a href="{% url 'fls:coherpage' %}">Согласованность оценок</a></li>
+                <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
+                <li><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
 
             </ul>
         </div>
@@ -38,7 +38,7 @@
                 <br>
                 <select name="type" id="type" class="selectpicker">
                     <option value="1">Ручная оценка</option>
-                    <option value="2">Сравнение параметров</option>
+                    <option value="2">Автоматическая оценка</option>
                 </select>
                 <br>
                 <br>
@@ -108,10 +108,7 @@
                 data: {'comp': comp_id},
                 dataType: 'json',
                 success: function (data) {
-
-                    {#$('#reqs').html(data.reqs);#}
                     $("#critfil").html(data.crits);
-                    {#$(data.reqs).insertAfter("#place");#}
                 },
                 error: function () {
                     alert("error");
@@ -129,21 +126,19 @@
         select_comp = $('#comp');
         select_type = $('#type');
         select_key = $('#key');
-
-
-        {#select_reqs = $('#req');#}
+        select_jury = $("#jury");
 
         select_comp.selectpicker();
         select_type.selectpicker();
-        {#select_reqs.selectpicker();#}
-        {#$('#send').click(fill_estimations);#}
+        select_key.selectpicker();
+        select_jury.selectpicker();
+
         $(document).ready(fill_criterions);
         select_comp.change(fill_criterions);
         select_type.change(fill_estimations);
         select_key.change(fill_estimations);
-        {#select_reqs.selectpicker();#}
+        select_jury.change(fill_estimations);
 
-        {#$('#req').change(alert('hh'));#}
         $('#critfil').on('change', '#crit', function () {
             fill_estimations();
         });
