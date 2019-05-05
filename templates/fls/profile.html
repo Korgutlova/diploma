@@ -61,11 +61,21 @@
             <ul>
                 {% for r in view_requests %}
                     <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
-                        участника {{ r.participant.get_username}} </p>
+                        участника {{ r.participant.get_username }} </p>
                     </a></li>
                 {% endfor %}
             </ul>
         {% endif %}
+        {% if crits %}
+            <h4>Оцените значимость показателей критериев:</h4>
+            <ul>
+                {% for c in crits %}
+                    <li><a href="{% url 'fls:pairwise_comparison_param' c.id %}"><p>Критерий "{{ c.name }}" </p>
+                    </a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
     {% endif %}
 {% endblock %}
 {% block script %}

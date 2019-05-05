@@ -345,9 +345,9 @@ def pairwise_comparison_param(request, crit_id):
     jury = CustomUser.objects.get(user=request.user)
     if jury.role != 2:
         return HttpResponse("Данная страница для Вас недоступна")
-    params = Criterion.objects.get(id=crit_id).param_criterion.all()
+    params = Criterion.objects.get(id=crit_id).param_criterion.filter(type__in=(1, 3, 4, 5))
     params_modif = make_pairs(params)
-
+    response = render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, 'crit': crit_id})
     if request.method == 'POST':
         values = dict(request.POST)
         del values['csrfmiddlewaretoken']
@@ -362,8 +362,8 @@ def pairwise_comparison_param(request, crit_id):
                 w = WeightParamJury.objects.get(param=param, jury=jury)
                 w.value = param_value
                 w.save()
-        return HttpResponse("Ваши оценки параметров сохранены")
-    return render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, 'crit': crit_id})
+        response = redirect("fls:profile")
+    return response
 
 
 @login_required(login_url="login/")
@@ -372,6 +372,7 @@ def profile(request):
     requests = Request.objects.filter(participant=user)
     new_requests = []
     view_requests = []
+    criterions = []
     select_comp = 0
     if request.method == "POST":
         comp_id = request.POST['comp']
@@ -382,10 +383,11 @@ def profile(request):
                 view_requests.append(req)
             new_requests = list(set(new_requests) - set(view_requests))
         select_comp = int(comp_id)
+        criterions = Competition.objects.get(id=comp_id).competition_criterions.filter(result_formula=False)
     return render(request, "fls/profile.html",
                   {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
                    'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
-                   'statuses': STATUSES})
+                   'statuses': STATUSES, 'crits': criterions})
 
 
 def ajax_comp_status(request):
