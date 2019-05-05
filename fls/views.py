@@ -555,7 +555,8 @@ def est_deviations(request):
         request.GET['crit'])
     req = Request.objects.get(id=req_id)
     jurys = CustomUser.objects.filter(role=2)
-    avg_value = sum([EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
+    avg_value = sum([jury_est.value for jury_est in
+                     EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
     jury_est_values = {}
     for jury in jurys:
         jury_est_values[jury] = []
@@ -584,6 +585,8 @@ def comp_reqs(request):
 
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
+    # если статус переходит на "оценивание", все параметры линейно нормализуются,
+    # подсчитываются все индивидуальные для жюри автоматические оценки (на основе WeightParamJury)
     if int(val) == 3:
         calculate_jury_automate_ests(id)
     comp.status = int(val)

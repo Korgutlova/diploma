@@ -203,5 +203,10 @@ def calculate_jury_automate_ests(comp_id):
             for crit in criterions:
                 final_jury_value += EstimationJury.objects.get(jury=jury, request=req, criterion=crit,
                                                                type=2).value * crit.weight_value
-            EstimationJury.objects.create(jury=jury, request=req, criterion=final_criterion, type=2,
-                                          value=final_jury_value)
+            if not EstimationJury.objects.filter(jury=jury, request=req, criterion=final_criterion, type=2).exists():
+                EstimationJury.objects.create(jury=jury, request=req, criterion=final_criterion, type=2,
+                                              value=final_jury_value)
+            else:
+                estimate = EstimationJury.objects.get(jury=jury, request=req, criterion=final_criterion, type=2)
+                estimate.value = final_jury_value
+                estimate.save()
