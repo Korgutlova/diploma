@@ -66,16 +66,26 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        {% if crits %}
-            <h4>Оцените значимость показателей критериев:</h4>
+        {% if new_crits %}
+            <h4>Неоцененные показатели критериев:</h4>
             <ul>
-                {% for c in crits %}
+                {% for c in new_crits %}
                     <li><a href="{% url 'fls:pairwise_comparison_param' c.id %}"><p>Критерий "{{ c.name }}" </p>
                     </a></li>
                 {% endfor %}
             </ul>
-        {% endif %}
 
+        {% endif %}
+        {% if view_crits %}
+            <h4>Оцененные показатели критериев:</h4>
+            <ul>
+                {% for c in view_crits %}
+                    <li><a href="{% url 'fls:pairwise_comparison_param' c.id %}"><p>Критерий "{{ c.name }}" </p>
+                    </a></li>
+                {% endfor %}
+            </ul>
+
+        {% endif %}
     {% endif %}
 {% endblock %}
 {% block script %}

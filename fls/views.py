@@ -372,7 +372,8 @@ def profile(request):
     requests = Request.objects.filter(participant=user)
     new_requests = []
     view_requests = []
-    criterions = []
+    new_criterions = []
+    view_criterions = []
     select_comp = 0
     if request.method == "POST":
         comp_id = request.POST['comp']
@@ -384,10 +385,15 @@ def profile(request):
             new_requests = list(set(new_requests) - set(view_requests))
         select_comp = int(comp_id)
         criterions = Competition.objects.get(id=comp_id).competition_criterions.filter(result_formula=False)
+        for crit in criterions:
+            if WeightParamJury.objects.filter(jury=user, param__criterion=crit).exists():
+                view_criterions.append(crit)
+            else:
+                new_criterions.append(crit)
     return render(request, "fls/profile.html",
                   {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
                    'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
-                   'statuses': STATUSES, 'crits': criterions})
+                   'statuses': STATUSES, 'new_crits': new_criterions, 'view_crits': view_criterions})
 
 
 def ajax_comp_status(request):
