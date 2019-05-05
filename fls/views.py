@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, aut_est_jury
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, WeightParamJury
@@ -425,12 +425,12 @@ def estimate_req(request, req_id):
                                           request=req, criterion=c, value=val, type=1)
             estimate.save()
             jury_final_estimate += c.weight_value * float(val)
-            print(jury_final_estimate, 'j')
         final_estimate = EstimationJury.objects.filter(jury=jury, request=req,
                                                        type=1,
                                                        criterion=final_criteria)
         if final_estimate.exists():
-            final_estimate[0].value = jury_final_estimate
+            final_estimate = final_estimate[0]
+            final_estimate.value = jury_final_estimate
         else:
             final_estimate = EstimationJury(jury=jury, request=req, type=1, criterion=final_criteria,
                                             value=jury_final_estimate)
@@ -528,7 +528,6 @@ def method_comparison(request):
     comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
     criterion = Criterion.objects.get(id=crit_id)
     slt_jury = CustomUser.objects.get(id=jury_id)
-    aut_est_jury(slt_jury, criterion)
     reqs = Request.objects.filter(competition_id=comp_id)
     estimation_values = {}
     for req in reqs:
@@ -585,6 +584,8 @@ def comp_reqs(request):
 
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
+    if int(val) == 3:
+        calculate_jury_automate_ests(id)
     comp.status = int(val)
     comp.save()
     return redirect("fls:get_comp", id)

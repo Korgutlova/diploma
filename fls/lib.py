@@ -14,7 +14,8 @@ django.setup()
 
 from py_expression_eval import Parser
 
-from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury
+from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury, \
+    Criterion
 
 parser = Parser()
 
@@ -149,8 +150,7 @@ def clusterization(dataset, n_clusters):
     return labels, centroids
 
 
-
-def normalize_crit_values(crit):
+def normalize_crit_params_values(crit):
     reqs = crit.competition.competition_request.all()
     params = crit.param_criterion.filter(type__in=(1, 3, 4, 5))
     req_param_values = []
@@ -169,17 +169,16 @@ def normalize_crit_values(crit):
     for i in range(len(params)):
         max_v, min_v = np.max(req_param_values[:, i]), np.min(req_param_values[:, i])
         for k in range(len(reqs)):
-            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.max_for_jury-1)
+            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.max_for_jury - 1)
     return req_param_values, reqs, params
 
 
-def aut_est_jury(jury, crit):
-    req_param_values, reqs, params = normalize_crit_values(crit)
+def jury_weight_sum_ests(jury, crit, req_param_values, reqs, params):
     for i, req in enumerate(reqs):
         sum_value = 0
         for j, param in enumerate(params):
             weight_value = WeightParamJury.objects.get(jury=jury, param=param).weight_value
-            param_value = ParamValue.objects.get(param=param, request=req).value
+            param_value = req_param_values[i, j]
             sum_value += param_value * weight_value
         if EstimationJury.objects.filter(jury=jury, type=2, request=req, criterion=crit).exists():
             estimaion_jury = EstimationJury.objects.get(jury=jury, type=2, request=req, criterion=crit)
@@ -187,3 +186,22 @@ def aut_est_jury(jury, crit):
             estimaion_jury.save()
         else:
             EstimationJury.objects.create(jury=jury, type=2, request=req, criterion=crit, value=sum_value)
+
+
+def calculate_jury_automate_ests(comp_id):
+    jurys = CustomUser.objects.filter(role=2)
+    final_criterion = Criterion.objects.get(result_formula=True)
+    criterions = Competition.objects.get(id=comp_id).competition_criterions.filter(result_formula=False)
+    for crit in criterions:
+        req_param_values, reqs, params = normalize_crit_params_values(crit)
+        for jury in jurys:
+            jury_weight_sum_ests(jury, crit, req_param_values, reqs, params)
+    reqs = Competition.objects.get(id=comp_id).competition_request.all()
+    for jury in jurys:
+        for req in reqs:
+            final_jury_value = 0
+            for crit in criterions:
+                final_jury_value += EstimationJury.objects.get(jury=jury, request=req, criterion=crit,
+                                                               type=2).value * crit.weight_value
+            EstimationJury.objects.create(jury=jury, request=req, criterion=final_criterion, type=2,
+                                          value=final_jury_value)
