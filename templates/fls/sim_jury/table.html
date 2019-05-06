@@ -2,29 +2,34 @@
     для {{ slt_jury }}</strong></caption>
 <thead class="thead thead-light">
 <tr>
-    <th style="width: 50px">Участник:</th>
-{#    {% for param in params %}#}
-{#        <th style="width: 50px">{{ param }}</th>#}
-{#    {% endfor %}#}
-    <th style="width: 50px" colspan="2">{{ slt_jury }}</th>
+    <td rowspan="2" style="vertical-align : middle;text-align:center;"><b>Участник</b></td>
+    <th style="width: 50px" colspan="2" scope="colgroup">{{ slt_jury }}
+    </th>
     {% if jurys %}
         {% for jury in jurys %}
-            <th style="width: 50px" colspan="2">{{ jury }}</th>
+            <th colspan="2" scope="colgroup">{{ jury }}</th>
         {% endfor %}
     {% endif %}
-
-
 </tr>
+<tr>
+
+    <th class="notbold" scope="col">Оценка</th>
+    <th class="notbold" scope="col">Место</th>
+    {% if jurys %}
+        {% for jury in jurys %}
+            <th class="notbold" scope="col">Оценка</th>
+            <th class="notbold" scope="col">Место</th>
+        {% endfor %}
+    {% endif %}
+</tr>
+
 </thead>
 <tbody>
-
 {% for est_name, values in ests.items %}
     <tr>
         <td>{{ est_name }}</td>
-{#        {% for param_value in values.0 %}#}
-{#            <td>{{ param_value }}</td>#}
-{#        {% endfor %}#}
-        {% for jury_value, jury_rank in values.1 %}
+
+        {% for jury_value, jury_rank in values %}
             <td class="key_est" style="background-color: #4cae4c">{{ jury_value }}</td>
             <td class="key_rank" style="background-color: #5bc0de">{{ jury_rank }}</td>
 
@@ -33,18 +38,10 @@
     </tr>
 {% endfor %}
 
-{#{% empty %}#}
-{#    <tr>#}
-{#        <td colspan="8" class="text-center bg-warning">Нет результатов</td>#}
-{#    </tr>#}
-{#{% endfor %}#}
 
-
-<tr style="background-color: greenyellow">
+<tr style="background-color: #adff2f">
     <td>Схожесть</td>
-{#    {% for param in params %}#}
-{#        <th></th>#}
-{#    {% endfor %}#}
+
     <td></td>
     <td></td>
     {% for diff in diffs %}
@@ -58,12 +55,6 @@
 
     {% endfor %}
 </tr>
-
-
-{#{% empty %}#}
-{#    <tr>#}
-{#        <td colspan="8" class="text-center bg-warning">Нет результатов</td>#}
-{#    </tr>#}
 
 
 </tbody>

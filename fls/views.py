@@ -543,11 +543,11 @@ def similar_jury(request):
     estimation_values = {}
     for i, req in enumerate(reqs):
         part_name = req.participant
-        estimation_values[part_name] = ([], [])
-        estimation_values[part_name][1].append((
+        estimation_values[part_name] = []
+        estimation_values[part_name].append((
             round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
             slt_ests[i]))
-        estimation_values[part_name][1].extend(
+        estimation_values[part_name].extend(
             [(round(EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value, 2),
               jury_ests[jury.id][i]) for
              jury in sorted_jury])
@@ -608,7 +608,6 @@ def est_deviations(request):
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
     avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
-    # print(params_values)
     variation_coef = math.sqrt(
         sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / avg_value
     data = {'est': render_to_string('fls/dev/table.html',
