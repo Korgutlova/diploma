@@ -226,7 +226,7 @@ rankings = [
     [6, 4, 3, 5, 2, 1, 7]
 ]
 
-define_optimal_k_centers(rankings)
+# define_optimal_k_centers(rankings)
 
 
 def normalize_crit_params_values(crit):
