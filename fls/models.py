@@ -125,6 +125,9 @@ class CustomEnum(models.Model):
     def __str__(self):
         return "%s" % self.name
 
+    def get_values(self):
+        return self.values_for_enum.all()
+
 
 class ValuesForEnum(models.Model):
     enum = models.ForeignKey(CustomEnum, related_name='values_for_enum', on_delete=models.SET_NULL,
@@ -205,6 +208,9 @@ class ParamValue(models.Model):
 
     def is_photo(self):
         return self.param.type == 4
+
+    def is_enum(self):
+        return self.param.type == 5
 
     def get_name(self):
         return self.param.name

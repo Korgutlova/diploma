@@ -72,7 +72,16 @@ def summa(*args):
 
 
 def calculate_avg_request(comp):
-    pass
+    requests = comp.competition_request.all()
+    final_criteria = comp.competition_criterions.get(result_formula=True)
+    for r in requests:
+        estimations = EstimationJury.objects.filter(request=r, criterion=final_criteria, type=1).values_list("value",
+                                                                                                             flat=True)
+        print(estimations)
+        result = average(estimations)
+        r.result_value = result
+        r.save()
+    print("done")
 
 
 def calculate_result_for_ranking(comp):
@@ -116,7 +125,7 @@ def calculate_result_criteria(comp):
                 if param.type == 1:
                     array[v] = spv.value
                 elif param.type == 5:
-                    array[v] = spv.enum_val
+                    array[v] = spv.enum_val.enum_value
                 else:
                     print("Неверный формат")
             result = execute_formula(array, funcs, c.formula)
@@ -259,7 +268,7 @@ def load_request(request, comp_id):
     if participant.role != 1:
         return HttpResponse("Данная страница для Вас недоступна")
     comp = Competition.objects.get(id=comp_id)
-    criteria = Criterion.objects.filter(competition=comp)
+    criteria = Criterion.objects.filter(competition=comp, result_formula=False)
     collection = []
     for cr in criteria:
         params = Param.objects.filter(criterion=cr)
@@ -289,7 +298,7 @@ def load_request(request, comp_id):
                     elif param.type == 2 or param.type == 6:
                         sp_val.text = val
                     else:
-                        sp_val.enum_val = val
+                        sp_val.enum_val = ValuesForEnum.objects.get(id=val)
                     sp_val.save()
 
         print("saving")
