@@ -44,7 +44,7 @@ def parse_formula(formula, params_values):
     return calc_exp()
 
 
-parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
+# parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
 
 
 def median_kemeni(rankings):
@@ -148,6 +148,85 @@ def clusterization(dataset, n_clusters):
                     cluster_rankings.append(dataset[k])
             centroids[i] = median_kemeni(cluster_rankings)
     return labels, centroids
+
+
+def generate_reference_datasets(B, dataset):
+    B_datasets = []
+    n_objects = len(dataset)
+    n_features = len(dataset[0])
+    for i in range(B):
+        b_dataset = []
+        for j in range(n_objects):
+            b_dataset.append(list(np.random.permutation(range(1, n_features + 1))))
+        B_datasets.append(b_dataset)
+    return B_datasets
+
+
+def define_optimal_k_centers(dataset):
+    W_k_values = []
+    W_k_b_values = []
+    B = 10
+    Gap = []
+    sk = []
+    reference_dataset = generate_reference_datasets(B, dataset)
+    for k in range(1, len(dataset)):
+        labels, centroids = clusterization(dataset, k)
+        clusters = {}
+        for idx, label in enumerate(labels):
+            if label not in clusters:
+                clusters[label] = []
+            clusters[label].append(dataset[idx])
+        W_k_value = 0
+        D_r = 0
+        for label in clusters:
+            for elem1 in clusters[label]:
+                for elem2 in clusters[label]:
+                    D_r += dist_kemeni(elem1, elem2)
+            W_k_value += D_r / (2 * len(clusters[label]))
+        W_k_values.append(W_k_value)
+        b_values = []
+        for ref_dataset in reference_dataset:
+            labels, centroids = clusterization(ref_dataset, k)
+            clusters = {}
+            for idx, label in enumerate(labels):
+                if label not in clusters:
+                    clusters[label] = []
+                clusters[label].append(dataset[idx])
+            W_k = 0
+            D_r = 0
+            for label in clusters:
+                for elem1 in clusters[label]:
+                    for elem2 in clusters[label]:
+                        D_r += dist_kemeni(elem1, elem2)
+                W_k += D_r / (2 * len(clusters[label]))
+            b_values.append(W_k)
+        W_k_b_values.append(b_values)
+        gap_k_value = sum([math.log(w_k_b) for w_k_b in b_values]) / B - math.log(W_k_value)
+        Gap.append(gap_k_value)
+        w = sum([math.log(w_k_b) for w_k_b in b_values]) / B
+        sd_k = math.sqrt(sum([(math.log(w_k_b) - w) ** 2 for w_k_b in b_values]) / B)
+        s_k = sd_k * math.sqrt(1 + 1 / B)
+        sk.append(s_k)
+    for k in range(len(Gap)):
+        print('Gap', Gap[k], 'sk', sk[k])
+    for k in range(0, len(Gap) - 1):
+        if Gap[k] >= Gap[k + 1] - sk[k + 1]:
+            print('K = ', k + 1)
+            break
+
+
+
+rankings = [
+    [1, 3, 2, 4, 6, 5, 7],
+    [3, 2, 1, 4, 5, 6, 7],
+    [6, 4, 3, 5, 1, 2, 7],
+    [1, 2, 3, 4, 6, 5, 7],
+    [3, 2, 1, 5, 4, 6, 7],
+    [6, 4, 3, 1, 5, 2, 7],
+    [6, 4, 3, 5, 2, 1, 7]
+]
+
+# define_optimal_k_centers(rankings)
 
 
 def normalize_crit_params_values(crit):

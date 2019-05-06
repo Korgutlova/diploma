@@ -68,7 +68,7 @@
                     $("#values").html(data.est)
                 },
                 error: function () {
-                    alert("error");
+                    alert("Результаты не готовы");
                 },
                 complete: function (data) {
                     color_range();
@@ -78,17 +78,18 @@
         };
 
         const color_range = function () {
-            color_pos = ['b3ffcc', '99ffbb', '80ffaa', '66ff99', '#4dff88', '#33ff77', '#1aff66', '#00ff55', '#00e64d', '#00cc44'];
-            color_neg = ['ffe6ee', 'ffccdd', '#ffb3cc', '#ff99bb', '#ff80aa', '#ff6699', '#ff4d88', '#ff3377'];
+            color_pos = ['#3fa082', '#52a98e', '#65b39b', '#78bca7', '#8bc6b4', '#9fcfc0', '#b2d9cd', '#c5e2d9', '#d8ece6', '#ebf5f2'];
+            color_neg = ['#cc285f', '#d13d6f', '#d6527e', '#db688f', '#e07e9f', '#e593af', '#eaa9bf', '#efbecf', '#f4d4df'];
             $(".paint").each(function (i) {
-                {#console.log($(this).text());#}
                 diff_value = parseFloat($(this).text());
-                if (diff_value >= 0) {
-
-                    color = color_pos[(color_pos.length - 1) - Math.round(diff_value)];
+                diff = Math.round(Math.abs(diff_value));
+                if (diff >= color_pos.length) {
+                    diff = color_pos.length - 1
                 }
-                else {
-                    color = color_neg[(color_neg.length - 1) - Math.round(Math.abs(diff_value))];
+                if (diff_value >= 0) {
+                    color = color_pos[diff];
+                } else {
+                    color = color_neg[diff];
 
                 }
                 $(this).prev().css("background-color", color);
@@ -105,10 +106,7 @@
                 data: {'comp': comp_id},
                 dataType: 'json',
                 success: function (data) {
-
-                    {#$('#reqs').html(data.reqs);#}
                     $("#critfil").html(data.crits);
-                    {#$(data.reqs).insertAfter("#place");#}
                 },
                 error: function () {
                     alert("Результаты не готовы");
@@ -126,18 +124,12 @@
 
         select_comp = $('#comp');
         select_type = $('#jury');
-
-
         select_comp.selectpicker();
         select_type.selectpicker();
-        {#select_reqs.selectpicker();#}
-        {#$('#send').click(fill_estimations);#}
+
         $(document).ready(fill_criterions);
         select_comp.change(fill_criterions);
         select_type.change(fill_estimations);
-        {#select_reqs.selectpicker();#}
-
-        {#$('#req').change(alert('hh'));#}
         $('#critfil').on('change', '#crit', function () {
             fill_estimations();
         });
