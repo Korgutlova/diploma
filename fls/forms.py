@@ -6,7 +6,7 @@ from fls.models import Competition
 class CompetitionForm(forms.ModelForm):
     class Meta:
         model = Competition
-        fields = ['name',  'description', 'method_of_estimate']
+        fields = ['name',  'description', 'method_of_estimate', 'max_for_criteria']
 
     def clean_name(self):
         name = self.cleaned_data['name']
