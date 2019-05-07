@@ -67,7 +67,7 @@ class Competition(models.Model):
         return len(self.competition_criterions.all().exclude(formula="")) == 0
 
     def get_next_criterion(self):
-        criteria = self.competition_criterions.all().filter(formula="")
+        criteria = self.competition_criterions.all().filter(formula="", result_formula=False)
         if len(criteria) > 0:
             return criteria[0].id
         return -1

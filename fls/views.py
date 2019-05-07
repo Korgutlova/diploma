@@ -77,7 +77,6 @@ def calculate_avg_request(comp):
     for r in requests:
         estimations = EstimationJury.objects.filter(request=r, criterion=final_criteria, type=1).values_list("value",
                                                                                                              flat=True)
-        print(estimations)
         result = average(estimations)
         r.result_value = result
         r.save()
@@ -85,7 +84,39 @@ def calculate_avg_request(comp):
 
 
 def calculate_result_for_ranking(comp):
-    pass
+    requests = comp.competition_request.all()
+    criteria = comp.competition_criterions.all().filter(result_formula=False)
+    for r in requests:
+        sum = 0
+        for c in criteria:
+            vars, funcs = get_vars_and_funcs(c.formula)
+            array = {}
+            for v in vars:
+                id = int(v[2:])
+                print(id)
+                param = Param.objects.get(id=id)
+                print(param)
+                spv = ParamValue.objects.get(param=param, request=r)
+                print(spv)
+                if param.type == 1:
+                    array[v] = spv.value
+                elif param.type == 5:
+                    array[v] = spv.enum_val.enum_value
+                else:
+                    print("Неверный формат")
+            result = execute_formula(array, funcs, c.formula) * c.weight_value
+            cv = CriterionValue.objects.filter(criterion=c, request=r)
+            if cv.exists():
+                cv[0].value = result
+                cv[0].save()
+            else:
+                cv = CriterionValue(criterion=c, request=r, value=result)
+                cv.save()
+            sum += result
+            print("result %s" % result)
+        r.result_value = sum
+        r.save()
+    print("done")
 
 
 def get_vars_and_funcs(formula):
