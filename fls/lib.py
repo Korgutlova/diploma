@@ -260,7 +260,7 @@ def normalize_crit_params_values(crit):
     for i in range(len(params)):
         max_v, min_v = np.max(req_param_values[:, i]), np.min(req_param_values[:, i])
         for k in range(len(reqs)):
-            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.max_for_jury - 1)
+            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.competition.max_for_criteria - 1)
     return req_param_values, reqs, params
 
 
