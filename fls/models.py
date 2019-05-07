@@ -38,9 +38,10 @@ class Competition(models.Model):
 
     method_of_estimate = models.IntegerField(choices=METHOD_CHOICES, blank=True, null=True,
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
-    # в каком состоянии находится конкурс
     status = models.IntegerField(choices=STATUSES, blank=True, null=True,
                                  default=STATUSES[0][0], verbose_name="Статус конкурса")
+
+    max_for_criteria = models.IntegerField(default=10, verbose_name="Ограничение критериев")
 
     class Meta:
         unique_together = (('name', 'description'),)
@@ -104,10 +105,6 @@ class Request(models.Model):
                                     blank=True, null=True, verbose_name='Конкурс')
     participant = models.ForeignKey(CustomUser, related_name='custom_user', on_delete=models.CASCADE,
                                     blank=True, null=True, verbose_name='Участник')
-
-    value = models.FloatField(default=0)
-
-    # rang = models.IntegerField(default=0)
     result_value = models.FloatField(default=0)
 
     def __str__(self):
@@ -115,7 +112,7 @@ class Request(models.Model):
 
 
 class CustomEnum(models.Model):
-    competition = models.ForeignKey(Competition, related_name='competition_enums', on_delete=models.CASCADE,
+    competition = models.ForeignKey(Competition, related_name='competition_enums', on_delete=models.SET_NULL,
                                     blank=True, null=True)
     name = models.CharField(max_length=50)
 
@@ -130,7 +127,7 @@ class CustomEnum(models.Model):
 
 
 class ValuesForEnum(models.Model):
-    enum = models.ForeignKey(CustomEnum, related_name='values_for_enum', on_delete=models.SET_NULL,
+    enum = models.ForeignKey(CustomEnum, related_name='values_for_enum', on_delete=models.CASCADE,
                              blank=True, null=True, verbose_name="Перечисление")
     enum_key = models.CharField(max_length=50)
     enum_value = models.FloatField(default=0)
