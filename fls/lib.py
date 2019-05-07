@@ -1,4 +1,5 @@
 import math
+import sys
 from copy import deepcopy
 from itertools import permutations
 
@@ -16,6 +17,8 @@ from py_expression_eval import Parser
 
 from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury, \
     Criterion
+
+from math import log, sqrt
 
 parser = Parser()
 
@@ -107,6 +110,8 @@ def make_ranks(values, method='min', s_m=False):
 
 
 def distance(elem1, elem2):
+    if not elem2:
+        return sys.maxsize
     return dist_kemeni(elem1, elem2)
 
 
@@ -146,8 +151,17 @@ def clusterization(dataset, n_clusters):
             for k, num_label in enumerate(labels):
                 if num_label == i:
                     cluster_rankings.append(dataset[k])
-            centroids[i] = median_kemeni(cluster_rankings)
-    return labels, centroids
+            try:
+                centroids[i] = median_kemeni(cluster_rankings)
+            except:
+                pass
+    clusters = {}
+    for idx, label in enumerate(labels):
+        if label not in clusters:
+            clusters[label] = []
+        clusters[label].append(dataset[idx])
+
+    return clusters, centroids, labels
 
 
 def generate_reference_datasets(B, dataset):
@@ -164,18 +178,12 @@ def generate_reference_datasets(B, dataset):
 
 def define_optimal_k_centers(dataset):
     W_k_values = []
-    W_k_b_values = []
-    B = 10
+    B = 100
     Gap = []
     sk = []
     reference_dataset = generate_reference_datasets(B, dataset)
     for k in range(1, len(dataset)):
-        labels, centroids = clusterization(dataset, k)
-        clusters = {}
-        for idx, label in enumerate(labels):
-            if label not in clusters:
-                clusters[label] = []
-            clusters[label].append(dataset[idx])
+        clusters = clusterization(dataset, k)[0]
         W_k_value = 0
         D_r = 0
         for label in clusters:
@@ -184,14 +192,9 @@ def define_optimal_k_centers(dataset):
                     D_r += dist_kemeni(elem1, elem2)
             W_k_value += D_r / (2 * len(clusters[label]))
         W_k_values.append(W_k_value)
-        b_values = []
+        b_W_k_values = []
         for ref_dataset in reference_dataset:
-            labels, centroids = clusterization(ref_dataset, k)
-            clusters = {}
-            for idx, label in enumerate(labels):
-                if label not in clusters:
-                    clusters[label] = []
-                clusters[label].append(dataset[idx])
+            clusters = clusterization(ref_dataset, k)[0]
             W_k = 0
             D_r = 0
             for label in clusters:
@@ -199,31 +202,40 @@ def define_optimal_k_centers(dataset):
                     for elem2 in clusters[label]:
                         D_r += dist_kemeni(elem1, elem2)
                 W_k += D_r / (2 * len(clusters[label]))
-            b_values.append(W_k)
-        W_k_b_values.append(b_values)
-        gap_k_value = sum([math.log(w_k_b) for w_k_b in b_values]) / B - math.log(W_k_value)
-        Gap.append(gap_k_value)
-        w = sum([math.log(w_k_b) for w_k_b in b_values]) / B
-        sd_k = math.sqrt(sum([(math.log(w_k_b) - w) ** 2 for w_k_b in b_values]) / B)
-        s_k = sd_k * math.sqrt(1 + 1 / B)
-        sk.append(s_k)
-    for k in range(len(Gap)):
-        print('Gap', Gap[k], 'sk', sk[k])
-    for k in range(0, len(Gap) - 1):
-        if Gap[k] >= Gap[k + 1] - sk[k + 1]:
-            print('K = ', k + 1)
-            break
+            b_W_k_values.append(W_k)
 
+        try:
+            Gap.append(sum([log(float(b_w_k)) for b_w_k in b_W_k_values]) / B - log(W_k_value))
+            w_k = sum([log(b_w_k) for b_w_k in b_W_k_values]) / B
+            s_k = sqrt(sum([(log(b_w_k) - w_k) ** 2 for b_w_k in b_W_k_values]) / B) * sqrt(1 + 1 / B)
+            sk.append(s_k)
+        except:
+
+            Gap.append(-1000)
+            sk.append(0)
+    print(W_k_values)
+    print(sk)
+    print(Gap)
+    result_k = []
+    for i in range(len(Gap) - 1):
+        if Gap[i] >= (Gap[i + 1] - sk[i + 1]):
+            print('k=', i + 1)
+            result_k.append(i + 1)
+
+    print(result_k)
+
+    print(clusterization(dataset, result_k[2])[0])
 
 
 rankings = [
-    [1, 3, 2, 4, 6, 5, 7],
     [3, 2, 1, 4, 5, 6, 7],
-    [6, 4, 3, 5, 1, 2, 7],
+    [3, 2, 1, 4, 5, 6, 7],
+    [2, 7, 6, 5, 1, 4, 3],
+    [2, 7, 6, 5, 1, 3, 4],
     [1, 2, 3, 4, 6, 5, 7],
     [3, 2, 1, 5, 4, 6, 7],
     [6, 4, 3, 1, 5, 2, 7],
-    [6, 4, 3, 5, 2, 1, 7]
+    [6, 4, 3, 1, 2, 5, 7],
 ]
 
 # define_optimal_k_centers(rankings)

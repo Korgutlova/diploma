@@ -687,15 +687,13 @@ def coherence(request):
         [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
         method='min') for
         jury in jurys]
-    labels, centroids = clusterization(jury_rankings, clusts)
+    clusters, centroids, labels = clusterization(jury_rankings, clusts)
+    for label in clusters:
+        clusters[label].insert(0, centroids[label])
     clusters_jury = {}
-    clusters = {}
-    for label in set(labels):
-        clusters[label] = []
-        clusters_jury[label] = []
-        clusters[label].append(centroids[label])
     for idx, label in enumerate(labels):
-        clusters[label].append(jury_rankings[idx])
+        if not label in clusters_jury:
+            clusters_jury[label] = []
         clusters_jury[label].append(jurys[idx])
     req_ranks = {}
     for idx, req in enumerate(reqs):
