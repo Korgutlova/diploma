@@ -14,9 +14,9 @@
                 {% with param=v.0 sbvalues=v.1 %}
                     <p>Критерий '{{ param.name }}' </p>
                     {% for sb in sbvalues %}
-                        <p> Параметр критерия - {{ sb.get_name }} - <strong>{% if sb.is_number %}
-                            {{ sb.value }}
-                        {% endif %}</strong></p>
+                        <p> Параметр критерия - {{ sb.get_name }} <strong>{% if sb.is_number %}
+                            - {{ sb.value }}
+                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %}</strong></p>
                         {% if sb.is_photo %}
                             <div id="myCarousel" class="carousel slide" data-ride="carousel"
                                  style="width: 400px; height:400px;">

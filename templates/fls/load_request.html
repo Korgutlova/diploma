@@ -42,11 +42,10 @@
                         </div>
                     {% endif %}
                     {% if sp.type == 5 %}
-                        {# Необходимо реализовать для перечислений #}
                         <select name="sp_{{ sp.id }}">
                             <label>Выберите значение из списка
-                                {% for key, value in sp.enum.get_dict %}
-                                    <option value="{{ enum_value }}">{{ enum_key }}</option>
+                                {% for en in sp.enum.get_values %}
+                                    <option value="{{ en.id }}">{{ en.enum_key }}</option>
                                 {% endfor %}
                             </label>
                         </select>
