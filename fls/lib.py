@@ -16,7 +16,7 @@ django.setup()
 from py_expression_eval import Parser
 
 from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury, \
-    Criterion
+    Criterion, ClusterNumber
 
 from math import log, sqrt
 
@@ -176,13 +176,19 @@ def generate_reference_datasets(B, dataset):
     return B_datasets
 
 
-def define_optimal_k_centers(dataset):
+def define_optimal_k_number(dataset):
+    clusters = clusterization(dataset, 2)[0]
+    if len(dataset) == 2:
+        return [len(clusters.keys())]
+    if len(clusters.keys()) == 1:
+        return [1]
+
     W_k_values = []
-    B = 100
+    B = 10
     Gap = []
     sk = []
     reference_dataset = generate_reference_datasets(B, dataset)
-    for k in range(1, len(dataset)):
+    for k in range(2, len(dataset)):
         clusters = clusterization(dataset, k)[0]
         W_k_value = 0
         D_r = 0
@@ -216,29 +222,15 @@ def define_optimal_k_centers(dataset):
     print(W_k_values)
     print(sk)
     print(Gap)
+    if Gap.count(-1000) == len(Gap):
+        return [2]
     result_k = []
     for i in range(len(Gap) - 1):
-        if Gap[i] >= (Gap[i + 1] - sk[i + 1]):
-            print('k=', i + 1)
-            result_k.append(i + 1)
-
-    print(result_k)
-
-    print(clusterization(dataset, result_k[2])[0])
-
-
-rankings = [
-    [3, 2, 1, 4, 5, 6, 7],
-    [3, 2, 1, 4, 5, 6, 7],
-    [2, 7, 6, 5, 1, 4, 3],
-    [2, 7, 6, 5, 1, 3, 4],
-    [1, 2, 3, 4, 6, 5, 7],
-    [3, 2, 1, 5, 4, 6, 7],
-    [6, 4, 3, 1, 5, 2, 7],
-    [6, 4, 3, 1, 2, 5, 7],
-]
-
-# define_optimal_k_centers(rankings)
+        if Gap[i] != -1000 and Gap[i] >= (Gap[i + 1] - sk[i + 1]):
+            result_k.append(i + 2)
+            if len(result_k) >= 2:
+                break
+    return result_k
 
 
 def normalize_crit_params_values(crit):
@@ -260,7 +252,8 @@ def normalize_crit_params_values(crit):
     for i in range(len(params)):
         max_v, min_v = np.max(req_param_values[:, i]), np.min(req_param_values[:, i])
         for k in range(len(reqs)):
-            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (crit.competition.max_for_criteria - 1)
+            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (
+                    crit.competition.max_for_criteria - 1)
     return req_param_values, reqs, params
 
 
@@ -302,3 +295,22 @@ def calculate_jury_automate_ests(comp_id):
                 estimate = EstimationJury.objects.get(jury=jury, request=req, criterion=final_criterion, type=2)
                 estimate.value = final_jury_value
                 estimate.save()
+
+
+def define_optimal_k(comp_id):
+    comp = Competition.objects.get(id=comp_id)
+    reqs = comp.competition_request.all()
+    criterions = comp.competition_criterions.all()
+    jurys = CustomUser.objects.filter(role=2)
+    for criterion in criterions:
+        for type in (1, 2):
+            jury_rankings = [make_ranks(
+                [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion=criterion).value for req in
+                 reqs],
+                method='min') for
+                jury in jurys]
+            result_k = define_optimal_k_number(jury_rankings)
+            ClusterNumber.objects.filter(criterion=criterion, type=type).delete()
+            for k in result_k:
+                ClusterNumber.objects.create(criterion=criterion, type=type, k_number=k)
+

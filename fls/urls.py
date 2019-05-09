@@ -35,5 +35,6 @@ urlpatterns = [
     url(r'^coherence/$', coherence_page, name="coherpage"),
     url(r'^coher/$', coherence, name="coher"),
     url(r'^comp/(?P<id>\d+)/calculate_result$', calculate_result, name="calculate_result"),
-    url(r'^comp_crits', comp_criterions, name='comp_crits')
+    url(r'^comp_crits', comp_criterions, name='comp_crits'),
+    url(r'^fill_k', optimal_k_for_criterion, name='crit_k')
 ]

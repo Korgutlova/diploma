@@ -1,10 +1,8 @@
-<label for="req">Выберите участника:</label>
+<label for="clusts">Количество групп:</label>
 <br>
-<select id="req" name="reqs" class="nn">
-    {% for req in reqs %}
-        <option value="{{ req.id }}">{{ req.participant }}</option>
-    {% empty %}
-        <option value="non" selected>Нет заявок</option>
+<select id="clusts" name="clusts" class="nn">
+    {% for k, opt in k_range %}
+        <option value="{{ k }}">{{ k }} {% ifequal opt 1 %}(опт.){% endifequal %}</option>
     {% endfor %}
 </select>
 

@@ -272,3 +272,17 @@ class WeightParamJury(models.Model):
 
     def __str__(self):
         return "Жюри %s - Параметр %s" % (self.jury, self.param)
+
+
+class ClusterNumber(models.Model):
+    criterion = models.ForeignKey(Criterion, related_name='criterion_ks', on_delete=models.CASCADE, blank=False,
+                                  null=False)
+    type = models.IntegerField(choices=METHOD_CHOICES[:2], default=METHOD_CHOICES[0][0], null=True,
+                               blank=True, verbose_name='Тип оценивания')
+    k_number = models.IntegerField(default=1)
+
+    class Meta:
+        unique_together = (('criterion', 'type', 'k_number'),)
+
+    def __str__(self):
+        return "Критерий %s - Тип %s - %s" % (self.criterion, self.type, self.k_number)

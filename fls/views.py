@@ -13,10 +13,11 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests
+from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests, \
+    define_optimal_k_number, define_optimal_k
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum
+    STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum, ClusterNumber
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -675,6 +676,8 @@ def change_status(request, id, val):
     # подсчитываются все индивидуальные для жюри автоматические оценки (на основе WeightParamJury)
     if int(val) == 3:
         calculate_jury_automate_ests(id)
+    if int(val) == 4:
+        define_optimal_k(id)
     comp.status = int(val)
     comp.save()
     return redirect("fls:get_comp", id)
@@ -682,14 +685,16 @@ def change_status(request, id, val):
 
 def coherence_page(request):
     comps = Competition.objects.all()
-    jury_count = list(range(1, CustomUser.objects.filter(role=2).count()))
-    return render(request, 'fls/coher/coher.html', {'comps': comps, 'jury_count': jury_count})
+    return render(request, 'fls/coher/coher.html', {'comps': comps})
 
 
 def coherence(request):
     comp_id, type, clusts, crit_id = int(request.GET['comp']), int(request.GET['type']), int(
         request.GET['clusts']), int(
         request.GET['crit']),
+    print(crit_id, 'crit')
+    print(clusts, 'clust_id')
+    print(type, 'type')
     reqs = Competition.objects.get(id=comp_id).competition_request.all()
     jurys = CustomUser.objects.filter(role=2)
     jury_ranks = {}
@@ -734,6 +739,7 @@ def coherence(request):
             for ranking in clusters[label]:
                 label_values.append(ranking[idx])
             req_ranks[req.participant].append(label_values)
+
     data = {'est': render_to_string('fls/coher/table.html',
                                     {'req_ranks': req_ranks, 'kendall_coef': kendall_coef,
                                      'clusters_jury': clusters_jury})}
@@ -744,4 +750,15 @@ def coherence(request):
 def comp_criterions(request):
     criterions = Competition.objects.get(id=request.GET['comp']).competition_criterions.all()
     data = {'crits': render_to_string('fls/sim_jury/criterions.html', {'criterions': criterions})}
+    return JsonResponse(data)
+
+
+def optimal_k_for_criterion(request):
+    crit_id, type = int(request.GET['crit']), int(request.GET['type'])
+    ks = list(ClusterNumber.objects.filter(criterion_id=crit_id, type=type).values_list('k_number', flat=True))
+    jurys = CustomUser.objects.filter(role=2)
+    k_range = [(k, 1) for k in ks]
+    k_range.extend([(k, 0) for k in range(1, len(jurys)) if k not in ks])
+    print(k_range)
+    data = {'k_range': render_to_string('fls/coher/k_range.html', {'k_range': k_range})}
     return JsonResponse(data)

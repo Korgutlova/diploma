@@ -40,13 +40,8 @@
                 </select>
                 <br>
                 <br>
-                <label for="clusts">Количество групп:</label>
-                <br>
-                <select name="clusts" id="clusts" class="selectpicker">
-                    {% for i in jury_count %}
-                        <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
-                </select>
+                <div id="k_range_fil"></div>
+
                 <br>
             </div>
             <div class="col-sm-8" id="put">
@@ -64,7 +59,7 @@
 
         const fill_estimations = function () {
             comp_id = $('#comp').val();
-            crit_id = $('#crit').val();
+            crit_id = $("#crit").val();
             type = $('#type').val();
             clusts = $('#clusts').val();
             $.ajax({
@@ -73,7 +68,7 @@
                 data: {'comp': comp_id, 'type': type, 'clusts': clusts, 'crit': crit_id},
                 dataType: 'json',
                 success: function (data) {
-                    $("#put").html(data.est)
+                    $("#put").html(data.est);
                 },
                 error: function () {
                     alert("Результаты не готовы");
@@ -92,17 +87,39 @@
                 dataType: 'json',
                 success: function (data) {
 
-                    {#$('#reqs').html(data.reqs);#}
                     $("#critfil").html(data.crits);
-                    {#$(data.reqs).insertAfter("#place");#}
+
                 },
                 error: function () {
                     alert("error");
                 },
                 complete: function (data) {
-
                     $('#crit').addClass('selectpicker');
                     $('#crit').selectpicker();
+                    fill_k_range()
+                }
+            })
+
+        };
+
+        const fill_k_range = function () {
+            crit_id = $("#crit").val();
+            type = $('#type').val();
+            $.ajax({
+                url: '/fls/fill_k/',
+                type: 'get',
+                data: {'crit': crit_id, 'type': type},
+                dataType: 'json',
+                success: function (data) {
+
+                    $("#k_range_fil").html(data.k_range);
+                },
+                error: function () {
+                    alert("error");
+                },
+                complete: function (data) {
+                    $('#clusts').addClass('selectpicker');
+                    $('#clusts').selectpicker();
                     fill_estimations();
                 }
             })
@@ -111,16 +128,24 @@
 
         select_comp = $('#comp');
         select_type = $('#type');
-        select_clusts = $("#clusts");
         select_comp.selectpicker();
         select_type.selectpicker();
-        select_clusts.selectpicker();
         $(document).ready(fill_criterions);
         select_comp.change(fill_criterions);
-        select_type.change(fill_estimations);
-        select_clusts.change(fill_estimations);
+        select_type.change(fill_k_range);
+
+        $("#critfil").bind("paste", function () {
+            common_crit = $(this).find("#crit").val();
+        });
+        $("#k_range_fil").bind("paste", function () {
+            common_k = $(this).find("#clusts").val();
+        });
+
 
         $('#critfil').on('change', '#crit', function () {
+            fill_k_range()
+        });
+        $('#k_range_fil').on('change', '#clusts', function () {
             fill_estimations();
         });
 
