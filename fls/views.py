@@ -13,8 +13,8 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
-from fls.lib import parse_formula, make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests, \
-    define_optimal_k_number, define_optimal_k
+from fls.lib import make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests, \
+    define_optimal_k
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum, ClusterNumber
@@ -614,7 +614,6 @@ def method_comparison(request):
     method_indexes = (0, 1)
     methods = itemgetter(*method_indexes)(METHOD_CHOICES)
     comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
-    criterion = Criterion.objects.get(id=crit_id)
     slt_jury = CustomUser.objects.get(id=jury_id)
     reqs = Request.objects.filter(competition_id=comp_id)
     estimation_values = {}
@@ -643,20 +642,20 @@ def est_deviations(request):
         request.GET['crit'])
     req = Request.objects.get(id=req_id)
     jurys = CustomUser.objects.filter(role=2)
-    avg_value = sum([jury_est.value for jury_est in
-                     EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
+    avg_est = sum([jury_est.value for jury_est in
+                   EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
     jury_est_values = {}
     for jury in jurys:
         jury_est_values[jury] = []
         jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
-        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - avg_value), 2)])
+        jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - avg_est), 2)])
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
     avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
     print(jury_est_values)
     variation_coef = math.sqrt(
-        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / avg_value
+        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / avg_est
     data = {'est': render_to_string('fls/dev/table.html',
-                                    {'ests': jury_est_values, 'param_values': [], 'comm': avg_value,
+                                    {'ests': jury_est_values, 'comm': round(avg_est, 2),
                                      'avg_dev': avg_dev, 'var_coef': round(variation_coef, 2)})}
     return JsonResponse(data)
 
@@ -672,11 +671,8 @@ def comp_reqs(request):
 
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
-    # если статус переходит на "оценивание", все параметры линейно нормализуются,
-    # подсчитываются все индивидуальные для жюри автоматические оценки (на основе WeightParamJury)
-    if int(val) == 3:
-        calculate_jury_automate_ests(id)
     if int(val) == 4:
+        calculate_jury_automate_ests(id)
         define_optimal_k(id)
     comp.status = int(val)
     comp.save()
@@ -692,9 +688,6 @@ def coherence(request):
     comp_id, type, clusts, crit_id = int(request.GET['comp']), int(request.GET['type']), int(
         request.GET['clusts']), int(
         request.GET['crit']),
-    print(crit_id, 'crit')
-    print(clusts, 'clust_id')
-    print(type, 'type')
     reqs = Competition.objects.get(id=comp_id).competition_request.all()
     jurys = CustomUser.objects.filter(role=2)
     jury_ranks = {}
@@ -758,7 +751,7 @@ def optimal_k_for_criterion(request):
     ks = list(ClusterNumber.objects.filter(criterion_id=crit_id, type=type).values_list('k_number', flat=True))
     jurys = CustomUser.objects.filter(role=2)
     k_range = [(k, 1) for k in ks]
-    k_range.extend([(k, 0) for k in range(1, len(jurys)) if k not in ks])
-    print(k_range)
+    # k_range.extend([(k, 0) for k in range(1, len(jurys)) if k not in ks])
+    # print(k_range)
     data = {'k_range': render_to_string('fls/coher/k_range.html', {'k_range': k_range})}
     return JsonResponse(data)

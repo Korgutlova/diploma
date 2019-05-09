@@ -75,10 +75,34 @@
                 },
                 complete: function (data) {
                     color_range();
+                    request_consistency_est();
                 }
             })
 
         };
+
+        const request_consistency_est = function () {
+            var_coef = $("#var_coef");
+            cons_est = $("#var_est");
+            koef_value = parseFloat(var_coef.text());
+            if (koef_value <= 0.1) {
+                var_coef.css("color", '#07a017');
+                cons_est.text('(отлично)');
+            }
+            else if (koef_value > 0.1 && koef_value <= 0.2) {
+                var_coef.css("color", '#68a05a');
+                cons_est.text('(хорошо)');
+            }
+            else if (koef_value > 0.2 && koef_value <= 0.3) {
+                var_coef.css("color", '#ffa634');
+                cons_est.text('(удовлетворительно)');
+            }
+            else {
+                var_coef.css("color", '#FF0000');
+                cons_est.text('(неудовлетворительно)');
+            }
+        };
+
 
         const fill_crits_reqs = function () {
             comp_id = $('#comp').val();

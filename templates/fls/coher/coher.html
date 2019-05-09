@@ -74,10 +74,30 @@
                     alert("Результаты не готовы");
                 },
                 complete: function (data) {
+                    consistency_est();
                 }
             })
 
         };
+
+        const consistency_est = function () {
+            var_coef = $("#ken_coef");
+            cons_est = $("#exp_est");
+            koef_value = parseFloat(var_coef.text());
+            if (koef_value >= 0.7) {
+                var_coef.css("color", '#07a017');
+                cons_est.text('высокая');
+            }
+            else if (koef_value >= 0.3 && koef_value < 0.7) {
+                var_coef.css("color", '#ffa634');
+                cons_est.text('средняя');
+            }
+            else {
+                var_coef.css("color", '#FF0000');
+                cons_est.text('неудовлетворительная');
+            }
+        };
+
         const fill_criterions = function () {
             comp_id = $('#comp').val();
             $.ajax({
