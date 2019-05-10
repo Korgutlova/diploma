@@ -44,8 +44,10 @@
                     {% endfor %}
                     <div class="for_form" hidden>
                         <label>Оценка критерия
-                            <input type="text" name="est_val_{{ param.id }}"
-                                   value="{% if estimate_val %} {{ estimate_val }} {% endif %}">
+                            {% with  somestr=param.id|stringformat:"i" %}
+                                <input type="text" name="est_val_{{ param.id }}"
+                                       value="{% if estimate_flag %} {{ "est_val_"|add:somestr }} {% endif %}">
+                            {% endwith %}
                         </label>
                     </div>
                     <hr>
@@ -64,15 +66,23 @@
 
     {% if request.participant == user %}
         <button type="button" class="btn">Редактировать заявку</button>
-        {#        <form method="post" action="{% url 'fls:delete_req' request.id %}" hidden>#}
-        {#            {% csrf_token %}#}
-        {#            <button type="submit" class="btn btn-danger">Удалить заявку</button>#}
-        {#        </form>#}
+        <form method="post" action="{% url 'fls:delete_req' request.id %}" hidden>
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить заявку</button>
+        </form>
     {% endif %}
-    {% if user.is_jury and not estimate_flag and request.competition.status == 3%}
-        <h4>Вы еще не оценили заявку </h4>
-        <br>
-        <button id="estimate" type="button" class="btn">Оценить заявку</button>
+    {% if user.is_jury  and request.competition.status == 3 %}
+        {% if estimate_flag %}
+            <button id="edit" type="button" class="btn">Редактировать оценку</button>
+            <form method="post" action="{% url 'fls:estimate_del' request.id %}">
+                {% csrf_token %}
+                <button id="delete" type="submit" class="btn btn-danger">Удалить оценку</button>
+            </form>
+        {% else %}
+            <h4>Вы еще не оценили заявку </h4>
+            <br>
+            <button id="estimate" type="button" class="btn">Оценить заявку</button>
+        {% endif %}
     {% endif %}
 
 {% endblock %}

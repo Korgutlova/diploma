@@ -51,6 +51,8 @@
         <button type="submit" id="submit" class="btn btn-primary labelText">Сохранить
         </button>
     </form>
+    <br><br>
+     <a href="{% url 'fls:get_comp' comp.id %}" class="btn btn-default">К странице конкурса</a>
 {% endblock %}
 {% block script %}
     <script>

@@ -381,7 +381,7 @@ def pairwise_comparison(request, comp_id):
             criterion = Criterion.objects.get(id=int(key))
             criterion.weight_value = sum(criterion_rows[key]) / sum(elems)
             criterion.save()
-        return HttpResponse("Ваши оценки параметров сохранены")
+        return redirect("fls:get_comp", comp_id)
     return render(request, 'fls/pairwise_comparison_table.html', {"params": criteria_modif, "comp": comp})
 
 
@@ -489,11 +489,12 @@ def get_request(request, id):
             subvalues.append(sbvalue)
         arr.append((c, subvalues))
     dict = {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user)}
-    if len(estimate) == 1:
+    if len(estimate) > 0:
         flag = True
-        dict['estimate_id'] = estimate[0].id
-        dict['estimate_val'] = estimate[0].value
+        for est in estimate:
+            dict['est_val_%s' % est.criterion.id] = est.value
     dict['estimate_flag'] = flag
+    print(dict)
     return render(request, 'fls/request.html', dict)
 
 
@@ -532,9 +533,9 @@ def estimate_req(request, req_id):
     return redirect("fls:get_request", req_id)
 
 
-def estimate_del(request, est_id):
-    estimate = EstimationJury.objects.get(id=est_id)
-    req_id = estimate.request.id
+def estimate_del(request, req_id):
+    estimate = EstimationJury.objects.filter(request=Request.objects.get(id=req_id),
+                                             jury=CustomUser.objects.get(user=request.user))
     estimate.delete()
     return redirect("fls:get_request", req_id)
 
@@ -755,3 +756,18 @@ def optimal_k_for_criterion(request):
     # print(k_range)
     data = {'k_range': render_to_string('fls/coher/k_range.html', {'k_range': k_range})}
     return JsonResponse(data)
+
+
+def info_est_jury(request, id):
+    comp = Competition.objects.get(id=id)
+    jurys = CustomUser.objects.filter(role=2)
+    requests = comp.competition_request.all()
+    len_req = len(requests)
+    result = []
+    for jury in jurys:
+        sum = 0
+        for req in requests:
+            if EstimationJury.objects.filter(request=req, jury=jury).count() > 0:
+                sum += 1
+        result.append((jury, round((sum * 100 / len_req), 2)))
+    return render(request, "fls/est_info_jury.html", {"result": result, "comp": comp})

@@ -23,13 +23,20 @@
         <button type="button" class="btn btn-warning" id="summa">summa</button>
     </div>
     <hr>
-
+    <h4>Числа</h4>
+    <div class="numb">
+        <div class=" col-md-3">
+            <input class="form-control" type="number" id="field_numb">
+        </div>
+        <button type="button" class="btn btn-warning" id="numb_button">Добавить</button>
+    </div>
+    <br>
     <form name="form" action="{% block url_form %}url{% endblock %}" method="post">
         {% csrf_token %}
         <div class="row">
             <div class="col-md-5">
                 {% block name %}
-                    {% endblock %}
+                {% endblock %}
                 <label>Формула
                     <textarea style="resize: none;" name="formula" class="form-control rounded-0" rows="5" cols="40"
                               id="desc" readonly></textarea>
@@ -38,22 +45,17 @@
             </div>
             <br>
             <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span>
-                back
+                Назад
             </button>
         </div>
         <br>
-        {#        <input type="text" id="formula" name="formula2" disabled hidden>#}
+        <input type="text" id="formula2" name="formula2" disabled hidden>
         <hr>
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 {% block name_button %}Сохранить{% endblock %}
                                     </span>
         </button>
-        {#        <button type="submit" class="btn btn-success labelText">#}
-        {#                                <span style="font-family: 'Comic Sans MS',monospace">#}
-        {#                                Сохранить и добавить еще критерий#}
-        {#                                    </span>#}
-        {#        </button>#}
     </form>
 
     <div class="modal fade" id="myModal" role="dialog">

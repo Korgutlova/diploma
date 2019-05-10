@@ -22,7 +22,7 @@ urlpatterns = [
         name="pairwise_comparison_param"),
     url(r'^request/(?P<id>\d+)/$', get_request, name="get_request"),
     url(r'^estimate_req/(?P<req_id>\d+)/$', estimate_req, name="estimate_req"),
-    url(r'^estimate_del/(?P<est_id>\d+)/$', estimate_del, name="estimate_del"),
+    url(r'^estimate_del/(?P<req_id>\d+)/$', estimate_del, name="estimate_del"),
     url(r'^simjury/$', similar_page, name="simjury"),
     url(r'^similar_jury/$', similar_jury, name="similar_jury"),
     url(r'^ajax_comp_status/$', ajax_comp_status, name="ajax_comp_status"),
@@ -36,5 +36,6 @@ urlpatterns = [
     url(r'^coher/$', coherence, name="coher"),
     url(r'^comp/(?P<id>\d+)/calculate_result$', calculate_result, name="calculate_result"),
     url(r'^comp_crits', comp_criterions, name='comp_crits'),
-    url(r'^fill_k', optimal_k_for_criterion, name='crit_k')
+    url(r'^fill_k', optimal_k_for_criterion, name='crit_k'),
+    url(r'^comp/(?P<id>\d+)/info_est_jury', info_est_jury, name='info_est_jury')
 ]

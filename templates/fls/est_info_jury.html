@@ -1,0 +1,21 @@
+{% extends 'fls/base_template.html' %}
+{% block title %}
+    Информация о голосовании жюри, конкурс {{ comp.name }}
+{% endblock %}
+
+{% block content %}
+    <h3>Информация о голосовании жюри, конкурс {{ comp.name }} </h3>
+    <hr>
+    {% for elem in result %}
+        {% with jury=elem.0 progress=elem.1 %}
+            <h3>Жюри - {{ jury.get_username }}</h3>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{ progress }}"
+                     aria-valuemin="0" aria-valuemax="100" style="width:{{ progress }}%">
+                    {{ progress }}%
+                </div>
+            </div>
+        {% endwith %}
+    {% endfor %}
+    <a href="{% url 'fls:get_comp' comp.id %}" class="btn btn-default">К странице конкурса</a>
+{% endblock %}
