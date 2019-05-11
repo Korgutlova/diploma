@@ -28,15 +28,10 @@ def result_criteria(request, id):
     comp = Competition.objects.get(id=id)
     criteria = Criterion.objects.filter(competition=comp, result_formula=False)
     if request.method == "POST":
-        cr = Criterion.objects.filter(result_formula=True)
-        if len(cr) > 0:
-            cr[0].name = request.POST["name"]
-            cr[0].formula = request.POST["formula"]
-            cr[0].save()
-        else:
-            c = Criterion(competition=comp, name=request.POST["name"], formula=request.POST["formula"],
-                          result_formula=True)
-            c.save()
+        cr = Criterion.objects.filter(competition=comp, result_formula=True)
+        c = cr[0]
+        c.formula = request.POST["formula"]
+        c.save()
         return redirect("fls:list_comp")
     return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id})
 
@@ -46,8 +41,8 @@ def formula_for_single_criteria(request, id, cr_id):
     comp = Competition.objects.get(id=id)
     criteria = Criterion.objects.get(id=cr_id)
     params = criteria.param_criterion.all().filter(for_formula=True)
-    len_1 = len(comp.competition_criterions.all().filter(formula=not ""))
-    len_2 = len(comp.competition_criterions.all())
+    len_1 = len(comp.competition_criterions.all().exclude(formula=None).filter(result_formula=False))
+    len_2 = len(comp.competition_criterions.all().filter(result_formula=False))
     print(len_1, len_2)
     print(params)
     print(cr_id)
@@ -58,10 +53,14 @@ def formula_for_single_criteria(request, id, cr_id):
         len_1 += 1
         if len_1 == len_2:
             return redirect("fls:list_comp")
+        else:
+            criteria = Criterion.objects.get(id=comp.get_next_criterion())
+            params = criteria.param_criterion.all().filter(for_formula=True)
+
     if (len_2 - len_1) == 1:
         next = False
     return render(request, 'fls/add_formula.html',
-                  {"params": params, "id": id, "c": Criterion.objects.get(id=comp.get_next_criterion()), "next": next})
+                  {"params": params, "id": id, "c": criteria, "next": next})
 
 
 def average(*args):

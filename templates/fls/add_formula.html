@@ -1,16 +1,15 @@
 {% extends 'fls/base_criteria.html' %}
 {% block title %}
-    Создание формулы для критерия {{ p.name }}
+    Создание формулы для критерия {{ c.name }}
 {% endblock %}
 
 {% block cycle_and_head %}
 
-    <h3>Создание формулы для критерия {{ p.name }}</h3>
+    <h3>Создание формулы для критерия {{ c.name }}</h3>
     <hr>
     <h4>Параметры критерия</h4>
     {% for p in params %}
-        <button data-toggle="tooltip" data-placement="top" title="Главный параметр - {{ c.name }}"
-                type="button" class="btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
+        <button type="button" class="btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
     {% endfor %}
     <hr>
 {% endblock %}

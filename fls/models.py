@@ -64,10 +64,10 @@ class Competition(models.Model):
         return size
 
     def not_exists_formula(self):
-        return len(self.competition_criterions.all().exclude(formula="")) == 0
+        return len(self.competition_criterions.all().exclude(formula=None)) == 0
 
     def get_next_criterion(self):
-        criteria = self.competition_criterions.all().filter(formula="", result_formula=False)
+        criteria = self.competition_criterions.all().filter(formula=None, result_formula=False)
         if len(criteria) > 0:
             return criteria[0].id
         return -1
@@ -145,7 +145,7 @@ class Criterion(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
     max_for_jury = models.IntegerField(blank=True, null=True)
-    formula = models.TextField()
+    formula = models.TextField(blank=True, null=True)
 
     # True - итоговая формула (указываются id критериев)
     # False - промежуточные формулы критериев (там будут указываться id сабпараметров)
@@ -159,7 +159,7 @@ class Criterion(models.Model):
         unique_together = (('competition', 'name'),)
 
     def __str__(self):
-        return self.name
+        return "Конкурс %s - критерий %s" % (self.competition, self.name)
 
 
 class Param(models.Model):

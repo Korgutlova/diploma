@@ -10,8 +10,8 @@
         <button type="button" class="btn sign" id="minus">-</button>
         <button type="button" class="btn sign" id="div">/</button>
         <button type="button" class="btn sign" id="mult">*</button>
-        <button type="button" class="btn" id="bracket1">(</button>
-        <button type="button" class="btn" id="bracket2">)</button>
+        <button type="button" class="btn" id="left_branch">(</button>
+        <button type="button" class="btn" id="right_branch">)</button>
     </div>
 
     <hr>
@@ -25,20 +25,34 @@
     <hr>
     <h4>Числа</h4>
     <div class="numb">
-        <div class=" col-md-3">
-            <input class="form-control" type="number" id="field_numb">
+        <div class="row">
+            <div class="col-md-3">
+                <input class="form-control" type="number" id="field_numb">
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-warning" id="numb_button">Добавить</button>
+            </div>
         </div>
-        <button type="button" class="btn btn-warning" id="numb_button">Добавить</button>
+        <br>
+        <div class="row">
+            <div class="col-md-5 div-err" hidden>
+                <h5>Введите число</h5>
+            </div>
+        </div>
     </div>
     <br>
     <form name="form" action="{% block url_form %}url{% endblock %}" method="post">
         {% csrf_token %}
         <div class="row">
             <div class="col-md-5">
-                {% block name %}
-                {% endblock %}
                 <label>Формула
-                    <textarea style="resize: none;" name="formula" class="form-control rounded-0" rows="5" cols="40"
+                    <textarea style="resize: none;" name="formula_show" class="form-control rounded-0" rows="5"
+                              cols="40"
+                              id="desc_show" readonly></textarea>
+
+                </label>
+                <label hidden>Формула для бэка
+                    <textarea name="formula" class="form-control rounded-0" rows="5" cols="40"
                               id="desc" readonly></textarea>
 
                 </label>
@@ -49,13 +63,13 @@
             </button>
         </div>
         <br>
-        <input type="text" id="formula2" name="formula2" disabled hidden>
         <hr>
         <button type="submit" class="btn btn-primary labelText">
                                 <span style="font-family: 'Comic Sans MS',monospace">
                                 {% block name_button %}Сохранить{% endblock %}
                                     </span>
         </button>
+        <br><br><br>
     </form>
 
     <div class="modal fade" id="myModal" role="dialog">
@@ -92,35 +106,67 @@
             $('[data-toggle="tooltip"]').tooltip()
         });
         $(document).ready(function () {
+            var symbols = ['+', '-', '/', '*'];
+            var left_branch = '(';
+            var right_branch = ')';
             var array = [];
+            var display = [];
             $(document).on('click', '.param', function () {
                 var str = "a_" + $(this).attr("id") + " ";
-                {#var str = $(this).text();#}
-                if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
-                    && false === array[array.length - 1].endsWith(") "))) {
+                if (array.length === 0 || (-1 !== symbols.indexOf(array[array.length - 1][0]))
+                    || (left_branch === array[array.length - 1][0])) {
                     array.push(str);
+                    display.push($(this).text() + " ");
                 }
                 full_textarea();
             });
 
-            $(".oper").on('click', '.btn', function () {
-                if (array.length !== 0) {
-                    var elem = array[array.length - 1];
-                    var bool = true;
-                    {#$(".oper > .btn").each(function () {#}
-                    {#    if ($(this).text() + " " === elem) {#}
-                    {#        bool = false;#}
-
-                    if (bool) {
-                        array.push($(this).text() + " ");
-                    }
-
-                    full_textarea();
+            $(".oper").on('click', '.btn.sign', function () {
+                if ((-1 === symbols.indexOf(array[array.length - 1][0])) && (left_branch !== array[array.length - 1][0])) {
+                    var el = $(this).text() + " ";
+                    array.push(el);
+                    display.push(el);
                 }
+                full_textarea();
+            });
+
+            $("#left_branch").click(function () {
+                if (array.length === 0 || (-1 !== symbols.indexOf(array[array.length - 1][0]))
+                    || (left_branch === array[array.length - 1][0])) {
+                    array.push("( ");
+                    display.push("( ");
+                }
+                full_textarea();
+            });
+
+            $("#right_branch").click(function () {
+                if (((-1 === symbols.indexOf(array[array.length - 1][0])) || (right_branch === array[array.length - 1][0]))
+                    && left_branch !== array[array.length - 1][0]) {
+                    array.push(") ");
+                    display.push(") ");
+                }
+                full_textarea();
             });
 
             $("#back").click(function () {
                 array = array.slice(0, array.length - 1);
+                display = display.slice(0, array.length - 1);
+                full_textarea();
+            });
+
+            $("#numb_button").click(function () {
+                var new_el = $('#field_numb').val();
+                if (new_el === "") {
+                    $(".div-err").show();
+                } else {
+                    $(".div-err").hide();
+                    if (array.length === 0 || (-1 !== symbols.indexOf(array[array.length - 1][0]))
+                        || (left_branch === array[array.length - 1][0])) {
+                        array.push(new_el + " ");
+                        display.push(new_el + " ");
+                        $('#field_numb').val("");
+                    }
+                }
                 full_textarea();
             });
 
@@ -132,12 +178,14 @@
 
             $("#apply_checkbox").click(function () {
                 var params = [];
+                var params_sh = [];
                 $.each($("input[name='item']:checked"), function () {
                     params.push("a_" + $(this).attr("id"));
-                    {#params.push($("label[for='" + $(this).attr("id") + "']").text());#}
+                    params_sh.push($("label[for='" + $(this).attr("id") + "']").text());
                     $(this).prop('checked', false);
                 });
                 array.push($("#insert").text() + "(" + params + ") ");
+                display.push($("#insert").text() + "(" + params_sh + ") ");
                 $("#insert").text('');
                 $("#checkAll").prop('checked', false);
                 full_textarea();
@@ -150,11 +198,16 @@
                     content += array[i];
                 }
                 $("#desc").val(content);
+                content = "";
+                for (i = 0; i < display.length; i++) {
+                    content += display[i];
+                }
+                $("#desc_show").val(content);
             }
 
             $(".func > .btn").click(function () {
-                if (array.length === 0 || (false === array[array.length - 1].startsWith("a_")
-                    && false === array[array.length - 1].endsWith(") "))) {
+                if (array.length === 0 || (-1 !== symbols.indexOf(array[array.length - 1][0]))
+                    || (left_branch === array[array.length - 1][0])) {
                     $("#insert").append($(this).text());
                     $('#myModal').modal('show');
                 }
