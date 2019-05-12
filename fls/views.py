@@ -790,7 +790,6 @@ def info_est_jury(request, id):
 
 
 def inv_change_status(request, id, status):
-    print("lol")
     status = int(status)
     invitation = Invitation.objects.get(id=id)
     if status == 2:
