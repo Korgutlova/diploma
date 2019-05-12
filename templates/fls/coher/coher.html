@@ -111,7 +111,7 @@
 
                 },
                 error: function () {
-                    alert("error");
+                    alert("Результаты не готовы");
                 },
                 complete: function (data) {
                     $('#crit').addClass('selectpicker');
@@ -133,9 +133,6 @@
                 success: function (data) {
 
                     $("#k_range_fil").html(data.k_range);
-                },
-                error: function () {
-                    alert("error");
                 },
                 complete: function (data) {
                     $('#clusts').addClass('selectpicker');

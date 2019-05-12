@@ -2,9 +2,9 @@
 <br>
 <select id="crit" name="crit" class="nn">
     {% for criterion in criterions %}
-        <option value="{{ criterion.id }}">{{ criterion }}</option>
+        <option value="{{ criterion.id }}">{{ criterion.name }}</option>
     {% empty %}
-        <option value="non" selected>Нет заявок</option>
+        <option value="non" selected>Нет критериев</option>
     {% endfor %}
 </select>
 

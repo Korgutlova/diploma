@@ -547,7 +547,7 @@ def get_comp(request, id):
 
 
 def similar_page(request):
-    comps = Competition.objects.all()
+    comps = Competition.objects.filter(status=4)
     jurys = CustomUser.objects.filter(role=2)
     return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'jurys': jurys})
 
@@ -605,14 +605,13 @@ def similar_jury(request):
 
 
 def metcomp_page(request):
-    comps = Competition.objects.all()
+    comps = Competition.objects.filter(status=4)
     jurys = CustomUser.objects.filter(role=2)
     return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
 
 
 def method_comparison(request):
-    method_indexes = (0, 1)
-    methods = itemgetter(*method_indexes)(METHOD_CHOICES)
+    methods = (1, 2)
     comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
     slt_jury = CustomUser.objects.get(id=jury_id)
     reqs = Request.objects.filter(competition_id=comp_id)
@@ -621,19 +620,19 @@ def method_comparison(request):
         part_name = req.participant
         estimation_values[part_name] = [[], []]
         estimation_values[part_name][1].extend(
-            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=tp[0], criterion_id=crit_id).value, 2) for
-            tp in methods)
+            round(EstimationJury.objects.get(request=req, jury=slt_jury, type=type, criterion_id=crit_id).value, 2) for
+            type in methods)
         diff = round((estimation_values[part_name][1][0] - estimation_values[part_name][1][1]), 2)
         estimation_values[part_name].append(diff)
     data = {'est': render_to_string('fls/metcomp/table.html',
                                     {'ests': estimation_values,
-                                     'slt_jury': slt_jury, 'methods': methods})}
+                                     'slt_jury': slt_jury})}
 
     return JsonResponse(data)
 
 
 def deviations_page(request):
-    comps = Competition.objects.all()
+    comps = Competition.objects.filter(status=4)
     return render(request, 'fls/dev/dev.html', {'comps': comps})
 
 
@@ -680,7 +679,7 @@ def change_status(request, id, val):
 
 
 def coherence_page(request):
-    comps = Competition.objects.all()
+    comps = Competition.objects.filter(status=4)
     return render(request, 'fls/coher/coher.html', {'comps': comps})
 
 

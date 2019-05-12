@@ -1,4 +1,4 @@
-<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Сравнение методов
+<caption class="text-center" style="font-family: 'Arial',monospace"><strong>Сравнение методов оценивания
     для {{ slt_jury }}</strong>
 </caption>
 <thead class="thead thead-light">
@@ -7,9 +7,11 @@
     {% for param in params %}
         <th style="width: 50px">{{ param }}</th>
     {% endfor %}
-    {% for method in methods %}
-        <th style="width: 50px">{{ method.1 }}</th>
-    {% endfor %}
+    {#    {% for method in methods %}#}
+    {#        <th style="width: 50px">{{ method.1 }}</th>#}
+    {#    {% endfor %}#}
+    <th style="width: 50px">Ручная оценка</th>
+    <th style="width: 50px">Автоматическая оценка</th>
     <th style="width: 50px">Разница</th>
 
 
@@ -26,7 +28,7 @@
         {% for method_value in values.1 %}
             <td>{{ method_value }}</td>
         {% endfor %}
-        <td id="{{ forloop.counter0 }}" class="paint">{{ values.2}}</td>
+        <td id="{{ forloop.counter0 }}" class="paint">{{ values.2 }}</td>
 
 
     </tr>
