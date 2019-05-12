@@ -17,7 +17,7 @@ from fls.lib import make_ranks, dist_kemeni, clusterization, calculate_jury_auto
     define_optimal_k
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
-    STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum, ClusterNumber
+    STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum, ClusterNumber, Invitation
 from py_expression_eval import Parser
 
 parser = Parser()
@@ -213,7 +213,8 @@ def comp_first_step(request):
             print("create comp")
             comp = form.save()
             for j_id in request.POST.getlist("jurys[]"):
-                comp.jurys.add(CustomUser.objects.get(id=int(j_id)))
+                invitation = Invitation(competition=comp, jury=CustomUser.objects.get(id=int(j_id)))
+                invitation.save()
             comp.organizer = CustomUser.objects.get(user=request.user)
             comp.save()
         else:
@@ -438,7 +439,7 @@ def profile(request):
                 else:
                     new_criterions.append(crit)
     return render(request, "fls/profile.html",
-                  {"cust_user": user, "requests": requests, 'comps': Competition.objects.all(),
+                  {"cust_user": user, "requests": requests, 'comps': user.competitions_for_jury.all(),
                    'new_requests': new_requests, 'view_requests': view_requests, 'select_comp': select_comp,
                    'statuses': STATUSES, 'new_crits': new_criterions, 'view_crits': view_criterions})
 
@@ -786,3 +787,17 @@ def info_est_jury(request, id):
                 sum += 1
         result.append((jury, round((sum * 100 / len_req), 2)))
     return render(request, "fls/est_info_jury.html", {"result": result, "comp": comp})
+
+
+def inv_change_status(request, id, status):
+    print("lol")
+    status = int(status)
+    invitation = Invitation.objects.get(id=id)
+    if status == 2:
+        invitation.status = status
+        invitation.save()
+        invitation.competition.jurys.add(invitation.jury)
+    if status == 3:
+        invitation.status = status
+        invitation.save()
+    return redirect("fls:profile")
