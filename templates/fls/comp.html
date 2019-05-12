@@ -69,6 +69,11 @@
             <h4><a href="{% url 'fls:change_status' comp.id 4 %}"> Поменять статус конкурса на Закрыт</a></h4>
         {% endif %}
         {% if comp.status == 4 %}
+            {% if comp.method_of_estimate == 1 %}
+                <a href="{% url 'fls:simjury' comp.id %}" class="btn btn-success">Аналитика результатов оценки</a>
+                <br>
+                <br>
+            {% endif %}
             <a href="{% url 'fls:calculate_result' comp.id %}" class="btn btn-success">Подсчитать результаты</a>
             <h4><a href="#"> Ссылка на просмотр результатов (в будущем будет)</a></h4>
         {% endif %}

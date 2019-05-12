@@ -18,10 +18,17 @@
                 <a class="navbar-brand" href="#">Аналитика результатов</a>
             </div>
             <ul class="nav navbar-nav">
-                <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
-                <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
-                <li><a href="{% url 'fls:coherpage'  %}">Согласованность комиссии</a></li>
+                {% if selected_comp_id %}
+                    <li class="active"><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
+                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Разброс оценок</a></li>
+                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность комиссии</a></li>
+                {% else %}
+                    <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
+                    <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
+                    <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
+                    <li><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
+                {% endif %}
 
             </ul>
         </div>
@@ -31,7 +38,7 @@
             <div class="col-sm-4">
                 <label for="comp">Выберите конкурс:</label>
                 <br>
-                <select id="comp" name="comp" class="selectpicker">
+                <select id="comp" name="comp" class="selectpicker" {% if selected_comp_id %} disabled {% endif %}>
                     {% for comp in comps %}
                         {% if comp.id == selected_comp_id %}
                             <option value="{{ comp.id }}" selected>{{ comp.name }}</option>
