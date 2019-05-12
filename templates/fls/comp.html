@@ -7,12 +7,19 @@
     <h3 xmlns="http://www.w3.org/1999/html"><b>Конкурс: </b>{{ comp.name }}</h3>
     <hr>
     <p><b>Описание </b> <br>{{ comp.description }}</p>
+    <p><b>Ораганизатор конкурса</b> {{ comp.organizer }}</p>
     <p><b>Статус:</b> {{ comp.get_status }}</p>
     <hr>
     <p>Необходимые критерии для участия в конкурсе</p>
     <ul>
         {% for p in comp.get_criteria %}
             <li><b>{{ p.name }}</b></li>
+        {% endfor %}
+    </ul>
+    <p><b>Жюри конкурса</b></p>
+    <ul>
+        {% for j in comp.jurys.all %}
+            <li><p>{{ j.get_username }}</p></li>
         {% endfor %}
     </ul>
     {% if  comp.get_count  == 0 %}

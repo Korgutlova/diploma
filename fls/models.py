@@ -31,6 +31,33 @@ TYPE_PARAM = (
 )
 
 
+class CustomUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_user')
+    role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=ROLE_CHOICES[0][0],
+                               verbose_name="Роль")
+
+    def __str__(self):
+        return self.user.username
+
+    def get_username(self):
+        return self.user.username
+
+    def get_role(self):
+        for r in ROLE_CHOICES:
+            if r[0] == self.role:
+                return r[1]
+        return "Анонимус"
+
+    def is_participant(self):
+        return self.role == 1
+
+    def is_jury(self):
+        return self.role == 2
+
+    def is_organizer(self):
+        return self.role == 3
+
+
 class Competition(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название конкурса")
 
@@ -40,6 +67,10 @@ class Competition(models.Model):
                                              default=METHOD_CHOICES[0][0], verbose_name="Метод оценивания")
     status = models.IntegerField(choices=STATUSES, blank=True, null=True,
                                  default=STATUSES[0][0], verbose_name="Статус конкурса")
+    organizer = models.ForeignKey(CustomUser, related_name='organizer_for_comp', on_delete=models.CASCADE,
+                                  blank=True, null=True, verbose_name='Оранизатор конкурса')
+
+    jurys = models.ManyToManyField("CustomUser", verbose_name="Жюри конкурса")
 
     max_for_criteria = models.IntegerField(default=10, verbose_name="Ограничение критериев")
 
@@ -71,33 +102,6 @@ class Competition(models.Model):
         if len(criteria) > 0:
             return criteria[0].id
         return -1
-
-
-class CustomUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_user')
-    role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=ROLE_CHOICES[0][0],
-                               verbose_name="Роль")
-
-    def __str__(self):
-        return self.user.username
-
-    def get_username(self):
-        return self.user.username
-
-    def get_role(self):
-        for r in ROLE_CHOICES:
-            if r[0] == self.role:
-                return r[1]
-        return "Анонимус"
-
-    def is_participant(self):
-        return self.role == 1
-
-    def is_jury(self):
-        return self.role == 2
-
-    def is_organizer(self):
-        return self.role == 3
 
 
 class Request(models.Model):

@@ -192,27 +192,30 @@ def calculate_result(request, id):
     comp = Competition.objects.get(id=id)
     if user.is_organizer():
         if comp.method_of_estimate == 1:
-            # проходимся по всем заявкам, и берем среднее по результатам жюри, затем проставление данных оценок в заявку
             calculate_avg_request(comp)
         elif comp.method_of_estimate == 2:
             calculate_result_for_ranking(comp)
-            # для всех params заявки высчитываем соответсвующую формулу и умножаем на вес (параметра)  и складываем результат пишем в заявку
         elif comp.method_of_estimate == 3:
             calculate_result_criteria(comp)
-            # для каждой формулы критерия подсчитываем на основе subpapramsvalue и сохраняем, после по итоговой формуле подставляем значения критериев, результат пишем в заявку
     return redirect("fls:get_comp", id)
 
 
 @login_required(login_url="login/")
 def comp_first_step(request):
     form = CompetitionForm()
+    print(1)
     if request.method == 'POST':
         key = "params[%s][%s]"
         print(request.POST)
+        request.POST = request.POST.copy()
         form = CompetitionForm(request.POST)
         if form.is_valid():
             print("create comp")
             comp = form.save()
+            for j_id in request.POST.getlist("jurys[]"):
+                comp.jurys.add(CustomUser.objects.get(id=int(j_id)))
+            comp.organizer = CustomUser.objects.get(user=request.user)
+            comp.save()
         else:
             return render(request, 'fls/add_comp_first.html', {"form": form})
         i = 0

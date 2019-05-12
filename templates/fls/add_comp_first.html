@@ -194,11 +194,18 @@
                     data_params.push(cust_enum);
                 }
                 var result = {"params": data_params};
+                var jurys = [];
                 var array = decodeURI($("#form").serialize()).split("&");
                 for (i = 0; i < array.length; i++) {
                     var values = array[i].split("=");
                     result[values[0]] = values[1];
+                    if (values[0] === "jurys") {
+                        jurys.push(values[1]);
+                    }
                 }
+                alert(jurys);
+                result["jurys"] = jurys;
+                alert(result["jurys"]);
                 $.ajax({
                     type: "post",
                     url: "/fls/comp/first",

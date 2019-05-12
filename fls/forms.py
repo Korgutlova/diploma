@@ -1,12 +1,14 @@
 from django import forms
 
-from fls.models import Competition
+from fls.models import Competition, CustomUser
 
 
 class CompetitionForm(forms.ModelForm):
+    jurys = forms.ModelMultipleChoiceField(queryset=CustomUser.objects.filter(role=2), label="Жюри конкурса", required=False)
+
     class Meta:
         model = Competition
-        fields = ['name',  'description', 'method_of_estimate', 'max_for_criteria']
+        fields = ['name', 'description', 'method_of_estimate', 'max_for_criteria', 'jurys']
 
     def clean_name(self):
         name = self.cleaned_data['name']
