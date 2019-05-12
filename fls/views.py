@@ -549,12 +549,14 @@ def get_comp(request, id):
     return render(request, 'fls/comp.html', {'comp': comp, 'user': user, 'requests': requests})
 
 
-def similar_page(request):
-    comps = Competition.objects.filter(status=4)
-    jurys = CustomUser.objects.filter(role=2)
-    return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'jurys': jurys})
+@login_required(login_url="login/")
+def similar_jury_page(request, comp_id=None):
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    selected_comp_id = int(comp_id) if comp_id else None
+    return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
 
+@login_required(login_url="login/")
 def similar_jury(request):
     comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
         request.GET['crit'])
@@ -607,10 +609,11 @@ def similar_jury(request):
     return JsonResponse(data)
 
 
-def metcomp_page(request):
-    comps = Competition.objects.filter(status=4)
-    jurys = CustomUser.objects.filter(role=2)
-    return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'jurys': jurys})
+@login_required(login_url="login/")
+def metcomp_page(request, comp_id=None):
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    selected_comp_id = int(comp_id) if comp_id else None
+    return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
 
 def method_comparison(request):
@@ -634,16 +637,19 @@ def method_comparison(request):
     return JsonResponse(data)
 
 
-def deviations_page(request):
-    comps = Competition.objects.filter(status=4)
-    return render(request, 'fls/dev/dev.html', {'comps': comps})
+@login_required(login_url="login/")
+def deviations_page(request, comp_id=None):
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    selected_comp_id = int(comp_id) if comp_id else None
+    return render(request, 'fls/dev/dev.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
 
+@login_required(login_url="login/")
 def est_deviations(request):
     comp_id, type, req_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
         request.GET['crit'])
     req = Request.objects.get(id=req_id)
-    jurys = CustomUser.objects.filter(role=2)
+    jurys = Competition.objects.get(id=comp_id).jurys.all()
     avg_est = sum([jury_est.value for jury_est in
                    EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
     jury_est_values = {}
@@ -681,17 +687,21 @@ def change_status(request, id, val):
     return redirect("fls:get_comp", id)
 
 
-def coherence_page(request):
-    comps = Competition.objects.filter(status=4)
-    return render(request, 'fls/coher/coher.html', {'comps': comps})
+@login_required(login_url="login/")
+def coherence_page(request, comp_id=None):
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    selected_comp_id = int(comp_id) if comp_id else None
+    return render(request, 'fls/coher/coher.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
 
+@login_required(login_url="login/")
 def coherence(request):
     comp_id, type, clusts, crit_id = int(request.GET['comp']), int(request.GET['type']), int(
         request.GET['clusts']), int(
         request.GET['crit']),
-    reqs = Competition.objects.get(id=comp_id).competition_request.all()
-    jurys = CustomUser.objects.filter(role=2)
+    comp = Competition.objects.get(id=comp_id)
+    reqs = comp.competition_request.all()
+    jurys = comp.jurys.all()
     jury_ranks = {}
     for jury in jurys:
         jury_ranks[jury] = make_ranks(
@@ -742,16 +752,20 @@ def coherence(request):
     return JsonResponse(data)
 
 
-def comp_criterions(request):
-    criterions = Competition.objects.get(id=request.GET['comp']).competition_criterions.all()
-    data = {'crits': render_to_string('fls/sim_jury/criterions.html', {'criterions': criterions})}
+@login_required(login_url="login/")
+def comp_criterions_jurys(request):
+    comp = Competition.objects.get(id=request.GET['comp'])
+    criterions = comp.competition_criterions.all()
+    jurys = comp.jurys.all()
+    data = {'crits': render_to_string('fls/sim_jury/criterions.html', {'criterions': criterions}),
+            'jury': render_to_string('fls/sim_jury/jury.html', {'jurys': jurys})}
     return JsonResponse(data)
 
 
+@login_required(login_url="login/")
 def optimal_k_for_criterion(request):
     crit_id, type = int(request.GET['crit']), int(request.GET['type'])
     ks = list(ClusterNumber.objects.filter(criterion_id=crit_id, type=type).values_list('k_number', flat=True))
-    jurys = CustomUser.objects.filter(role=2)
     k_range = [(k, 1) for k in ks]
     # k_range.extend([(k, 0) for k in range(1, len(jurys)) if k not in ks])
     # print(k_range)

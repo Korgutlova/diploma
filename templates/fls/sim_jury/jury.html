@@ -1,0 +1,10 @@
+<label for="jury">Выберите жюри:</label>
+<br>
+<select id="jury" name="jury" class="nn">
+    {% for jury in jurys %}
+        <option value="{{ jury.id }}">{{ jury }}</option>
+    {% empty %}
+        <option value="non" selected>Нет жюри</option>
+    {% endfor %}
+</select>
+

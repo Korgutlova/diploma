@@ -11,7 +11,7 @@
             </div>
             <ul class="nav navbar-nav">
                 <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
-                <li class="active"><a href="#">Отклонения от правил</a></li>
+                <li class="active"><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
                 <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
                 <li><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
 
@@ -26,21 +26,18 @@
                 <br>
                 <select id="comp" name="comp" class="selectpicker">
                     {% for comp in comps %}
-                        <option value={{ comp.id }}>{{ comp.name }}</option>
+                        {% if comp.id == selected_comp_id %}
+                            <option value="{{ comp.id }}" selected>{{ comp.name }}</option>
+                        {% else %}
+                            <option value="{{ comp.id }}">{{ comp.name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <br>
                 <br>
                 <div id="critfil"></div>
                 <br>
-                <label for="jury">Выберите члена жюри:</label>
-                <br>
-                <select id="jury" name="jury" class="selectpicker">
-
-                    {% for jury in jurys %}
-                        <option value={{ jury.id }}>{{ jury }}</option>
-                    {% endfor %}
-                </select>
+                <div id="jury_fill"></div>
                 <br>
             </div>
             <div class="col-sm-8">
@@ -98,23 +95,28 @@
 
         };
 
-        const fill_criterions = function () {
+        const fill_criterions_jury = function () {
             comp_id = $('#comp').val();
             $.ajax({
-                url: '/fls/comp_crits/',
+                url: '/fls/comp_crits_jurys/',
                 type: 'get',
                 data: {'comp': comp_id},
                 dataType: 'json',
                 success: function (data) {
                     $("#critfil").html(data.crits);
+                    $("#jury_fill").html(data.jury);
+
                 },
                 error: function () {
                     alert("Результаты не готовы");
                 },
                 complete: function (data) {
-
-                    $('#crit').addClass('selectpicker');
-                    $('#crit').selectpicker();
+                    crit_select = $('#crit');
+                    jury_select = $('#jury');
+                    crit_select.addClass('selectpicker');
+                    crit_select.selectpicker();
+                    jury_select.addClass('selectpicker');
+                    jury_select.selectpicker();
                     fill_estimations();
                 }
             })
@@ -123,14 +125,15 @@
 
 
         select_comp = $('#comp');
-        select_type = $('#jury');
         select_comp.selectpicker();
-        select_type.selectpicker();
 
-        $(document).ready(fill_criterions);
-        select_comp.change(fill_criterions);
-        select_type.change(fill_estimations);
+        $(document).ready(fill_criterions_jury);
+        select_comp.change(fill_criterions_jury);
+
         $('#critfil').on('change', '#crit', function () {
+            fill_estimations();
+        });
+        $('#jury_fill').on('change', '#jury', function () {
             fill_estimations();
         });
 

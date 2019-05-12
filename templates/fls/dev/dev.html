@@ -25,7 +25,11 @@
                 <br>
                 <select id="comp" name="comp" class="selectpicker">
                     {% for comp in comps %}
-                        <option value={{ comp.id }}>{{ comp.name }}</option>
+                        {% if comp.id == selected_comp_id %}
+                            <option value="{{ comp.id }}" selected>{{ comp.name }}</option>
+                        {% else %}
+                            <option value="{{ comp.id }}">{{ comp.name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <br>

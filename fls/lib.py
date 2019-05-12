@@ -15,7 +15,7 @@ django.setup()
 
 from py_expression_eval import Parser
 
-from fls.models import CriterionValue, Request, CustomUser, EstimationJury, Competition, ParamValue, WeightParamJury, \
+from fls.models import EstimationJury, Competition, ParamValue, WeightParamJury, \
     Criterion, ClusterNumber
 
 from math import log, sqrt
@@ -273,8 +273,8 @@ def jury_weight_sum_ests(jury, crit, req_param_values, reqs, params):
 
 
 def calculate_jury_automate_ests(comp_id):
-    jurys = CustomUser.objects.filter(role=2)
     comp = Competition.objects.get(id=comp_id)
+    jurys = comp.jurys.all()
     final_criterion = Criterion.objects.get(competition=comp, result_formula=True)
     criterions = Competition.objects.get(id=comp_id).competition_criterions.filter(result_formula=False)
     for crit in criterions:
@@ -301,7 +301,7 @@ def define_optimal_k(comp_id):
     comp = Competition.objects.get(id=comp_id)
     reqs = comp.competition_request.all()
     criterions = comp.competition_criterions.all()
-    jurys = CustomUser.objects.filter(role=2)
+    jurys = comp.jurys.all()
     for criterion in criterions:
         for type in (1, 2):
             jury_rankings = [make_ranks(
@@ -313,4 +313,3 @@ def define_optimal_k(comp_id):
             ClusterNumber.objects.filter(criterion=criterion, type=type).delete()
             for k in result_k:
                 ClusterNumber.objects.create(criterion=criterion, type=type, k_number=k)
-

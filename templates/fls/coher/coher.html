@@ -10,7 +10,7 @@
             </div>
             <ul class="nav navbar-nav">
                 <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
-                <li><a href="#">Отклонения от правил</a></li>
+                <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
                 <li><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
                 <li class="active"><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
 
@@ -25,7 +25,11 @@
                 <br>
                 <select id="comp" name="comp" class="selectpicker">
                     {% for comp in comps %}
-                        <option value={{ comp.id }}>{{ comp.name }}</option>
+                        {% if comp.id == selected_comp_id %}
+                            <option value="{{ comp.id }}" selected>{{ comp.name }}</option>
+                        {% else %}
+                            <option value="{{ comp.id }}">{{ comp.name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <br>
@@ -101,21 +105,20 @@
         const fill_criterions = function () {
             comp_id = $('#comp').val();
             $.ajax({
-                url: '/fls/comp_crits/',
+                url: '/fls/comp_crits_jurys/',
                 type: 'get',
                 data: {'comp': comp_id},
                 dataType: 'json',
                 success: function (data) {
-
                     $("#critfil").html(data.crits);
-
                 },
                 error: function () {
                     alert("Результаты не готовы");
                 },
                 complete: function (data) {
-                    $('#crit').addClass('selectpicker');
-                    $('#crit').selectpicker();
+                    crit_select = $('#crit');
+                    crit_select.addClass('selectpicker');
+                    crit_select.selectpicker();
                     fill_k_range()
                 }
             })
@@ -135,8 +138,9 @@
                     $("#k_range_fil").html(data.k_range);
                 },
                 complete: function (data) {
-                    $('#clusts').addClass('selectpicker');
-                    $('#clusts').selectpicker();
+                    cluster_select = $('#clusts');
+                    cluster_select.addClass('selectpicker');
+                    cluster_select.selectpicker();
                     fill_estimations();
                 }
             })
@@ -151,12 +155,6 @@
         select_comp.change(fill_criterions);
         select_type.change(fill_k_range);
 
-        $("#critfil").bind("paste", function () {
-            common_crit = $(this).find("#crit").val();
-        });
-        $("#k_range_fil").bind("paste", function () {
-            common_k = $(this).find("#clusts").val();
-        });
 
 
         $('#critfil').on('change', '#crit', function () {
