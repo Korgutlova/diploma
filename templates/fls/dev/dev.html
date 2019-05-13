@@ -10,15 +10,15 @@
             </div>
             <ul class="nav navbar-nav">
                 {% if selected_comp_id %}
-                    <li><a href={% url 'fls:simjury' selected_comp_id%}>Схожесть жюри</a></li>
-                    <li><a href="{% url 'fls:metcomp' selected_comp_id%}">Отклонения от правил</a></li>
-                    <li class="active"><a href="{% url 'fls:devpage' selected_comp_id%}">Разброс оценок</a></li>
-                    <li><a href="{% url 'fls:coherpage' selected_comp_id%}">Согласованность комиссии</a></li>
+                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
+                    <li class="active"><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по участнику</a></li>
+                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность в целом</a></li>
                 {% else %}
                     <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
                     <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                    <li class="active"><a href="{% url 'fls:devpage' %}">Разброс оценок</a></li>
-                    <li><a href="{% url 'fls:coherpage' %}">Согласованность комиссии</a></li>
+                    <li class="active"><a href="{% url 'fls:devpage' %}">Согласованность по участнику</a></li>
+                    <li><a href="{% url 'fls:coherpage' %}">Согласованность в целом</a></li>
                 {% endif %}
 
 
@@ -57,10 +57,26 @@
 
                 <br>
             </div>
-            <div class="col-sm-8" id="paste">
+            <div class="col-sm-8" id="div_values">
             </div>
         </div>
     </div>
+    <div id="error" style="display: none;">
+        <br>
+        <table  class="table table-striped table-bordered">
+            <thead class="thead thead-light">
+            <tr>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td colspan="8" class="text-center bg-warning">Результаты не готовы</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
 
 
 {% endblock %}
@@ -79,10 +95,11 @@
                 data: {'comp': comp_id, 'type': type, 'reqs': req_id, 'crit': crit_id},
                 dataType: 'json',
                 success: function (data) {
-                    $("#paste").html(data.est)
+                    $("#div_values").html(data.est)
                 },
                 error: function () {
-                    alert("Результаты не готовы");
+                    $("#div_values").html($('#error').html())
+
                 },
                 complete: function (data) {
                     color_range();
@@ -126,9 +143,6 @@
                     $("#critfil").html(data.crits);
                     $("#reqfil").html(data.reqs);
                 },
-                error: function () {
-                    alert("Результаты не готовы");
-                },
                 complete: function (data) {
 
                     $('#req').addClass('selectpicker');
@@ -164,14 +178,8 @@
 
         select_comp = $('#comp');
         select_type = $('#type');
-
-
-        {#select_reqs = $('#req');#}
-
         select_comp.selectpicker();
         select_type.selectpicker();
-        {#select_reqs.selectpicker();#}
-        {#$('#send').click(fill_estimations);#}
         $(document).ready(fill_crits_reqs);
         select_comp.change(fill_crits_reqs);
         select_type.change(fill_estimations);
