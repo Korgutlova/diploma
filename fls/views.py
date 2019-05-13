@@ -552,7 +552,7 @@ def get_comp(request, id):
 
 @login_required(login_url="login/")
 def similar_jury_page(request, comp_id=None):
-    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user, method_of_estimate=1)
     selected_comp_id = int(comp_id) if comp_id else None
     return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
@@ -612,7 +612,7 @@ def similar_jury(request):
 
 @login_required(login_url="login/")
 def metcomp_page(request, comp_id=None):
-    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user, method_of_estimate=1)
     selected_comp_id = int(comp_id) if comp_id else None
     return render(request, 'fls/metcomp/metcomp.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
@@ -640,7 +640,7 @@ def method_comparison(request):
 
 @login_required(login_url="login/")
 def deviations_page(request, comp_id=None):
-    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user, method_of_estimate=1)
     selected_comp_id = int(comp_id) if comp_id else None
     return render(request, 'fls/dev/dev.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
@@ -690,7 +690,7 @@ def change_status(request, id, val):
 
 @login_required(login_url="login/")
 def coherence_page(request, comp_id=None):
-    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user)
+    comps = Competition.objects.filter(status=4, organizer=request.user.custom_user, method_of_estimate=1)
     selected_comp_id = int(comp_id) if comp_id else None
     return render(request, 'fls/coher/coher.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
@@ -712,18 +712,16 @@ def coherence(request):
     req_values = {}
     for idx, req in enumerate(reqs):
         req_values[req] = sum([jury_ranks[jury][0][idx] for jury in jurys])
-    try:
-        common_rank_req_sum_avg = sum(list(req_values.values())) / len(reqs)
-        dev_sum = 0
-        for req in req_values:
-            dev_sum += (req_values[req] - common_rank_req_sum_avg) ** 2
-        sum_T = 0
-        for jury in jury_ranks:
-            sum_T += sum([el ** 3 - el for el in jury_ranks[jury][1]])
-        kendall_coef = round((12 * dev_sum / ((len(jurys) ** 2) * (len(reqs) ** 3 - len(reqs)) - len(jurys) * sum_T)),
+
+    common_rank_req_sum_avg = sum(list(req_values.values())) / len(reqs)
+    dev_sum = 0
+    for req in req_values:
+        dev_sum += (req_values[req] - common_rank_req_sum_avg) ** 2
+    sum_T = 0
+    for jury in jury_ranks:
+        sum_T += sum([el ** 3 - el for el in jury_ranks[jury][1]])
+    kendall_coef = round((12 * dev_sum / ((len(jurys) ** 2) * (len(reqs) ** 3 - len(reqs)) - len(jurys) * sum_T)),
                              2)
-    except:
-        kendall_coef = None
 
     jury_rankings = [make_ranks(
         [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],

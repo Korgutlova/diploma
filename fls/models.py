@@ -62,8 +62,8 @@ class CustomUser(models.Model):
     def is_organizer(self):
         return self.role == 3
 
-    def completed_comps_count(self):
-        return self.organizer_for_comp.filter(status=4).count()
+    def completed_hand_comps_count(self):
+        return self.organizer_for_comp.filter(status=4, method_of_estimate=1).count()
 
     def get_new_inv(self):
         return self.jury_invitations.all().filter(status=1)
