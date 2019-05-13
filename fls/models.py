@@ -20,7 +20,12 @@ STATUSES = (
     (4, 'Закрыт'),
 )
 
-# добавить textarea?
+STATUSES_INV = (
+    (1, 'Новое'),
+    (2, 'Принятое'),
+    (3, 'Отклоненное'),
+)
+
 TYPE_PARAM = (
     (1, 'NUMBER'),
     (2, 'TEXT'),
@@ -60,6 +65,15 @@ class CustomUser(models.Model):
     def completed_comps_count(self):
         return self.organizer_for_comp.filter(status=4).count()
 
+    def get_new_inv(self):
+        return self.jury_invitations.all().filter(status=1)
+
+    def get_app_inv(self):
+        return self.jury_invitations.all().filter(status=2)
+
+    def get_rej_inv(self):
+        return self.jury_invitations.all().filter(status=3)
+
 
 class Competition(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название конкурса")
@@ -73,7 +87,7 @@ class Competition(models.Model):
     organizer = models.ForeignKey(CustomUser, related_name='organizer_for_comp', on_delete=models.CASCADE,
                                   blank=True, null=True, verbose_name='Оранизатор конкурса')
 
-    jurys = models.ManyToManyField("CustomUser", verbose_name="Жюри конкурса")
+    jurys = models.ManyToManyField("CustomUser", related_name="competitions_for_jury", verbose_name="Жюри конкурса")
 
     max_for_criteria = models.IntegerField(default=10, verbose_name="Ограничение критериев")
 
@@ -107,12 +121,36 @@ class Competition(models.Model):
         return -1
 
 
+class Invitation(models.Model):
+    competition = models.ForeignKey(Competition, related_name='competition_invitations', on_delete=models.CASCADE,
+                                    blank=False, null=False, verbose_name='Конкурс')
+    jury = models.ForeignKey(CustomUser, related_name='jury_invitations', on_delete=models.CASCADE,
+                             blank=True, null=True, verbose_name='Жюри')
+    status = models.IntegerField(choices=STATUSES_INV, blank=True, null=True, default=STATUSES_INV[0][0],
+                                 verbose_name="Статус приглашения")
+
+    class Meta:
+        unique_together = (('competition', 'jury'),)
+
+    def __str__(self):
+        return "Приглашение %s на конкурс %s, статус -  %s" % (self.jury, self.competition, self.get_status())
+
+    def get_status(self):
+        for r in STATUSES_INV:
+            if r[0] == self.status:
+                return r[1]
+        return "Не определено"
+
+
 class Request(models.Model):
     competition = models.ForeignKey(Competition, related_name='competition_request', on_delete=models.CASCADE,
                                     blank=True, null=True, verbose_name='Конкурс')
     participant = models.ForeignKey(CustomUser, related_name='custom_user', on_delete=models.CASCADE,
                                     blank=True, null=True, verbose_name='Участник')
     result_value = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (('competition', 'participant'),)
 
     def __str__(self):
         return "Заявка %s - %s" % (self.participant, self.competition.name)

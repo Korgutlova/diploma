@@ -31,7 +31,44 @@
     {% endif %}
     {% if cust_user.is_jury %}
         <hr>
-        <h4>Доступные конкурсы</h4>
+        <h3>Приглашения</h3>
+        <a href="#" id="my_inv" role="button" class="btn btn-info">Показать</a>
+        <div class="inv" hidden>
+            {% with new_inv=cust_user.get_new_inv %}
+                {% if new_inv %}
+                    <h4><b>Новые</b></h4>
+                    {% for inv in new_inv %}
+                        <h4>Приглашение на конкурс {{ inv.competition.name }}</h4>
+                        <form method="post" action="{% url 'fls:inv_change_status' inv.id 2 %}">
+                            {% csrf_token %}
+                            <button id="app_inv" type="submit" class="btn btn-success">Принять</button>
+                        </form>
+                        <form method="post" action="{% url 'fls:inv_change_status' inv.id 3 %}">
+                            {% csrf_token %}
+                            <button id="rej_inv" type="submit" class="btn btn-danger">Отклонить</button>
+                        </form>
+
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% with approve_inv=cust_user.get_app_inv %}
+                {% if approve_inv %}
+                    <h4><b>Принятые</b></h4>
+                    {% for inv in approve_inv %}
+                        <h4>Принятые приглашения на конкурс {{ inv.competition.name }}</h4>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% with reject_inv=cust_user.get_rej_inv %}
+                {% if reject_inv %}
+                    <h4><b>Отклоненные</b></h4>
+                    {% for inv in reject_inv %}
+                        <h4>Отклоненные приглашения на конкурс {{ inv.competition.name }}</h4>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        <h3>Доступные конкурсы</h3>
         <br>
         <form action="{% url 'fls:profile' %}" method="post">
             {% csrf_token %}
@@ -94,6 +131,9 @@
             $(".requests").show();
         });
 
+        $("#my_inv").click(function () {
+            $(".inv").show();
+        });
         $(document).on('click', '#status_comp', function () {
             $.ajax({
                 type: "get",

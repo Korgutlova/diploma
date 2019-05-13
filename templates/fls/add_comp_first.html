@@ -203,16 +203,13 @@
                         jurys.push(values[1]);
                     }
                 }
-                alert(jurys);
                 result["jurys"] = jurys;
-                alert(result["jurys"]);
                 $.ajax({
                     type: "post",
                     url: "/fls/comp/first",
                     data: result,
                     success: function (response){
                         alert("Success");
-                        alert(response);
                         window.location = "http://127.0.0.1:8000/fls/comp/second/" + response.comp_id;
                     }
                 });

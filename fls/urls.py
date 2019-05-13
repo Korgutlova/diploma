@@ -41,5 +41,6 @@ urlpatterns = [
     url(r'^comp/(?P<id>\d+)/calculate_result$', calculate_result, name="calculate_result"),
     url(r'^comp_crits_jurys', comp_criterions_jurys, name='comp_crits'),
     url(r'^fill_k', optimal_k_for_criterion, name='crit_k'),
-    url(r'^comp/(?P<id>\d+)/info_est_jury', info_est_jury, name='info_est_jury')
+    url(r'^comp/(?P<id>\d+)/info_est_jury', info_est_jury, name='info_est_jury'),
+    url(r'^invitations/(?P<id>\d+)/change_status/(?P<status>\d+)', inv_change_status, name='inv_change_status'),
 ]
