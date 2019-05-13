@@ -199,7 +199,16 @@ def calculate_result(request, id):
             calculate_result_for_ranking(comp)
         elif comp.method_of_estimate == 3:
             calculate_result_criteria(comp)
-    return redirect("fls:get_comp", id)
+    return redirect("fls:get_result", comp.id)
+
+
+@login_required(login_url="login/")
+def get_result(request, id):
+    comp = Competition.objects.get(id=id)
+    requests = comp.competition_request.all().extra(
+        select={'result': 'CAST(result_value AS INTEGER)'}
+    ).order_by("-result")
+    return render(request, "fls/result_competition.html", {"comp": comp, "requests": requests})
 
 
 @login_required(login_url="login/")
@@ -448,7 +457,8 @@ def profile(request):
 
 def ajax_comp_status(request):
     status = request.GET["status"]
-    comps = Competition.objects.filter(status=status)
+    user = CustomUser.objects.get(user=request.user)
+    comps = user.organizer_for_comp.all()
     return JsonResponse(
         {'est': render_to_string('fls/part_organizer_profile.html', {"org_comps": comps, "statuses": STATUSES,
                                                                      "selected_status": int(status)})})
@@ -723,7 +733,7 @@ def coherence(request):
     for jury in jury_ranks:
         sum_T += sum([el ** 3 - el for el in jury_ranks[jury][1]])
     kendall_coef = round((12 * dev_sum / ((len(jurys) ** 2) * (len(reqs) ** 3 - len(reqs)) - len(jurys) * sum_T)),
-                             2)
+                         2)
 
     jury_rankings = [make_ranks(
         [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],

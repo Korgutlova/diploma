@@ -33,7 +33,7 @@
     {% if user.is_participant and comp.status == 2 %}
         <a href="{% url 'fls:load_request' comp.id %}" class="btn btn-success"> Участвовать</a>
     {% endif %}
-    {% if user.is_organizer %}
+    {% if user == comp.organizer %}
         {% if comp.status == 1 %}
             {% if comp.method_of_estimate == 2 or comp.method_of_estimate == 3 %}
                 {% with cr_id=comp.get_next_criterion %}

@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'fls/base_template.html' %}
+{% block title %}Результаты конкурса {{ comp.name }}{% endblock %}
+{% block content %}
+    <h3>Результаты конкурса {{ comp.name }}</h3>
+    <hr>
+    <br>
 
-</body>
-</html>
+    {% for r in requests %}
+        <h4><b>{{ forloop.counter }}</b> Участник {{ r.participant.get_username }}, результат - <b>{{ r.result_value }}</b></h4>
+        <hr>
+    {% endfor %}
+{% endblock %}
