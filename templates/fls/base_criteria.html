@@ -6,21 +6,20 @@
 
     <h4>Операции</h4>
     <div class="oper">
-        <button type="button" class="btn sign" id="plus">+</button>
-        <button type="button" class="btn sign" id="minus">-</button>
-        <button type="button" class="btn sign" id="div">/</button>
-        <button type="button" class="btn sign" id="mult">*</button>
-        <button type="button" class="btn" id="left_branch">(</button>
-        <button type="button" class="btn" id="right_branch">)</button>
+        <button type="button" class="tool btn sign" id="plus">+</button>
+        <button type="button" class="tool btn sign" id="minus">-</button>
+        <button type="button" class="tool btn sign" id="div">/</button>
+        <button type="button" class="tool btn sign" id="mult">*</button>
+        <button type="button" class="tool btn" id="left_branch">(</button>
+        <button type="button" class="tool btn" id="right_branch">)</button>
     </div>
 
     <hr>
     <h4>Функции</h4>
     <div class="func">
-        <button type="button" class="btn btn-warning" id="max">max</button>
-        <button type="button" class="btn btn-warning" id="min">min</button>
-        <button type="button" class="btn btn-warning" id="average">average</button>
-        <button type="button" class="btn btn-warning" id="summa">summa</button>
+        {% for f in funcs %}
+            <button type="button" class="tool btn btn-warning" id="{{ f }}">{{ f }}</button>
+        {% endfor %}
     </div>
     <hr>
     <h4>Числа</h4>
@@ -30,7 +29,7 @@
                 <input class="form-control" type="number" id="field_numb">
             </div>
             <div class="col-md-3">
-                <button type="button" class="btn btn-warning" id="numb_button">Добавить</button>
+                <button type="button" class="tool btn btn-warning" id="numb_button">Добавить</button>
             </div>
         </div>
         <br>
@@ -118,6 +117,7 @@
                     array.push(str);
                     display.push($(this).text() + " ");
                 }
+                disabled_button();
                 full_textarea();
             });
 
@@ -127,6 +127,9 @@
                     array.push(el);
                     display.push(el);
                 }
+                $(".tool").attr("disabled", false);
+                $("#right_branch").attr("disabled", true);
+                $(".sign").attr("disabled", true);
                 full_textarea();
             });
 
@@ -136,6 +139,9 @@
                     array.push("( ");
                     display.push("( ");
                 }
+                $(".tool").attr("disabled", false);
+                $("#right_branch").attr("disabled", true);
+                $(".sign").attr("disabled", true);
                 full_textarea();
             });
 
@@ -145,6 +151,7 @@
                     array.push(") ");
                     display.push(") ");
                 }
+                disabled_button();
                 full_textarea();
             });
 
@@ -167,6 +174,7 @@
                         $('#field_numb').val("");
                     }
                 }
+                disabled_button();
                 full_textarea();
             });
 
@@ -188,6 +196,7 @@
                 display.push($("#insert").text() + "(" + params_sh + ") ");
                 $("#insert").text('');
                 $("#checkAll").prop('checked', false);
+                disabled_button();
                 full_textarea();
             });
 
@@ -203,6 +212,14 @@
                     content += display[i];
                 }
                 $("#desc_show").val(content);
+            }
+
+            function disabled_button() {
+                $(".tool").attr("disabled", false);
+                $(".param").attr("disabled", true);
+                $(".func > .btn").attr("disabled", true);
+                $("#numb_button").attr("disabled", true);
+                $("#left_branch").attr("disabled", true);
             }
 
             $(".func > .btn").click(function () {

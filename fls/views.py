@@ -22,6 +22,8 @@ from py_expression_eval import Parser
 
 parser = Parser()
 
+DICT_FUNCTIONS = ["max", "min", "summa", "average"]
+
 
 @login_required(login_url="login/")
 def result_criteria(request, id):
@@ -33,7 +35,7 @@ def result_criteria(request, id):
         c.formula = request.POST["formula"]
         c.save()
         return redirect("fls:list_comp")
-    return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id})
+    return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id, "funcs": DICT_FUNCTIONS})
 
 
 @login_required(login_url="login/")
@@ -60,7 +62,7 @@ def formula_for_single_criteria(request, id, cr_id):
     if (len_2 - len_1) == 1:
         next = False
     return render(request, 'fls/add_formula.html',
-                  {"params": params, "id": id, "c": criteria, "next": next})
+                  {"params": params, "id": id, "c": criteria, "next": next, "funcs": DICT_FUNCTIONS})
 
 
 def average(*args):
