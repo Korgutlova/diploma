@@ -5,6 +5,11 @@
     <hr>
     <h3>Конкурсы</h3>
     <br>
+    {% if  cust_user.completed_comps_count %}
+        <a href="{% url "fls:simjury" %}" class="btn btn-info">Аналитика результатов оценки</a>
+        <br>
+        <br>
+    {% endif %}
     <div class="row form-inline">
         <div class="col-md-2 my-1">
             <label for="status">Фильтр</label><select class="form-control" name="status" id="status">

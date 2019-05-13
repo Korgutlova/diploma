@@ -57,6 +57,9 @@ class CustomUser(models.Model):
     def is_organizer(self):
         return self.role == 3
 
+    def completed_comps_count(self):
+        return self.organizer_for_comp.filter(status=4).count()
+
 
 class Competition(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Название конкурса")
