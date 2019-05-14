@@ -6,7 +6,12 @@
 {% block content %}
     <h3>Заявка на конкурс "{{ comp.name }}"</h3>
     <hr>
-    <form  enctype="multipart/form-data" name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
+    <div class="row">
+        <div class="col-md-5 div-err" hidden>
+            <h4>Проверьте правильность заявки</h4>
+        </div>
+    </div>
+    <form enctype="multipart/form-data" name="form" action="{% url 'fls:load_request' comp.id %}" method="post">
         {% csrf_token %}
         {% for c in collection %}
             <div class="card_param">
@@ -15,9 +20,13 @@
                 {% for sp in c.subparams %}
                     <h4>Параметр - {{ sp.name }}</h4>
                     {% if sp.type == 1 %}
-                        <label>Введите число/значение
-                            <input type="text" class="form-control" name="sp_{{ sp.id }}">
-                        </label>
+                        <div class="form-group">
+                            <label>Введите число/значение {% if sp.max %}
+                                <i>Ограничение: не больше <span>{{ sp.max }}</span></i>{% endif %}
+                                <input type="number" class="form-control numb" name="sp_{{ sp.id }}"
+                                       id="sp_{{ sp.id }}">
+                            </label>
+                        </div>
                     {% endif %}
                     {% if sp.type == 2 %}
                         <label>Введите текст
@@ -75,6 +84,18 @@
             $(this).css('background-color', '#ffffff');
         });
 
+        $('.container').on('change', '.numb', function () {
+            if (Number($(this).parent().find("span").text()) < $(this).val()) {
+                $(this).parent().parent().addClass("has-error");
+            } else {
+                $(this).parent().parent().removeClass("has-error");
+            }
+            var len = $(".form-group.has-error").length;
+            if (len === 0) {
+                $(".div-err").hide();
+            }
+        });
+
         $('.container').on('click', '.add_file_field', function () {
             var div_block = $(this).parent().parent().children(".file").last();
             var id = div_block.find(".file-upload").attr("name").split("_")[1];
@@ -86,6 +107,16 @@
                 "                                    <input type=\"text\" class=\"form-control\" name=\"header_" + id + "\">\n" +
                 "                                </label>\n" +
                 "                            </div>");
+        });
+
+        $("form").submit(function (event) {
+            var len = $(".form-group.has-error").length;
+            if (len > 0) {
+                $(".div-err").show();
+                return false;
+            } else {
+                $("form").submit();
+            }
         });
     </script>
 {% endblock %}

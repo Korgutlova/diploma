@@ -211,10 +211,9 @@ class Param(models.Model):
     criterion = models.ForeignKey(Criterion, related_name='param_criterion', on_delete=models.CASCADE,
                                   blank=False, null=False, verbose_name="Ссылка на параметр")
     name = models.CharField(max_length=50)
-    # True - for formula
-    # False - for jury
 
     for_formula = models.BooleanField()
+
     type = models.IntegerField(choices=TYPE_PARAM, null=False,
                                blank=False, default=TYPE_PARAM[0][0], verbose_name="Тип данных")
     enum = models.ForeignKey(CustomEnum, related_name='param_enum', on_delete=models.SET_NULL,

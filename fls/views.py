@@ -1,3 +1,5 @@
+import statistics
+
 import numpy as np
 
 import cexprtk
@@ -22,7 +24,7 @@ from py_expression_eval import Parser
 
 parser = Parser()
 
-DICT_FUNCTIONS = ["max", "min", "summa", "average"]
+DICT_FUNCTIONS = ["max", "min", "summa", "average", "median", "mode"]
 
 
 @login_required(login_url="login/")
@@ -69,8 +71,16 @@ def average(*args):
     return np.average(args)
 
 
+def median(*args):
+    return statistics.median(*args)
+
+
 def summa(*args):
     return np.sum(args)
+
+
+def mode(*args):
+    return statistics.mode(*args)
 
 
 def calculate_avg_request(comp):
@@ -287,6 +297,8 @@ def comp_second_step(request, comp_id):
                         if type == 5:
                             enum_id = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "enum_id")])
                             sub_p.enum = CustomEnum.objects.get(id=enum_id)
+                        elif type == 1:
+                            sub_p.max = int(request.POST["%s[%s][%s]" % ((key % (i, "subparams")), k, "max")])
                         sub_p.save()
                         print(name_sub)
                         k += 1
@@ -458,7 +470,7 @@ def profile(request):
 def ajax_comp_status(request):
     status = request.GET["status"]
     user = CustomUser.objects.get(user=request.user)
-    comps = user.organizer_for_comp.all()
+    comps = user.organizer_for_comp.all().filter(status=status)
     return JsonResponse(
         {'est': render_to_string('fls/part_organizer_profile.html', {"org_comps": comps, "statuses": STATUSES,
                                                                      "selected_status": int(status)})})
@@ -468,7 +480,6 @@ def login_view(request):
     if not request.user.is_anonymous:
         return redirect("fls:profile")
 
-    user = request.user
     if request.method == 'POST':
         user = authenticate(
             username=request.POST['username'],

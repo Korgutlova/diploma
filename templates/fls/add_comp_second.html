@@ -1,14 +1,12 @@
 {% extends 'fls/base_template.html' %}
 {% load widget_tweaks %}
-{% block title %}Создание конкурса {{ comp.name }}. 2 Этап{% endblock %}
+{% block title %}Создание конкурса "{{ comp.name }}" . 2 Этап{% endblock %}
 {% block content %}
-    <h3>Создание конкурса {{ comp.name }}. 2 Этап</h3>
+    <h3>Создание конкурса "{{ comp.name }}". 2 Этап - Конструирование заявки</h3>
     <hr>
     <div class="col-xs-8">
-        <h3>Конструирование заявки</h3>
         <div class="param" id="param_1">
             <div class="col-xs-12">
-                <hr>
                 <h4>Критерий </h4>
                 <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
                    role="button">&times;</a>
@@ -72,6 +70,11 @@
                             </select>
                         </label>
                     </div>
+                </div>
+                <div class="max_numb form-group col-md-5">
+                    <label>Ограничение
+                        <input class="form-control" type="number" id="max_number">
+                    </label>
                 </div>
             </div>
         </div>
@@ -172,6 +175,10 @@
                     "                            </select>\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
+                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
+                    "                    <label>Ограничение\n" +
+                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
+                    "                    </label>\n" +
                     "                </div>");
             });
 
@@ -220,6 +227,10 @@
                     "                            </select>\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
+                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
+                    "                    <label>Ограничение\n" +
+                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
+                    "                    </label>\n" +
                     "                </div>");
 
             });
@@ -246,6 +257,11 @@
                 } else {
                     $("#" + sub_id + " .drop_down_list").hide();
                 }
+                if (Number($(this).val()) === 1) {
+                    $("#" + sub_id + " .max_numb").show();
+                } else {
+                    $("#" + sub_id + " .max_numb").hide();
+                }
             });
 
             $(".container").on('click', '#submit', function () {
@@ -260,8 +276,11 @@
                             "type_subparam": $(subparams[j]).find("#type_subparam").val(),
                             "for_formula": $(subparams[j]).find("#for_formula").is(':checked'),
                         };
-                        if (Number(tmp["type_subparam"]) === 5){
+                        if (Number(tmp["type_subparam"]) === 5) {
                             tmp["enum_id"] = $(subparams[j]).find("#enum_subparam").val();
+                        }
+                         if (Number(tmp["type_subparam"]) === 1) {
+                            tmp["max"] = $(subparams[j]).find("#max_number").val();
                         }
                         data_subparams.push(tmp);
                     }
