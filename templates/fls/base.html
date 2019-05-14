@@ -19,8 +19,22 @@
 </head>
 <body>
 {% block body %}
-
 {% endblock %}
+<div id="error" style="display: none;">
+    <br>
+    <table class="table table-striped table-bordered">
+        <thead class="thead thead-light">
+        <tr>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="8" class="text-center bg-warning">Результаты не готовы</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </body>
 {% block script %}
 {% endblock %}

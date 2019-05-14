@@ -692,7 +692,7 @@ def comp_reqs(request):
 
 def change_status(request, id, val):
     comp = Competition.objects.get(id=id)
-    if int(val) == 4:
+    if comp.method_of_estimate == 1 and int(val) == 4:
         calculate_jury_automate_ests(id)
         define_optimal_k(id)
     comp.status = int(val)
