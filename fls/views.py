@@ -233,9 +233,10 @@ def comp_first_step(request):
         if form.is_valid():
             print("create comp")
             comp = form.save()
-            for j_id in request.POST.getlist("jurys[]"):
-                invitation = Invitation(competition=comp, jury=CustomUser.objects.get(id=int(j_id)))
-                invitation.save()
+            if comp.method_of_estimate == 1:
+                for j_id in request.POST.getlist("jurys[]"):
+                    invitation = Invitation(competition=comp, jury=CustomUser.objects.get(id=int(j_id)))
+                    invitation.save()
             comp.organizer = CustomUser.objects.get(user=request.user)
             comp.save()
         else:
@@ -264,6 +265,8 @@ def comp_first_step(request):
             except Exception as e:
                 print(e)
                 break
+        Criterion.objects.create(competition=comp, name='Итоговый', description='Итоговый критерий',
+                                 result_formula=True)
         return JsonResponse({"comp_id": comp.id})
     return render(request, 'fls/add_comp_first.html', {"form": form})
 
@@ -312,8 +315,6 @@ def comp_second_step(request, comp_id):
             except Exception as e:
                 print(e)
                 break
-        Criterion.objects.create(competition=comp, name='Итоговый', description='Итоговый критерий',
-                                 result_formula=True)
     return render(request, 'fls/add_comp_second.html', {"types": TYPE_PARAM, "comp": comp, "enums": enums})
 
 
@@ -506,22 +507,26 @@ def get_request(request, id):
     cur_request = Request.objects.get(id=id)
     estimate = EstimationJury.objects.filter(request=cur_request)
     flag = False
+    flag_for_jury = False
+    if CustomUser.objects.get(user=request.user) in cur_request.competition.jurys.all():
+        flag_for_jury = True
     arr = []
     criteria = Criterion.objects.filter(competition=cur_request.competition, result_formula=False)
+    if len(estimate) > 0:
+        flag = True
     for c in criteria:
         subvalues = []
         for sb in c.param_criterion.all():
             sbvalue = ParamValue.objects.get(param=sb, request=cur_request)
             subvalues.append(sbvalue)
-        arr.append((c, subvalues))
-    dict = {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user)}
-    if len(estimate) > 0:
-        flag = True
-        for est in estimate:
-            dict['est_val_%s' % est.criterion.id] = est.value
-    dict['estimate_flag'] = flag
+        est = 0
+        if flag:
+            est = estimate.filter(criterion=c)[0].value
+        arr.append((c, subvalues, est))
     print(dict)
-    return render(request, 'fls/request.html', dict)
+    return render(request, 'fls/request.html',
+                  {'request': cur_request, 'values': arr, 'user': CustomUser.objects.get(user=request.user),
+                   'estimate_flag': flag, 'flag': flag_for_jury})
 
 
 def estimate_req(request, req_id):
@@ -797,7 +802,7 @@ def optimal_k_for_criterion(request):
 
 def info_est_jury(request, id):
     comp = Competition.objects.get(id=id)
-    jurys = CustomUser.objects.filter(role=2)
+    jurys = comp.jurys.all()
     requests = comp.competition_request.all()
     len_req = len(requests)
     result = []
@@ -820,4 +825,11 @@ def inv_change_status(request, id, status):
     if status == 3:
         invitation.status = status
         invitation.save()
+    return redirect("fls:profile")
+
+
+def delete_req(request, id):
+    request = Request.objects.get(id=id)
+    request.delete()
+    print("request deleted")
     return redirect("fls:profile")

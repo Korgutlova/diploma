@@ -44,5 +44,6 @@ urlpatterns = [
     url(r'^comp/(?P<id>\d+)/info_est_jury', info_est_jury, name='info_est_jury'),
     url(r'^invitations/(?P<id>\d+)/change_status/(?P<status>\d+)', inv_change_status, name='inv_change_status'),
     url(r'^comp/(?P<id>\d+)/get_result', get_result, name='get_result'),
+    url(r'^request/(?P<id>\d+)/delete', delete_req, name='delete_req'),
 
 ]

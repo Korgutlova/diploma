@@ -11,7 +11,7 @@
         <form id="form" method="post" action="{% url 'fls:estimate_req' request.id %}">
             {% csrf_token %}
             {% for v in  values %}
-                {% with param=v.0 sbvalues=v.1 %}
+                {% with param=v.0 sbvalues=v.1 est=v.2 %}
                     <p>Критерий '{{ param.name }}' </p>
                     {% for sb in sbvalues %}
                         <p> Параметр критерия - {{ sb.get_name }} <strong>{% if sb.is_number %}
@@ -46,7 +46,7 @@
                         <label>Оценка критерия
                             {% with  somestr=param.id|stringformat:"i" %}
                                 <input type="text" name="est_val_{{ param.id }}"
-                                       value="{% if estimate_flag %} {{ "est_val_"|add:somestr }} {% endif %}">
+                                       value="{{ est }}">
                             {% endwith %}
                         </label>
                     </div>
@@ -66,12 +66,14 @@
 
     {% if request.participant == user %}
         <button type="button" class="btn">Редактировать заявку</button>
-        <form method="post" action="{% url 'fls:delete_req' request.id %}" hidden>
+        <br>
+        <br>
+        <form method="post" action="{% url 'fls:delete_req' request.id %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Удалить заявку</button>
         </form>
     {% endif %}
-    {% if user.is_jury  and request.competition.status == 3 %}
+    {% if user.is_jury  and request.competition.status == 3 and flag %}
         {% if estimate_flag %}
             <button id="edit" type="button" class="btn">Редактировать оценку</button>
             <form method="post" action="{% url 'fls:estimate_del' request.id %}">

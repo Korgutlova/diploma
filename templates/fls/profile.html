@@ -68,21 +68,26 @@
                 {% endif %}
             {% endwith %}
         </div>
-        <h3>Доступные конкурсы</h3>
-        <br>
-        <form action="{% url 'fls:profile' %}" method="post">
-            {% csrf_token %}
-            <select class="form-control" name="comp">
-                {% for c in comps %}
-                    <option {% if select_comp == c.id %} selected {% endif %} value="{{ c.id }}">{{ c.name }}</option>
-                {% endfor %}
-            </select>
+        {% if comps %}
+            <h3>Доступные конкурсы</h3>
             <br>
-            <button type="submit" class="btn btn-primary labelText">
-                <span>Применить</span>
-            </button>
-        </form>
-        <br>
+            <form action="{% url 'fls:profile' %}" method="post">
+                {% csrf_token %}
+                <select class="form-control" name="comp">
+                    {% for c in comps %}
+                        <option {% if select_comp == c.id %} selected {% endif %}
+                                                             value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <button type="submit" class="btn btn-primary labelText">
+                    <span>Применить</span>
+                </button>
+            </form>
+            <br>
+        {% else %}
+            <h3>Для Вас не найдены доступные конкурсы </h3>
+        {% endif %}
         {% if new_requests %}
             <h4>Новые (непросмотренные) заявки</h4>
             <ul>

@@ -16,12 +16,18 @@
             <li><b>{{ p.name }}</b></li>
         {% endfor %}
     </ul>
-    <p><b>Жюри конкурса</b></p>
-    <ul>
-        {% for j in comp.jurys.all %}
-            <li><p>{{ j.get_username }}</p></li>
-        {% endfor %}
-    </ul>
+    {% if comp.method_of_estimate == 1 %}
+        <p><b>Жюри конкурса</b></p>
+        {% if comp.jurys.all %}
+            <ul>
+                {% for j in comp.jurys.all %}
+                    <li><p>{{ j.get_username }}</p></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Жюри пока не определены</p>
+        {% endif %}
+    {% endif %}
     {% if  comp.get_count  == 0 %}
         {% if user.is_participant  and comp.status == 2 %}
             <h4>На конкурс еще не подано ни одной заявки! Будь первым!</h4>
@@ -35,6 +41,8 @@
     {% endif %}
     {% if user == comp.organizer %}
         {% if comp.status == 1 %}
+            <a href="{% url 'fls:comp_second_step' comp.id %}"
+               class="btn btn-success">Добавить новые критерии</a>
             {% if comp.method_of_estimate == 2 or comp.method_of_estimate == 3 %}
                 {% with cr_id=comp.get_next_criterion %}
                     <a href="{% if cr_id == -1 %}#
