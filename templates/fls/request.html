@@ -4,19 +4,19 @@
     <h3>Заявка</h3>
     <hr>
 
-    <p>Конкурс - {{ request.competition.name }}</p>
-    <p>Загрузил пользователь {{ request.participant.get_username }}</p>
-    <p>Содержание заявки</p>
+    <h4>Конкурс - {{ request.competition.name }}</h4>
+    <h4>Загрузил пользователь {{ request.participant.get_username }}</h4>
+    <h4>Содержание заявки</h4>
     <div class="container">
         <form id="form" method="post" action="{% url 'fls:estimate_req' request.id %}">
             {% csrf_token %}
             {% for v in  values %}
                 {% with param=v.0 sbvalues=v.1 est=v.2 %}
-                    <p>Критерий '{{ param.name }}' </p>
+                    <h4>Критерий <b>'{{ param.name }}'</b></h4>
                     {% for sb in sbvalues %}
-                        <p> Параметр критерия - {{ sb.get_name }} <strong>{% if sb.is_number %}
+                        <h4> Параметр критерия - {{ sb.get_name }} <strong>{% if sb.is_number %}
                             - {{ sb.value }}
-                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %}</strong></p>
+                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %}</strong></h4>
                         {% if sb.is_photo %}
                             <div id="myCarousel" class="carousel slide" data-ride="carousel"
                                  style="width: 400px; height:400px;">
@@ -42,12 +42,10 @@
                         {% endif %}
 
                     {% endfor %}
-                    <div class="for_form" hidden>
+                    <div class="form-group for_form" hidden>
                         <label>Оценка критерия
-                            {% with  somestr=param.id|stringformat:"i" %}
-                                <input type="text" name="est_val_{{ param.id }}"
+                                <input type="number" class="form-control" name="est_val_{{ param.id }}"
                                        value="{{ est }}">
-                            {% endwith %}
                         </label>
                     </div>
                     <hr>
@@ -76,6 +74,7 @@
     {% if user.is_jury  and request.competition.status == 3 and flag %}
         {% if estimate_flag %}
             <button id="edit" type="button" class="btn">Редактировать оценку</button>
+            <br><br>
             <form method="post" action="{% url 'fls:estimate_del' request.id %}">
                 {% csrf_token %}
                 <button id="delete" type="submit" class="btn btn-danger">Удалить оценку</button>
