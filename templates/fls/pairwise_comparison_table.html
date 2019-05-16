@@ -2,21 +2,21 @@
 {% block title %}Метод попарного сравнения{% endblock %}
 
 {% block content %}
-    <h3>Определение весов параметров для конкурса "{{ comp.name }}"</h3>
+    <h3>Определение весов критериев для конкурса "{{ comp.name }}"</h3>
     <hr>
     <br>
     <div class="div-info">
         <p><strong>Информация по заполнению!</strong><br>
-            <strong>0</strong> - Параметр по вертикали важнее чем параметр по горизонтали <br>
-            <strong>0.5</strong> - Параметр по горизитонали и вертикали равны<br>
-            <strong>1</strong> - Параметр по горизитонали важнее чем параметр по вертикали</p>
+            <strong>Менее важный</strong> - Параметр по вертикали важнее чем параметр по горизонтали <br>
+            <strong>Равны</strong> - Параметр по горизитонали и вертикали равны<br>
+            <strong>Более важный</strong> - Параметр по горизитонали важнее чем параметр по вертикали</p>
     </div>
     <form name="form" id="form" action="
             {% if crit %}{% url 'fls:pairwise_comparison_param' crit %}{% else %}{% url 'fls:pairwise_comparison' comp.id %}{% endif %}"
           method="post">
         {% csrf_token %}
         <table class="table table-bordered" id="itable">
-            <caption class="text-center"><strong>Попарные сравнения параметров</strong></caption>
+            <caption class="text-center"><strong>Попарные сравнения критериев</strong></caption>
             <thead>
             <tr>
                 <th scope="col"></th>
@@ -35,9 +35,9 @@
                             {% else %}
                                 <select name="rank{{ item }}" id="{{ item }}" class="cell form-control">
                                     <option selected value="-">-</option>
-                                    <option value="0">0</option>
-                                    <option value="0.5">0,5</option>
-                                    <option value="1">1</option>
+                                    <option value="0">Менее важный</option>
+                                    <option value="0.5">Равны</option>
+                                    <option value="1">Более важный</option>
                                 </select>
                             {% endif %}
                         </th>
