@@ -2,21 +2,31 @@
 {% block title %}Метод попарного сравнения{% endblock %}
 
 {% block content %}
-    <h3>Определение весов критериев для конкурса "{{ comp.name }}"</h3>
+    {% if crit %}
+        <h3>Определение весов параметров для критерия "{{ crit.name}}"</h3>
+    {% else %}
+        <h3>Определение весов критериев для конкурса "{{ comp.name }}"</h3>
+    {% endif %}
     <hr>
     <br>
     <div class="div-info">
         <p><strong>Информация по заполнению!</strong><br>
-            <strong>Менее важный</strong> - Параметр по вертикали важнее чем параметр по горизонтали <br>
-            <strong>Равны</strong> - Параметр по горизитонали и вертикали равны<br>
-            <strong>Более важный</strong> - Параметр по горизитонали важнее чем параметр по вертикали</p>
+            <strong>Менее важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по вертикали важнее чем
+            параметр по горизонтали <br>
+            <strong>Равны</strong> - {% if crit %}Параметры{% else %}Критерии{% endif %} по горизитонали и вертикали по
+            значимости равны<br>
+            <strong>Более важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по горизитонали важнее
+            чем параметр по вертикали</p>
     </div>
     <form name="form" id="form" action="
-            {% if crit %}{% url 'fls:pairwise_comparison_param' crit %}{% else %}{% url 'fls:pairwise_comparison' comp.id %}{% endif %}"
+
+
+            {% if crit %}{% url 'fls:pairwise_comparison_param' crit.id %}{% else %}{% url 'fls:pairwise_comparison' comp.id %}{% endif %}"
           method="post">
         {% csrf_token %}
         <table class="table table-bordered" id="itable">
-            <caption class="text-center"><strong>Попарные сравнения критериев</strong></caption>
+            <caption class="text-center"><strong>Попарные сравнения {% if crit %}параметров{% else %}
+                критериев{% endif %}</strong></caption>
             <thead>
             <tr>
                 <th scope="col"></th>
@@ -52,7 +62,12 @@
         </button>
     </form>
     <br><br>
-     <a href="{% url 'fls:get_comp' comp.id %}" class="btn btn-default">К странице конкурса</a>
+    {% if crit %}
+        <a href="{% url 'fls:profile' %}" class="btn btn-default">Вернуться</a>
+
+    {% else %}
+        <a href="{% url 'fls:get_comp' comp.id %}" class="btn btn-default">К странице конкурса</a>
+    {% endif %}
 {% endblock %}
 {% block script %}
     <script>

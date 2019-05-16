@@ -418,7 +418,8 @@ def pairwise_comparison_param(request, crit_id):
         return HttpResponse("Данная страница для Вас недоступна")
     params = Criterion.objects.get(id=crit_id).param_criterion.filter(type__in=(1, 3, 4, 5))
     params_modif = make_pairs(params)
-    response = render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, 'crit': crit_id})
+    criterion = Criterion.objects.get(id=crit_id)
+    response = render(request, 'fls/pairwise_comparison_table.html', {"params": params_modif, 'crit': criterion})
     if request.method == 'POST':
         values = dict(request.POST)
         del values['csrfmiddlewaretoken']
