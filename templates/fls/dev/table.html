@@ -2,10 +2,10 @@
 <b>Средняя оценка</b> : {{ comm }}
 <br>
 <br>
-<b>Среднее отклонение</b> : {{ avg_dev }}
+<b>Среднеквадратическое отклонение</b> : {{ avg_dev }}
 <br>
 <br>
-<b>Коэффициент вариации</b> : <span id="var_coef">{{ var_coef }}</span> <span id="var_est"></span>
+<b>Согласованность мнений комиссии</b> : <span id="var_est"></span> (<span id="var_coef">{{ var_coef }}</span>)
 <br>
 
 
@@ -13,11 +13,11 @@
 <table id="values" class="table table-striped table-bordered">
 
 
-    <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Таблица отклонений</strong>
+    <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Таблица отклонений от среднего</strong>
     </caption>
     <thead class="thead thead-light">
     <tr>
-        <th style="width: 50px">Жюри</th>
+        <th style="width: 50px">Эксперты</th>
         <th style="width: 50px">Оценка</th>
         <th style="width: 50px">Отклонение</th>
 

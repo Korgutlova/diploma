@@ -27,7 +27,7 @@
     </nav>
     <div class="container" style="margin-top: 50px">
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-3">
                 <label for="comp">Выберите конкурс:</label>
                 <br>
                 <select id="comp" name="comp" class="selectpicker" {% if selected_comp_id %} disabled {% endif %}>
@@ -57,7 +57,7 @@
 
                 <br>
             </div>
-            <div class="col-sm-8" id="div_values">
+            <div class="col-sm-9" id="div_values">
             </div>
         </div>
     </div>
@@ -95,21 +95,17 @@
             var_coef = $("#var_coef");
             cons_est = $("#var_est");
             koef_value = parseFloat(var_coef.text());
-            if (koef_value <= 0.1) {
+            if (koef_value <= 0.2) {
                 var_coef.css("color", '#07a017');
-                cons_est.text('(отлично)');
-            }
-            else if (koef_value > 0.1 && koef_value <= 0.2) {
-                var_coef.css("color", '#68a05a');
-                cons_est.text('(хорошо)');
+                cons_est.text('высокая');
             }
             else if (koef_value > 0.2 && koef_value <= 0.3) {
-                var_coef.css("color", '#ffa634');
-                cons_est.text('(удовлетворительно)');
+                var_coef.css("color", '#68a05a');
+                cons_est.text('средняя');
             }
             else {
                 var_coef.css("color", '#FF0000');
-                cons_est.text('(неудовлетворительно)');
+                cons_est.text('низкая');
             }
         };
 
@@ -139,7 +135,7 @@
 
         const color_range = function () {
             color_pos = ['#3fa082', '#52a98e', '#65b39b', '#78bca7', '#8bc6b4', '#9fcfc0', '#b2d9cd', '#c5e2d9', '#d8ece6', '#ebf5f2'];
-            color_neg = ['#cc285f', '#d13d6f', '#d6527e', '#db688f', '#e07e9f', '#e593af', '#eaa9bf', '#efbecf', '#f4d4df'];
+            color_neg = ['#d6527e', '#db688f', '#e07e9f', '#e593af', '#eaa9bf', '#efbecf', '#f4d4df'];
             $(".paint").each(function (i) {
                 diff_value = parseFloat($(this).text());
                 diff = Math.round(Math.abs(diff_value));
