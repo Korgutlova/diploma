@@ -100,7 +100,7 @@
                 cons_est.text('высокая');
             }
             else if (koef_value > 0.2 && koef_value <= 0.3) {
-                var_coef.css("color", '#68a05a');
+                var_coef.css("color", '#ff8026');
                 cons_est.text('средняя');
             }
             else {
@@ -136,18 +136,11 @@
         const color_range = function () {
             color_pos = ['#3fa082', '#52a98e', '#65b39b', '#78bca7', '#8bc6b4', '#9fcfc0', '#b2d9cd', '#c5e2d9', '#d8ece6', '#ebf5f2'];
             color_neg = ['#d6527e', '#db688f', '#e07e9f', '#e593af', '#eaa9bf', '#efbecf', '#f4d4df'];
+            colors = ['#3fa082', '#52a98e', '#dd82a1','#d25882'];
             $(".paint").each(function (i) {
                 diff_value = parseFloat($(this).text());
                 diff = Math.round(Math.abs(diff_value));
-                if (diff >= color_pos.length) {
-                    diff = color_pos.length - 1
-                }
-                if (diff_value >= 0) {
-                    color = color_pos[diff];
-                } else {
-                    color = color_neg[diff];
-
-                }
+                color = colors[diff];
                 console.log(color);
                 $(this).css("background-color", color);
             })
