@@ -114,6 +114,8 @@ def calculate_result_for_ranking(comp):
                     array[v] = spv.value
                 elif param.type == 5:
                     array[v] = spv.enum_val.enum_value
+                elif param.type == 3 or param.type == 4:
+                    array[v] = spv.files.all().count()
                 else:
                     print("Неверный формат")
             result = execute_formula(array, funcs, c.formula) * c.weight_value
@@ -169,6 +171,8 @@ def calculate_result_criteria(comp):
                     array[v] = spv.value
                 elif param.type == 5:
                     array[v] = spv.enum_val.enum_value
+                elif param.type == 3 or param.type == 4:
+                    array[v] = spv.files.all().count()
                 else:
                     print("Неверный формат")
             result = execute_formula(array, funcs, c.formula)

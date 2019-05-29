@@ -35,7 +35,7 @@
                     <h4>Список </h4>
                     <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
                        role="button">&times;</a>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group">
                             <label>Название
                                 <input class="form-control" type="text" name="text">
@@ -53,7 +53,7 @@
                 <div class="subparam" id="subparam_1">
                     <a href="#" class="close delete_subparam" style="color: red;font-size: 34px;" aria-label="Close"
                        role="button">&times;</a>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group col-md-5">
                             <label>Ключ - название
                                 <input class="form-control" type="text" id="enum_text">
@@ -111,7 +111,7 @@
                     "                    <h4>Список </h4>\n" +
                     "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"form-row\">\n" +
+                    "                    <div class=\"row\">\n" +
                     "                        <div class=\"form-group\">\n" +
                     "                            <label>Название\n" +
                     "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
@@ -132,7 +132,7 @@
                 $("#enum_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
                 $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"form-row\">\n" +
+                    "                    <div class=\"row\">\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
                     "                            <label>Ключ - название\n" +
                     "                                <input class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +
@@ -155,7 +155,7 @@
                 $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
                 $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"form-row\">\n" +
+                    "                    <div class=\"row\">\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
                     "                            <label>Ключ - название\n" +
                     "                                <input class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +

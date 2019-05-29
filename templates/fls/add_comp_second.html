@@ -10,7 +10,7 @@
                 <h4>Критерий </h4>
                 <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
                    role="button">&times;</a>
-                <div class="form-row">
+                <div class="row">
                     <div class="form-group">
                         <label>Название
                             <input class="form-control" type="text" name="text">
@@ -30,10 +30,10 @@
                     <span class="glyphicon glyphicon-plus add_subparam"></span>
                 </a>
             </div>
-            <div class="subparam" id="subparam_1">
+            <div class="subparam d-block" id="subparam_1">
                 <a href="#" class="close delete_subparam" style="color: red;font-size: 34px;" aria-label="Close"
                    role="button">&times;</a>
-                <div class="form-row">
+                <div class="row">
                     <div class="form-group col-md-5">
                         <label>Название
                             <input class="form-control" type="text" id="sub_text">
@@ -57,24 +57,27 @@
                             </label>
                         </div>
                     </div>
-                    <br>
-                    <br>
                 </div>
-                <div class="form-row drop_down_list" hidden>
-                    <div class="form-group col-md-6">
-                        <label>Выберите необходимый список
-                            <select class="form-control" id="enum_subparam">
-                                {% for e in enums %}
-                                    <option value="{{ e.id }}">{{ e.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </label>
+                <div class="row">
+                    <div class="form-row drop_down_list" hidden>
+                        <div class="form-group col-md-6">
+                            <label>Выберите необходимый список
+                                <select class="form-control" id="enum_subparam">
+                                    {% for e in enums %}
+                                        <option value="{{ e.id }}">{{ e.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="max_numb form-group col-md-5">
-                    <label>Ограничение
-                        <input class="form-control" type="number"  onkeydown="return event.keyCode !== 69" id="max_number">
-                    </label>
+                <div class="row">
+                    <div class="max_numb form-group col-md-5">
+                        <label>Ограничение
+                            <input class="form-control" type="number" onkeydown="return event.keyCode !== 69"
+                                   id="max_number">
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,7 +114,7 @@
                     "                    <h4>Критерий </h4>\n" +
                     "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"form-row\">\n" +
+                    "                    <div class=\"row\">\n" +
                     "                        <div class=\"form-group\">\n" +
                     "                            <label>Название\n" +
                     "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
@@ -134,10 +137,10 @@
 
                 var lastid = $(".subparam:last").attr("id");
                 var newindex = Number(lastid.split('_')[1]) + 1;
-                $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
+                $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam d-block\" id=\"subparam_" + newindex + "\"></div>");
                 $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                   role=\"button\">&times;</a>\n" +
-                    "                <div class=\"form-row\">\n" +
+                    "                <div class=\"row\">\n" +
                     "                    <div class=\"form-group col-md-5\">\n" +
                     "                        <label>Название\n" +
                     "                            <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
@@ -162,23 +165,27 @@
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
-                    "                    <br>\n" +
-                    "                    <br>\n" +
                     "                </div>\n" +
-                    "                <div class=\"form-row drop_down_list\" hidden>\n" +
-                    "                    <div class=\"form-group col-md-6\">\n" +
-                    "                        <label>Выберите необходимый список\n" +
-                    "                            <select class=\"form-control\" id=\"enum_subparam\">\n" +
-                    "                                {% for e in enums %}\n"+
-                        "                                    <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
-                        "                                {% endfor %}\n" +
-                    "                            </select>\n" +
+                 " <div class=\"row\">\n" +
+                    "                    <div class=\"form-row drop_down_list\" hidden>\n" +
+                    "                        <div class=\"form-group col-md-6\">\n" +
+                    "                            <label>Выберите необходимый список\n" +
+                    "                                <select class=\"form-control\" id=\"enum_subparam\">\n" +
+                    "                                    {% for e in enums %}\n"+
+                        "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"row\">\n" +
+                    "                    <div class=\"max_numb form-group col-md-5\">\n" +
+                    "                        <label>Ограничение\n" +
+                    "                            <input class=\"form-control\" type=\"number\" onkeydown=\"return event.keyCode !== 69\"\n" +
+                    "                                   id=\"max_number\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
-                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
-                    "                    <label>Ограничение\n" +
-                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
-                    "                    </label>\n" +
                     "                </div>");
             });
 
@@ -186,10 +193,10 @@
             $('.container').on('click', '.add_subparam', function () {
                 var lastid = $(".subparam:last").attr("id");
                 var id = "subparam_" + (Number(lastid.split('_')[1]) + 1);
-                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
+                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam d-block\" id=\"" + id + "\"></div>");
                 $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                   role=\"button\">&times;</a>\n" +
-                    "                <div class=\"form-row\">\n" +
+                    "                <div class=\"row\">\n" +
                     "                    <div class=\"form-group col-md-5\">\n" +
                     "                        <label>Название\n" +
                     "                            <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
@@ -214,23 +221,27 @@
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
-                    "                    <br>\n" +
-                    "                    <br>\n" +
                     "                </div>\n" +
-                    "                <div class=\"form-row drop_down_list\" hidden>\n" +
-                    "                    <div class=\"form-group col-md-6\">\n" +
-                    "                        <label>Выберите необходимый список\n" +
-                    "                            <select class=\"form-control\" id=\"enum_subparam\">\n" +
-                    "                                {% for e in enums %}\n"+
-                        "                                    <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
-                        "                                {% endfor %}\n" +
-                    "                            </select>\n" +
+                  " <div class=\"row\">\n" +
+                    "                    <div class=\"form-row drop_down_list\" hidden>\n" +
+                    "                        <div class=\"form-group col-md-6\">\n" +
+                    "                            <label>Выберите необходимый список\n" +
+                    "                                <select class=\"form-control\" id=\"enum_subparam\">\n" +
+                    "                                    {% for e in enums %}\n"+
+                        "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"row\">\n" +
+                    "                    <div class=\"max_numb form-group col-md-5\">\n" +
+                    "                        <label>Ограничение\n" +
+                    "                            <input class=\"form-control\" type=\"number\" onkeydown=\"return event.keyCode !== 69\"\n" +
+                    "                                   id=\"max_number\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
-                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
-                    "                    <label>Ограничение\n" +
-                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
-                    "                    </label>\n" +
                     "                </div>");
 
             });
@@ -279,7 +290,7 @@
                         if (Number(tmp["type_subparam"]) === 5) {
                             tmp["enum_id"] = $(subparams[j]).find("#enum_subparam").val();
                         }
-                         if (Number(tmp["type_subparam"]) === 1) {
+                        if (Number(tmp["type_subparam"]) === 1) {
                             tmp["max"] = $(subparams[j]).find("#max_number").val();
                         }
                         data_subparams.push(tmp);
