@@ -46,15 +46,11 @@
 
         <div class="col-xs-6">
             <div class="container">
-                <form name="form" action="{% url "cmp:base" %}" method="post">
+                <form name="form"  method="post">
                     <div class="row">
                         <div class="col-xs-2">
                             <a href="#" class="btn btn-success" id="apply" role="button"><span
                                     style="font-family: 'Comic Sans MS',monospace">Применить</span></a>
-                        </div>
-                        <div class="col-xs-2">
-                            <a href="{% url "cmp:best" %}" class="btn btn-info" role="button"><span
-                                    style="font-family: 'Comic Sans MS',monospace">Лучшие результаты</span></a>
                         </div>
 
                     </div>
@@ -73,11 +69,6 @@
                             <input type="checkbox" class="form-check-input" id="c">
                             <label class="form-check-label" for="c">Количество человек в группе</label>
                         </div>
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="e_g">
-                            <label class="form-check-label" for="c">Для каждой группы</label>
-                        </div>
-
 
                     </div>
 
@@ -100,38 +91,31 @@
     });
 
     $('#apply').click(function () {
-        q = 'c';
-        each_group = 0;
+        param_query = 'c';
         if ($('#kf').is(':checked') && $("#c").is(':checked')) {
-            q = 'kfavg';
+            param_query = 'kfavg';
         }
         else if (($('#kf').is(':checked')))
-            q = 'kf';
+            param_query = 'kf';
         else if (($('#c').is(':checked')))
-            q = 'avg';
-        if ($('#e_g').is(':checked')) {
-            each_group = 1
-        }
+            param_query = 'avg';
         $.ajax({
-            url: '/app/calc',
+            url: '/cmp/calc',
             type: 'get',
-            data: {'param': q, 'each_group': each_group},
+            data: {'param': param_query},
             dataType: 'json',
             success: function (data) {
                 $('#itable tbody').html(data.ranking)
             },
-            error: function () {
-                alert("error");
-            },
             complete: function (data) {
-                func1();
+                fill_colors();
             }
         })
 
     });
 
 
-    function func1() {
+    function fill_colors() {
         var len = 15;
         var color = "";
         colors = ['#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000', '#ff0000',
