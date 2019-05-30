@@ -265,9 +265,13 @@ class UploadData(models.Model):
                                         null=False)
     header_for_file = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField()
+    file = models.FileField()
 
     def __str__(self):
         return '%s - %s - %s' % (self.sub_param_value.param.name, self.header_for_file, self.image.url)
+
+    def get_ext(self):
+        return self.file.url.split(".")[-1]
 
 
 class CriterionValue(models.Model):
