@@ -1,0 +1,9 @@
+{% for est in estimations %}
+    <tr>
+
+        <th scope="row" style="text-align: center">{{ est.3 }}</th>
+        <td id="old{{ forloop.counter0 }}">{{ est.0 }}</td>
+        <td id="new{{ forloop.counter0 }}">{{ est.1 }}</td>
+        <td id="dif{{ forloop.counter0 }}">{{ est.2 }}</td>
+    </tr>
+{% endfor %}

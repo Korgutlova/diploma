@@ -1,9 +1,0 @@
-{% for rank in ranking %}
-    <tr>
-
-        <th scope="row" style="text-align: center">{{ rank.3 }}</th>
-        <td id="old{{ forloop.counter0 }}">{{ rank.0 }}</td>
-        <td id="new{{ forloop.counter0 }}">{{ rank.1 }}</td>
-        <td id="dif{{ forloop.counter0 }}">{{ rank.2 }}</td>
-    </tr>
-{% endfor %}
