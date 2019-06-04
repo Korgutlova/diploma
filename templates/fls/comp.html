@@ -56,9 +56,11 @@
                         подсчета критериев</a>
                 {% endif %}
             {% endif %}
-            {% if comp.method_of_estimate == 1 or comp.method_of_estimate == 2 %}
+            {% if comp.need_pairwise_comparison %}
                 <a href="{% url 'fls:pairwise_comparison' comp.id %}"
                    class="btn btn-success">Попарное сравнение критериев</a>
+                <a href="{% url 'fls:same_criteria_importance' comp.id %}"
+                   class="btn btn-warning">Критерии одинаковы</a>
             {% endif %}
             <h4><a href="{% url 'fls:change_status' comp.id 2 %}"> Поменять статус конкурса на Открыт</a></h4>
         {% endif %}

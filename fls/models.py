@@ -37,15 +37,17 @@ TYPE_PARAM = (
 
 
 class CustomUser(models.Model):
+    fullname = models.CharField(max_length=100, verbose_name="Полное имя", default="")
+    description = models.TextField(verbose_name="Описание", default="")
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_user')
     role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True, default=ROLE_CHOICES[0][0],
                                verbose_name="Роль")
 
     def __str__(self):
-        return self.user.username
+        return self.fullname
 
     def get_username(self):
-        return self.user.username
+        return self.fullname
 
     def get_role(self):
         for r in ROLE_CHOICES:
@@ -119,6 +121,13 @@ class Competition(models.Model):
         if len(criteria) > 0:
             return criteria[0].id
         return -1
+
+    def need_pairwise_comparison(self):
+        if self.method_of_estimate == 1 or self.method_of_estimate == 2:
+            val = self.competition_criterions.all().filter(result_formula=False)[0].weight_value
+            if val is None:
+                return True
+        return False
 
 
 class Invitation(models.Model):
@@ -268,7 +277,8 @@ class UploadData(models.Model):
     file = models.FileField()
 
     def __str__(self):
-        return '%s - %s - %s' % (self.sub_param_value.param.name, self.header_for_file, self.image.url)
+        return '%s - %s - %s' % (
+            self.sub_param_value.param.name, self.header_for_file, self.image.url if self.image else self.file.url)
 
     def get_ext(self):
         return self.file.url.split(".")[-1]

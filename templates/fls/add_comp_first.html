@@ -1,8 +1,8 @@
 {% extends 'fls/base_template.html' %}
 {% load widget_tweaks %}
-{% block title %}Создание конкурса. 1 Этап {% endblock %}
+{% block title %}Создание конкурса - 1 Этап {% endblock %}
 {% block content %}
-    <h3>Создание конкурса. 1 Этап</h3>
+    <h3>Создание конкурса - 1 Этап</h3>
     <hr>
     <div class="row">
         <div class="col-xs-4">
@@ -11,8 +11,8 @@
                 <div style="width: 300px">
                     {% for field in form %}
                         <div class="form-group{% if field.errors %} has-error{% endif %}">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {% render_field field class="form-control" %}
+                            <label style="font-size: 20px;" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% render_field field class="form-control" style="font-size: 18px;" %}
                             {% for error in field.errors %}
                                 <p class="help-block">{{ error }}</p>
                             {% endfor %}
@@ -24,28 +24,27 @@
                 </div>
             </form>
             <button id="submit" class="btn btn-primary labelText">
-                <span>Сохранить и перейти к следующему этапу</span>
+                <span  style="font-size: 16px;">Сохранить и перейти к следующему этапу</span>
             </button>
         </div>
         <div class="col-xs-8">
-            <h3>Создание выпадающих списков</h3>
+            <h3><b>Создание списков вариантов<b></h3>
             <div class="enum" id="enum_1">
                 <div class="col-xs-12">
-                    <hr>
-                    <h4>Список </h4>
-                    <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
+                    <h3>Список </h3>
+                    <a href="#" class="close delete_param" style="color: red;font-size: 40px;" aria-label="Close"
                        role="button">&times;</a>
                     <div class="row">
-                        <div class="form-group">
-                            <label>Название
-                                <input class="form-control" type="text" name="text">
-                            </label><br>
+                        <div class="form-group col-md-8">
+                            <label  style="font-size: 20px;" >Название
+                                <input style="font-size: 20px; font-weight: lighter" class="form-control" type="text" name="text">
+                            </label>
                         </div>
                     </div>
                     <hr>
                 </div>
                 <div class="col-xs-12">
-                    <h5>Варианты выбора списка</h5>
+                    <p  style="font-size: 20px; font-weight: lighter">Варианты выбора списка</p>
                     <a href="#" style="color: #1e7e34;font-size: 24px">
                         <span class="glyphicon glyphicon-plus add_subparam"></span>
                     </a>
@@ -55,13 +54,13 @@
                        role="button">&times;</a>
                     <div class="row">
                         <div class="form-group col-md-5">
-                            <label>Ключ - название
-                                <input class="form-control" type="text" id="enum_text">
+                            <label style="font-size: 18px; font-weight: lighter">Ключ - название
+                                <input style="font-size: 18px; font-weight: lighter" class="form-control" type="text" id="enum_text">
                             </label>
                         </div>
                         <div class="form-group col-md-5">
-                            <label>Значение - число
-                                <input class="form-control" type="number" step="0.001" id="enum_value">
+                            <label style="font-size: 18px; font-weight: lighter">Значение - число
+                                <input style="font-size: 18px; font-weight: lighter" class="form-control" type="number" step="0.001" id="enum_value">
                             </label>
                         </div>
                         <br>
@@ -71,7 +70,7 @@
             </div>
             <br>
             <div class="col-xs-12">
-                <a href="#" class="btn btn-info add_enum" role="button"><span>Добавить список</span></a>
+                <a href="#" class="btn btn-info add_enum" role="button"><span style="font-size: 16px;">Добавить список</span></a>
             </div>
             <br>
             <br>
@@ -115,7 +114,7 @@
                     "                        <div class=\"form-group\">\n" +
                     "                            <label>Название\n" +
                     "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
-                    "                            </label><br>\n" +
+                    "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
                     "                    <hr>\n" +

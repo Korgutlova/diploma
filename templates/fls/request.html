@@ -91,31 +91,42 @@
     width: 100%;
     }
     }
+    hr {
+    border: none; /* Убираем границу для браузера Firefox */
+    color: #20ae9f; /* Цвет линии для остальных браузеров */
+    background-color: #20ae9f; /* Цвет линии для браузера Firefox и Opera */
+    height: 1px; /* Толщина линии */
+   }
+
+    .has-est {
+    border-color: #1f8d7e;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075)
+}
 {% endblock %}
 {% block content %}
-    <h3>Заявка</h3>
+    <h2>Заявка на конкурс <a href="{% url 'fls:get_comp' request.competition.id %}">"{{ request.competition.name }}"</a>
+    </h2>
     <hr>
-
-    <h4>Конкурс - {{ request.competition.name }}</h4>
-    <h4>Загрузил пользователь {{ request.participant.get_username }}</h4>
-    <h4>Содержание заявки</h4>
+    <h3>Загрузил пользователь <b>{{ request.participant.get_username }}</b></h3>
+    <h3>Содержание заявки: </h3>
     <div class="container">
         <form id="form" method="post" action="{% url 'fls:estimate_req' request.id %}">
             {% csrf_token %}
             {% for v in  values %}
                 {% with param=v.0 sbvalues=v.1 est=v.2 %}
-                    <h4>Критерий <b>'{{ param.name }}'</b></h4>
+                    <h3>Критерий <b>'{{ param.name }}'</b></h3>
                     {% for sb in sbvalues %}
-                        <h4> Параметр - {{ sb.get_name }} <strong>{% if sb.is_number %}
+                        <h3> Параметр - {{ sb.get_name }} <strong>{% if sb.is_number %}
                             - {{ sb.value }}
-                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %}</strong></h4>
+                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %}</strong></h3>
                         {% if sb.is_photo %}
                             <div class="row">
                                 {% for f in sb.get_files %}
                                     <div class="column">
                                         <img class="custom_image" id="{{ f.id }}" src="{{ f.image.url }}"
                                              alt="{{ f.header_for_file }}"
-                                             style="width:100%;">
+                                             style="width:70%;">
                                     </div>
                                     <div id="modal_{{ f.id }}" class="modal">
                                         <span class="close">&times;</span>
@@ -130,18 +141,19 @@
                         {% if sb.is_file %}
                             {% for f in sb.get_files %}
                                 <hr>
-                                <h4><a href="{{ f.file.url }}">Посмотреть файл {{ f.header_for_file }}</a></h4>
-                                <h4><a href="{{ f.file.url }}" download>Скачать файл {{ f.header_for_file }} в
-                                    формате {{ f.get_ext }}</a></h4>
+                                <h3><a href="{{ f.file.url }}">Посмотреть файл {{ f.header_for_file }}</a></h3>
+                                <h3><a href="{{ f.file.url }}" download>Скачать файл {{ f.header_for_file }} в
+                                    формате {{ f.get_ext }}</a></h3>
                             {% endfor %}
                         {% endif %}
                     {% endfor %}
-                    <div class="form-group for_form" hidden>
-                        <label>Оценка критерия
-                            <input type="number" class="form-control" name="est_val_{{ param.id }}"
-                                   value="{{ est }}">
-                        </label>
-                    </div>
+                        <div class="for_form form-group row" hidden>
+                            <h3><label for="est_val_{{ param.id }}" class="col-sm-3 col-form-label">Оценка критерия</label></h3>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control has-est" style="background-color : #baf9e4; font-weight: bold" id="est_val_{{ param.id }}" name="est_val_{{ param.id }}"
+                                       value="{{ est }}">
+                            </div>
+                        </div>
                     <hr>
                 {% endwith %}
             {% endfor %}

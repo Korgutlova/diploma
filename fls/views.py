@@ -1,5 +1,6 @@
 import os
 import statistics
+import time
 
 import numpy as np
 
@@ -354,7 +355,8 @@ def load_request(request, comp_id):
                     for f, h in zip(request.FILES.getlist("file_%s" % param.id), request.POST.getlist(
                             "header_%s" % param.id)):
                         print(f)
-                        link_file = "%s/%s/%s" % (participant.id, comp_id, f)
+                        link_file = "%s/%s/%s.%s" % (
+                            participant.id, comp_id, int(time.time() * 1000), f.name.split(".")[1])
                         fs = FileSystemStorage()
                         filename = fs.save(link_file, f)
                         u = UploadData(header_for_file=h, sub_param_value=sp_val)
@@ -850,8 +852,20 @@ def delete_req(request, id):
                 path = '{}{}'.format(BASE_DIR, f.image.url).replace('\\', '/').replace('//', '/')
             if os.path.exists(path):
                 os.remove(path)
+            f.delete()
+            print("delete photo or file")
     if path is not None:
         os.rmdir(os.path.dirname(path))
     request.delete()
     print("request deleted")
     return redirect("fls:profile")
+
+
+def same_criteria_importance(request, comp_id):
+    comp = Competition.objects.get(id=comp_id)
+    criteria = comp.competition_criterions.all().filter(result_formula=False)
+    val = 1 / len(criteria)
+    for criterion in criteria:
+        criterion.weight_value = val
+        criterion.save()
+    return redirect("fls:get_comp", comp_id)

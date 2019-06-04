@@ -36,7 +36,7 @@
                     {% if sp.type == 3 or sp.type == 4 %}
                         <div class="col-xs-12">
                             <div class="file">
-                                <label>Загрузите нужный файл/фотографию
+                                <label>Загрузите {% if sp.type == 3%} файл {% else %} фотографию{% endif %}
                                     <input type="file" class="file-upload" name="file_{{ sp.id }}">
                                 </label>
                                 <label>Введите подпись
