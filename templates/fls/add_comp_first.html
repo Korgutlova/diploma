@@ -28,7 +28,7 @@
             </button>
         </div>
         <div class="col-xs-8">
-            <h3><b>Создание списков вариантов<b></h3>
+            <h3><b>Создание списков вариантов</b></h3>
             <div class="enum" id="enum_1">
                 <div class="col-xs-12">
                     <h3>Список </h3>
@@ -44,15 +44,15 @@
                     <hr>
                 </div>
                 <div class="col-xs-12">
-                    <p  style="font-size: 20px; font-weight: lighter">Варианты выбора списка</p>
-                    <a href="#" style="color: #1e7e34;font-size: 24px">
+                    <p  style="font-size: 20px;">Варианты выбора списка</p>
+                    <a href="#" style="color: #1e7e34;font-size: 24px; margin-left: 10px;">
                         <span class="glyphicon glyphicon-plus add_subparam"></span>
                     </a>
                 </div>
                 <div class="subparam" id="subparam_1">
                     <a href="#" class="close delete_subparam" style="color: red;font-size: 34px;" aria-label="Close"
                        role="button">&times;</a>
-                    <div class="row">
+                    <div class="row" style="margin-left: 10px;">
                         <div class="form-group col-md-5">
                             <label style="font-size: 18px; font-weight: lighter">Ключ - название
                                 <input style="font-size: 18px; font-weight: lighter" class="form-control" type="text" id="enum_text">
@@ -105,23 +105,22 @@
                 var lastid = $(".enum:last").attr("id");
                 var nextindex = Number(lastid.split('_')[1]) + 1;
                 $(".enum:last").after("<div class=\"enum\" id=\"enum_" + nextindex + "\"></div>");
-                $("#enum_" + nextindex).append("<div class=\"col-xs-12\">\n" +
-                    "                    <hr>\n" +
-                    "                    <h4>Список </h4>\n" +
-                    "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                $("#enum_" + nextindex).append(" <div class=\"col-xs-12\">\n" +
+                    "                    <h3>Список </h3>\n" +
+                    "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 40px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
                     "                    <div class=\"row\">\n" +
-                    "                        <div class=\"form-group\">\n" +
-                    "                            <label>Название\n" +
-                    "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
+                    "                        <div class=\"form-group col-md-8\">\n" +
+                    "                            <label  style=\"font-size: 20px;\" >Название\n" +
+                    "                                <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"text\" name=\"text\">\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
                     "                    <hr>\n" +
                     "                </div>\n" +
                     "                <div class=\"col-xs-12\">\n" +
-                    "                    <h5>Варианты выбора списка</h5>\n" +
-                    "                    <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
+                    "                    <p  style=\"font-size: 20px;\">Варианты выбора списка</p>\n" +
+                    "                    <a href=\"#\" style=\"color: #1e7e34;font-size: 24px; margin-left: 10px;\">\n" +
                     "                        <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
                     "                    </a>\n" +
                     "                </div>");
@@ -129,17 +128,17 @@
                 var lastid = $(".subparam:last").attr("id");
                 var newindex = Number(lastid.split('_')[1]) + 1;
                 $("#enum_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
-                $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                $("#subparam_" + newindex).append(" <a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"row\">\n" +
+                    "                    <div class=\"row\" style=\"margin-left: 10px;\">\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
-                    "                            <label>Ключ - название\n" +
-                    "                                <input class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +
+                    "                            <label style=\"font-size: 18px; font-weight: lighter\">Ключ - название\n" +
+                    "                                <input style=\"font-size: 18px; font-weight: lighter\" class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
-                    "                            <label>Значение - число\n" +
-                    "                                <input class=\"form-control\" type=\"number\" step=\"0.001\" id=\"enum_value\">\n" +
+                    "                            <label style=\"font-size: 18px; font-weight: lighter\">Значение - число\n" +
+                    "                                <input style=\"font-size: 18px; font-weight: lighter\" class=\"form-control\" type=\"number\" step=\"0.001\" id=\"enum_value\">\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                        <br>\n" +
@@ -151,18 +150,19 @@
             $('.container').on('click', '.add_subparam', function () {
                 var lastid = $(".subparam").length;
                 var id = "subparam_" + (lastid + 1);
-                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
-                $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id"))
+                    .after("<div class=\"subparam\" id=\"" + id + "\"></div>");
+                $("#" + id).append(" <a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
                     "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"row\">\n" +
+                    "                    <div class=\"row\" style=\"margin-left: 10px;\">\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
-                    "                            <label>Ключ - название\n" +
-                    "                                <input class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +
+                    "                            <label style=\"font-size: 18px; font-weight: lighter\">Ключ - название\n" +
+                    "                                <input style=\"font-size: 18px; font-weight: lighter\" class=\"form-control\" type=\"text\" id=\"enum_text\">\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                        <div class=\"form-group col-md-5\">\n" +
-                    "                            <label>Значение - число\n" +
-                    "                                <input class=\"form-control\" type=\"number\" step=\"0.001\" id=\"enum_value\">\n" +
+                    "                            <label style=\"font-size: 18px; font-weight: lighter\">Значение - число\n" +
+                    "                                <input style=\"font-size: 18px; font-weight: lighter\" class=\"form-control\" type=\"number\" step=\"0.001\" id=\"enum_value\">\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                        <br>\n" +
