@@ -39,7 +39,7 @@ def result_criteria(request, id):
         c = cr[0]
         c.formula = request.POST["formula"]
         c.save()
-        return redirect("fls:list_comp")
+        return redirect("fls:get_comp", comp.id)
     return render(request, 'fls/add_result_formula.html', {"criteria": criteria, "id": id, "funcs": DICT_FUNCTIONS})
 
 
@@ -59,7 +59,7 @@ def formula_for_single_criteria(request, id, cr_id):
         criteria.save()
         len_1 += 1
         if len_1 == len_2:
-            return redirect("fls:list_comp")
+            return redirect("fls:get_comp", comp.id)
         else:
             criteria = Criterion.objects.get(id=comp.get_next_criterion())
             params = criteria.param_criterion.all().filter(for_formula=True)

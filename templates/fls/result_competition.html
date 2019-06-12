@@ -1,12 +1,26 @@
 {% extends 'fls/base_template.html' %}
-{% block title %}Результаты конкурса {{ comp.name }}{% endblock %}
+{% block title %}Результаты конкурса «{{ comp.name }}»{% endblock %}
 {% block content %}
-    <h3>Результаты конкурса {{ comp.name }}</h3>
-    <hr>
-    <br>
+    <table class="table table-bordered">
+        <caption class="text-center" style="font-size:25px;"><strong>Результаты конкурса «{{ comp.name }}»</strong></caption>
+        <thead>
+        <tr>
+            <th scope="col">Место</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Баллы</th>
+            <th scope="col">Ссылка на заявку</th>
 
-    {% for r in requests %}
-        <h4><b>{{ forloop.counter }}</b> Участник {{ r.participant.get_username }}, результат - <b>{{ r.result_value }}</b></h4>
-        <hr>
-    {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+            <tr>
+                <th scope="col">{{ forloop.counter }}</th>
+                <th scope="col">{{ r.participant.get_username }}</th>
+                <th scope="col">{{ r.result_value }}</th>
+                <th scope="col"><a href="{%  url "fls:get_request" r.id %}">Перейти к заявке</a></th>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

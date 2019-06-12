@@ -85,10 +85,14 @@
             $("#id_method_of_estimate").change(function () {
                 if (Number($(this).val()) === 1) {
                     $("#id_jurys").show();
+                    $("#id_max_for_criteria").show();
                     $('label[for="id_jurys"]').show();
+                    $('label[for="id_max_for_criteria"]').show();
                 } else {
                     $("#id_jurys").hide();
+                    $("#id_max_for_criteria").hide();
                     $('label[for="id_jurys"]').hide();
+                    $('label[for="id_max_for_criteria"]').hide();
                 }
 
             });

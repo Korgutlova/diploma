@@ -10,7 +10,7 @@ METHOD_CHOICES = (
 ROLE_CHOICES = (
     (1, 'Участник'),
     (2, 'Жюри'),
-    (3, 'Органзитор'),
+    (3, 'Организатор'),
 )
 
 STATUSES = (
@@ -53,7 +53,7 @@ class CustomUser(models.Model):
         for r in ROLE_CHOICES:
             if r[0] == self.role:
                 return r[1]
-        return "Анонимус"
+        return "Анонимный пользователь"
 
     def is_participant(self):
         return self.role == 1
@@ -261,6 +261,9 @@ class ParamValue(models.Model):
 
     def is_enum(self):
         return self.param.type == 5
+
+    def is_link(self):
+        return self.param.type == 6
 
     def get_name(self):
         return self.param.name
