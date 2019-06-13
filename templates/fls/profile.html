@@ -34,13 +34,13 @@
     {% if cust_user.is_jury %}
         <hr>
         <h3>Приглашения</h3>
-        <a href="#" id="my_inv" role="button" class="btn btn-info">Показать</a>
+        <a href="#" id="my_inv" role="button" class="btn btn-info" style="font-size: 16px">Показать</a>
         <div class="inv" hidden>
             {% with new_inv=cust_user.get_new_inv %}
                 {% if new_inv %}
-                    <h4><b>Новые</b></h4>
+                    <h3><b>Новые</b></h3>
                     {% for inv in new_inv %}
-                        <h4>Приглашение на конкурс {{ inv.competition.name }}</h4>
+                        <h3>Приглашение на конкурс {{ inv.competition.name }}</h3>
                         <form method="post" action="{% url 'fls:inv_change_status' inv.id 2 %}">
                             {% csrf_token %}
                             <button id="app_inv" type="submit" class="btn btn-success">Принять</button>
@@ -55,17 +55,17 @@
             {% endwith %}
             {% with approve_inv=cust_user.get_app_inv %}
                 {% if approve_inv %}
-                    <h4><b>Принятые</b></h4>
+                    <h3><b>Принятые</b></h3>
                     {% for inv in approve_inv %}
-                        <h4>Принятые приглашения на конкурс {{ inv.competition.name }}</h4>
+                        <h3>Принятые приглашения на конкурс {{ inv.competition.name }}</h3>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
             {% with reject_inv=cust_user.get_rej_inv %}
                 {% if reject_inv %}
-                    <h4><b>Отклоненные</b></h4>
+                    <h3><b>Отклоненные</b></h3>
                     {% for inv in reject_inv %}
-                        <h4>Отклоненные приглашения на конкурс {{ inv.competition.name }}</h4>
+                        <h3>Отклоненные приглашения на конкурс {{ inv.competition.name }}</h3>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
@@ -75,7 +75,7 @@
             <br>
             <form action="{% url 'fls:profile' %}" method="post">
                 {% csrf_token %}
-                <select class="form-control" name="comp">
+                <select class="form-control" style="font-size: 20px; height: 40px;" name="comp">
                     {% for c in comps %}
                         <option {% if select_comp == c.id %} selected {% endif %}
                                                              value="{{ c.id }}">{{ c.name }}</option>
@@ -83,7 +83,7 @@
                 </select>
                 <br>
                 <button type="submit" class="btn btn-primary labelText">
-                    <span>Применить</span>
+                    <span style="font-size: 16px">Применить</span>
                 </button>
             </form>
             <br>
@@ -91,21 +91,21 @@
             <h3>Для Вас не найдены доступные конкурсы </h3>
         {% endif %}
         {% if new_requests %}
-            <h4>Новые (непросмотренные) заявки</h4>
+            <h3>Новые (непросмотренные) заявки</h3>
             <ul>
                 {% for r in new_requests %}
-                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка участника
-                        {{ r.participant.get_username }}</p>
+                    <li><a href="{% url 'fls:get_request' r.id %}"><span style="font-size: 20px">Заявка участника
+                        {{ r.participant.get_username }}</span>
                     </a></li>
                 {% endfor %}
             </ul>
         {% endif %}
         {% if view_requests %}
-            <h4>Оцененные заявки</h4>
+            <h3>Оцененные заявки</h3>
             <ul>
                 {% for r in view_requests %}
-                    <li><a href="{% url 'fls:get_request' r.id %}"><p>Заявка
-                        участника {{ r.participant.get_username }} </p>
+                    <li><a href="{% url 'fls:get_request' r.id %}"><span style="font-size: 20px">Заявка
+                        участника {{ r.participant.get_username }} </span>
                     </a></li>
                 {% endfor %}
             </ul>

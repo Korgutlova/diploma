@@ -115,12 +115,12 @@
             {% csrf_token %}
             {% for v in  values %}
                 {% with param=v.0 sbvalues=v.1 est=v.2 %}
-                    <h3>Критерий <b>'{{ param.name }}'</b></h3>
+                    <h3>Критерий <b>«{{ param.name }}»</b></h3>
                     {% for sb in sbvalues %}
                         <h3> Параметр - {{ sb.get_name }} <strong>{% if sb.is_number %}
                             - {{ sb.value }}
                         {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %} {% if sb.is_link %}
-                            <a href="{{ sb.text }}" >{{ sb.text }}</a>{% endif %}</strong></h3>
+                            <a href="{{ sb.text }}">{{ sb.text }}</a>{% endif %}</strong></h3>
                         {% if sb.is_photo %}
                             <div class="row">
                                 {% for f in sb.get_files %}
@@ -149,11 +149,13 @@
                         {% endif %}
                     {% endfor %}
                     <div class="for_form form-group row" hidden>
-                        <h3><label for="est_val_{{ param.id }}" class="col-sm-3 col-form-label">Оценка критерия</label>
+                        <h3><label for="est_val_{{ param.id }}" class="col-sm-4 col-form-label">Оценка критерия
+                            до {{ request.competition.max_for_criteria }} баллов</label>
                         </h3>
                         <div class="col-sm-3">
                             <input type="number" class="form-control has-est"
-                                   style="background-color : #baf9e4; font-weight: bold" id="est_val_{{ param.id }}"
+                                   style="background-color : #baf9e4; font-weight: bold; font-size: 18px"
+                                   id="est_val_{{ param.id }}"
                                    name="est_val_{{ param.id }}"
                                    value="{{ est }}">
                         </div>
@@ -190,9 +192,11 @@
                 <button id="delete" type="submit" class="btn btn-danger">Удалить оценку</button>
             </form>
         {% else %}
-            <h4>Вы еще не оценили заявку </h4>
-            <br>
-            <button id="estimate" type="button" class="btn">Оценить заявку</button>
+            <div class="not_est">
+                <h4>Вы еще не оценили заявку </h4>
+                <br>
+                <button id="estimate" type="button" class="btn">Оценить заявку</button>
+            </div>
         {% endif %}
     {% endif %}
 
@@ -202,7 +206,7 @@
         $("#estimate").click(function () {
             $(".for_button").show();
             $(".for_form").show();
-            $('#estimate').hide();
+            $('.not_est').hide();
         });
         $("#edit").click(function () {
             $(".for_button").show();
