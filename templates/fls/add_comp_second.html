@@ -43,7 +43,7 @@
                     </div>
                     <div class="form-group col-md-3">
                         <label style="font-size: 20px;">Тип данных
-                            <select style="font-size: 20px; font-weight: lighter" class="form-control type_subparam"
+                            <select style="font-size: 20px; font-weight: lighter; height: 40px" class="form-control type_subparam"
                                     id="type_subparam">
                                 {% for t in types %}
                                     <option value="{{ t | first }}">{{ t | last }}</option>
@@ -65,7 +65,7 @@
                     <div class="form-row drop_down_list" hidden>
                         <div class="form-group col-md-6">
                             <label style="font-size: 20px;">Выберите необходимый список
-                                <select style="font-size: 20px; font-weight: lighter" class="form-control"
+                                <select style="font-size: 20px; font-weight: lighter; height: 40px" class="form-control"
                                         id="enum_subparam">
                                     {% for e in enums %}
                                         <option value="{{ e.id }}">{{ e.name }}</option>
@@ -154,7 +154,7 @@
                     "                    </div>\n" +
                     "                    <div class=\"form-group col-md-3\">\n" +
                     "                        <label style=\"font-size: 20px;\">Тип данных\n" +
-                    "                            <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control type_subparam\"\n" +
+                    "                            <select style=\"font-size: 20px; font-weight: lighter; height: 40px\" class=\"form-control type_subparam\"\n" +
                     "                                    id=\"type_subparam\">\n" +
                     "                                {% for t in types %}\n"+
                         "                                    <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
@@ -177,7 +177,7 @@
                     "                    <div class=\"form-row drop_down_list\" hidden>\n" +
                     "                        <div class=\"form-group col-md-6\">\n" +
                     "                            <label style=\"font-size: 20px;\">Выберите необходимый список\n" +
-                    "                                <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\"\n" +
+                    "                                <select style=\"font-size: 20px; font-weight: lighter; height: 40px\" class=\"form-control\"\n" +
                     "                                        id=\"enum_subparam\">\n" +
                     "                                    {% for e in enums %}\n"+
                         "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
@@ -214,7 +214,7 @@
                     "                    </div>\n" +
                     "                    <div class=\"form-group col-md-3\">\n" +
                     "                        <label style=\"font-size: 20px;\">Тип данных\n" +
-                    "                            <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control type_subparam\"\n" +
+                    "                            <select style=\"font-size: 20px; font-weight: lighter; height: 40px\" class=\"form-control type_subparam\"\n" +
                     "                                    id=\"type_subparam\">\n" +
                     "                                {% for t in types %}\n"+
                         "                                    <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
@@ -237,7 +237,7 @@
                     "                    <div class=\"form-row drop_down_list\" hidden>\n" +
                     "                        <div class=\"form-group col-md-6\">\n" +
                     "                            <label style=\"font-size: 20px;\">Выберите необходимый список\n" +
-                    "                                <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\"\n" +
+                    "                                <select style=\"font-size: 20px; font-weight: lighter; height: 40px\" class=\"form-control\"\n" +
                     "                                        id=\"enum_subparam\">\n" +
                     "                                    {% for e in enums %}\n"+
                         "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+

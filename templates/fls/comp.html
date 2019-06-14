@@ -6,14 +6,14 @@
 {% block content %}
     <h3 xmlns="http://www.w3.org/1999/html"><b>Конкурс: </b>{{ comp.name }}</h3>
     <hr>
-    <p><b>Описание </b> <br>{{ comp.description }}</p>
-    <p><b>Ораганизатор конкурса</b> {{ comp.organizer }}</p>
-    <p><b>Статус:</b> {{ comp.get_status }}</p>
+    <h3><b>Описание </b> <br>{{ comp.description }}</h3>
+    <h3><b>Ораганизатор конкурса</b> {{ comp.organizer }}</h3>
+    <h3><b>Статус:</b> {{ comp.get_status }}</h3>
     <hr>
-    <p>Необходимые критерии для участия в конкурсе</p>
+    <h3>Необходимые критерии для участия в конкурсе</h3>
     <ul>
         {% for p in comp.get_criteria %}
-            <li><b>{{ p.name }}</b></li>
+            <li style="font-size: 18px"><b>{{ p.name }}</b></li>
         {% endfor %}
     </ul>
     {% if comp.method_of_estimate == 1 %}
@@ -62,10 +62,10 @@
                 <a href="{% url 'fls:same_criteria_importance' comp.id %}"
                    class="btn btn-warning">Критерии одинаковы</a>
             {% endif %}
-            <h4><a href="{% url 'fls:change_status' comp.id 2 %}"> Поменять статус конкурса на Открыт</a></h4>
+            <h3><a href="{% url 'fls:change_status' comp.id 2 %}"> Поменять статус конкурса на Открыт</a></h3>
         {% endif %}
         {% if comp.status == 2 %}
-            <h4><a href="{% url 'fls:change_status' comp.id 3 %}"> Поменять статус конкурса на Оценивание</a></h4>
+            <h3><a href="{% url 'fls:change_status' comp.id 3 %}"> Поменять статус конкурса на Оценивание</a></h3>
         {% endif %}
         {% if comp.status == 3 %}
             {% if comp.method_of_estimate == 1 %}

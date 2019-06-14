@@ -1,4 +1,9 @@
 {% extends 'fls/base_template.html' %}
+{% block style%}
+    th {
+    font-size:20px;
+    }
+{% endblock %}
 {% block title %}Результаты конкурса «{{ comp.name }}»{% endblock %}
 {% block content %}
     <table class="table table-bordered">
@@ -14,7 +19,8 @@
         </thead>
         <tbody>
         {% for r in requests %}
-            <tr>
+
+            <tr {% if forloop.counter == 1 %} style="background: #b4ffa4" {% endif %}>
                 <th scope="col">{{ forloop.counter }}</th>
                 <th scope="col">{{ r.participant.get_username }}</th>
                 <th scope="col">{{ r.result_value }}</th>

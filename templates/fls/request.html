@@ -119,7 +119,11 @@
                     {% for sb in sbvalues %}
                         <h3> Параметр - {{ sb.get_name }} <strong>{% if sb.is_number %}
                             - {{ sb.value }}
-                        {% endif %} {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %} {% if sb.is_link %}
+                        {% endif %}
+                            {% if sb.is_text %}
+                            - {{ sb.text }}
+                        {% endif %}
+                            {% if sb.is_enum %}  - {{ sb.enum_val.enum_key }}{% endif %} {% if sb.is_link %}
                             <a href="{{ sb.text }}">{{ sb.text }}</a>{% endif %}</strong></h3>
                         {% if sb.is_photo %}
                             <div class="row">

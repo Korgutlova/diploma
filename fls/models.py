@@ -31,7 +31,7 @@ TYPE_PARAM = (
     (2, 'TEXT'),
     (3, 'FILE'),
     (4, 'PHOTO'),
-    (5, 'ENUM'),
+    (5, 'LIST'),
     (6, 'LINK'),
 )
 
@@ -252,6 +252,9 @@ class ParamValue(models.Model):
 
     def is_number(self):
         return self.param.type == 1
+
+    def is_text(self):
+        return self.param.type == 2
 
     def is_file(self):
         return self.param.type == 3

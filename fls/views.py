@@ -200,7 +200,7 @@ def calculate_result_criteria(comp):
             cv = CriterionValue.objects.get(request=r, criterion=criterion)
             array[v] = cv.value
         result = execute_formula(array, funcs, result_criteria.formula)
-        r.result_value = result
+        r.result_value = round(result, 2)
         r.save()
     print("done")
 
