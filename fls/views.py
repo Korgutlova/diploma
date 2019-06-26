@@ -1,4 +1,6 @@
+import os
 import statistics
+import time
 
 import numpy as np
 
@@ -14,6 +16,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 
+from dipl.settings import BASE_DIR
 from fls.forms import CompetitionForm
 from fls.lib import make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests, \
     define_optimal_k, max_dist_kemeni_for_ranking
@@ -114,6 +117,8 @@ def calculate_result_for_ranking(comp):
                     array[v] = spv.value
                 elif param.type == 5:
                     array[v] = spv.enum_val.enum_value
+                elif param.type == 3 or param.type == 4:
+                    array[v] = spv.files.all().count()
                 else:
                     print("Неверный формат")
             result = execute_formula(array, funcs, c.formula) * c.weight_value
@@ -169,6 +174,8 @@ def calculate_result_criteria(comp):
                     array[v] = spv.value
                 elif param.type == 5:
                     array[v] = spv.enum_val.enum_value
+                elif param.type == 3 or param.type == 4:
+                    array[v] = spv.files.all().count()
                 else:
                     print("Неверный формат")
             result = execute_formula(array, funcs, c.formula)
@@ -345,13 +352,18 @@ def load_request(request, comp_id):
                 sp_val.save()
                 if param.type == 3 or param.type == 4:
                     print(request.FILES)
-                    for image, h in zip(request.FILES.getlist("file_%s" % param.id), request.POST.getlist(
+                    for f, h in zip(request.FILES.getlist("file_%s" % param.id), request.POST.getlist(
                             "header_%s" % param.id)):
-                        print(image)
-                        link_file = "%s/%s/%s" % (participant.id, comp_id, image)
+                        print(f)
+                        link_file = "%s/%s/%s.%s" % (
+                            participant.id, comp_id, int(time.time() * 1000), f.name.split(".")[1])
                         fs = FileSystemStorage()
-                        filename = fs.save(link_file, image)
-                        u = UploadData(header_for_file=h, image=filename, sub_param_value=sp_val)
+                        filename = fs.save(link_file, f)
+                        u = UploadData(header_for_file=h, sub_param_value=sp_val)
+                        if param.type == 4:
+                            u.image = filename
+                        else:
+                            u.file = filename
                         u.save()
                 else:
                     val = request.POST["sp_%s" % param.id]
@@ -828,9 +840,23 @@ def inv_change_status(request, id, status):
 
 def delete_req(request, id):
     request = Request.objects.get(id=id)
+    path = None
+    for pv in request.request_param_values.all():
+        for f in pv.files.all():
+            if pv.param.type == 3:
+                path = '{}{}'.format(BASE_DIR, f.file.url).replace('\\', '/').replace('//', '/')
+            else:
+                path = '{}{}'.format(BASE_DIR, f.image.url).replace('\\', '/').replace('//', '/')
+            if os.path.exists(path):
+                os.remove(path)
+            f.delete()
+            print("delete photo or file")
+    if path is not None:
+        os.rmdir(os.path.dirname(path))
     request.delete()
     print("request deleted")
     return redirect("fls:profile")
+
 
 
 @login_required(login_url="login/")
@@ -882,3 +908,12 @@ def similar_jury(request):
                                     {'ests': estimation_values, 'jurys': sorted_jury,
                                      'slt_jury': slt_jury, 'dists': dists})}
     return JsonResponse(data)
+
+def same_criteria_importance(request, comp_id):
+    comp = Competition.objects.get(id=comp_id)
+    criteria = comp.competition_criterions.all().filter(result_formula=False)
+    val = 1 / len(criteria)
+    for criterion in criteria:
+        criterion.weight_value = val
+        criterion.save()
+    return redirect("fls:get_comp", comp_id)

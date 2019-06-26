@@ -7,6 +7,8 @@
     <hr>
     <h4><b>Имя:</b> {{ cust_user }}</h4>
     <h4><b>Статус:</b> {{ cust_user.get_role }}</h4>
+    <h4><b>Описание:</b></h4>
+    <p style="font-size: 20px; width: 40%;">{{ cust_user.description }}</p>
     {% if cust_user.is_participant %}
         <hr>
         <br>

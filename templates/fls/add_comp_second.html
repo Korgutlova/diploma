@@ -1,47 +1,50 @@
 {% extends 'fls/base_template.html' %}
 {% load widget_tweaks %}
-{% block title %}Создание конкурса "{{ comp.name }}" . 2 Этап{% endblock %}
+{% block title %}Создание конкурса "{{ comp.name }}" - 2 Этап{% endblock %}
 {% block content %}
-    <h3>Создание конкурса "{{ comp.name }}". 2 Этап - Конструирование заявки</h3>
+    <h3>Создание конкурса "{{ comp.name }}" - 2 Этап(Конструирование заявки)</h3>
     <hr>
     <div class="col-xs-8">
         <div class="param" id="param_1">
             <div class="col-xs-12">
-                <h4>Критерий </h4>
+                <h3>Критерий </h3>
                 <a href="#" class="close delete_param" style="color: red;font-size: 34px;" aria-label="Close"
                    role="button">&times;</a>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Название
-                            <input class="form-control" type="text" name="text">
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label style="font-size: 20px;">Название
+                            <input style="font-size: 20px; font-weight: lighter" class="form-control" type="text"
+                                   name="text">
                         </label><br>
                     </div>
-                    <div class="form-group">
-                        <label>Описание
-                            <textarea class="form-control rounded-0" rows="3" cols="70" name="description"></textarea>
+                    <div class="form-group col-md-7">
+                        <label style="font-size: 20px;">Описание
+                            <textarea style="font-size: 20px; font-weight: lighter" class="form-control rounded-0"
+                                      rows="2" cols="70" name="description"></textarea>
                         </label>
                     </div>
                 </div>
-                <hr>
             </div>
-            <div class="col-xs-12">
-                <h5>Параметры критерия </h5>
+            <div class="col-xs-12" style="margin-left: 10px;">
+                <h3>Параметры критерия </h3>
                 <a href="#" style="color: #1e7e34;font-size: 24px">
                     <span class="glyphicon glyphicon-plus add_subparam"></span>
                 </a>
             </div>
-            <div class="subparam" id="subparam_1">
-                <a href="#" class="close delete_subparam" style="color: red;font-size: 34px;" aria-label="Close"
+            <div class="subparam d-block" id="subparam_1">
+                <a href="#" class="close delete_subparam" style="color: red;font-size: 34px; " aria-label="Close"
                    role="button">&times;</a>
-                <div class="form-row">
+                <div class="row" style="margin-left: 10px;">
                     <div class="form-group col-md-5">
-                        <label>Название
-                            <input class="form-control" type="text" id="sub_text">
+                        <label style="font-size: 20px;">Название
+                            <input style="font-size: 20px; font-weight: lighter" class="form-control" type="text"
+                                   id="sub_text">
                         </label>
                     </div>
                     <div class="form-group col-md-3">
-                        <label>Тип данных
-                            <select class="form-control type_subparam" id="type_subparam">
+                        <label style="font-size: 20px;">Тип данных
+                            <select style="font-size: 20px; font-weight: lighter" class="form-control type_subparam"
+                                    id="type_subparam">
                                 {% for t in types %}
                                     <option value="{{ t | first }}">{{ t | last }}</option>
                                 {% endfor %}
@@ -52,38 +55,43 @@
                     <div class="form-group col-md-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="for_formula">
-                            <label class="form-check-label" for="gridCheck">
-                                Для формулы
+                            <label style="font-size: 20px;" class="form-check-label" for="gridCheck">
+                                &nbsp Для формулы
                             </label>
                         </div>
                     </div>
-                    <br>
-                    <br>
                 </div>
-                <div class="form-row drop_down_list" hidden>
-                    <div class="form-group col-md-6">
-                        <label>Выберите необходимый список
-                            <select class="form-control" id="enum_subparam">
-                                {% for e in enums %}
-                                    <option value="{{ e.id }}">{{ e.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </label>
+                <div class="row" style="margin-left: 10px;">
+                    <div class="form-row drop_down_list" hidden>
+                        <div class="form-group col-md-6">
+                            <label style="font-size: 20px;">Выберите необходимый список
+                                <select style="font-size: 20px; font-weight: lighter" class="form-control"
+                                        id="enum_subparam">
+                                    {% for e in enums %}
+                                        <option value="{{ e.id }}">{{ e.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="max_numb form-group col-md-5">
-                    <label>Ограничение
-                        <input class="form-control" type="number"  onkeydown="return event.keyCode !== 69" id="max_number">
-                    </label>
+                <div class="row" style="margin-left: 10px;">
+                    <div class="max_numb form-group col-md-5">
+                        <label style="font-size: 20px;">Ограничение
+                            <input style="font-size: 20px; font-weight: lighter" class="form-control" type="number"
+                                   onkeydown="return event.keyCode !== 69"
+                                   id="max_number">
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
         <br>
         <div class="col-xs-12">
             <button id="submit" class="btn btn-primary labelText">
-                <span>Сохранить конкурс </span>
+                <span style="font-size: 16px;">Сохранить конкурс </span>
             </button>
-            <a href="#" class="btn btn-info add_param" role="button"><span>Добавить критерий</span></a>
+            <a href="#" class="btn btn-info add_param" role="button"><span style="font-size: 16px;">Добавить критерий</span></a>
 
         </div>
         <br>
@@ -107,45 +115,47 @@
                 var nextindex = Number(lastid.split('_')[1]) + 1;
                 $(".param:last").after("<div class=\"param\" id=\"param_" + nextindex + "\"></div>");
                 $("#param_" + nextindex).append("<div class=\"col-xs-12\">\n" +
-                    "                    <hr>\n" +
-                    "                    <h4>Критерий </h4>\n" +
-                    "                    <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
-                    "                       role=\"button\">&times;</a>\n" +
-                    "                    <div class=\"form-row\">\n" +
-                    "                        <div class=\"form-group\">\n" +
-                    "                            <label>Название\n" +
-                    "                                <input class=\"form-control\" type=\"text\" name=\"text\">\n" +
-                    "                            </label><br>\n" +
-                    "                        </div>\n" +
-                    "                        <div class=\"form-group\">\n" +
-                    "                            <label>Описание\n" +
-                    "                                <textarea class=\"form-control rounded-0\" rows=\"3\" cols=\"70\" name=\"description\"></textarea>" +
-                    "                            </label>\n" +
-                    "                        </div>\n" +
+                    "                <h3>Критерий </h3>\n" +
+                    "                <a href=\"#\" class=\"close delete_param\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                    "                   role=\"button\">&times;</a>\n" +
+                    "                <div class=\"row\">\n" +
+                    "                    <div class=\"form-group col-md-4\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Название\n" +
+                    "                            <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"text\"\n" +
+                    "                                   name=\"text\">\n" +
+                    "                        </label><br>\n" +
                     "                    </div>\n" +
-                    "                    <hr>\n" +
+                    "                    <div class=\"form-group col-md-7\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Описание\n" +
+                    "                            <textarea style=\"font-size: 20px; font-weight: lighter\" class=\"form-control rounded-0\"\n" +
+                    "                                      rows=\"2\" cols=\"70\" name=\"description\"></textarea>\n" +
+                    "                        </label>\n" +
+                    "                    </div>\n" +
                     "                </div>\n" +
-                    "                <div class=\"col-xs-12\">\n" +
-                    "                   <h5>Параметры критерия </h5>\n" +
-                    "                    <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
-                    "                        <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
-                    "                    </a>\n" +
-                    "                </div>");
+                    "            </div>\n" +
+                    "            <div class=\"col-xs-12\" style=\"margin-left: 10px;\">\n" +
+                    "                <h3>Параметры критерия </h3>\n" +
+                    "                <a href=\"#\" style=\"color: #1e7e34;font-size: 24px\">\n" +
+                    "                    <span class=\"glyphicon glyphicon-plus add_subparam\"></span>\n" +
+                    "                </a>\n" +
+                    "            </div>");
 
                 var lastid = $(".subparam:last").attr("id");
                 var newindex = Number(lastid.split('_')[1]) + 1;
-                $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam\" id=\"subparam_" + newindex + "\"></div>");
-                $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                $("#param_" + nextindex + " .col-xs-12:last").after("<div class=\"subparam d-block\" id=\"subparam_" + newindex + "\"></div>");
+                $("#subparam_" + newindex).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px; \" aria-label=\"Close\"\n" +
                     "                   role=\"button\">&times;</a>\n" +
-                    "                <div class=\"form-row\">\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
                     "                    <div class=\"form-group col-md-5\">\n" +
-                    "                        <label>Название\n" +
-                    "                            <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Название\n" +
+                    "                            <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"text\"\n" +
+                    "                                   id=\"sub_text\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
                     "                    <div class=\"form-group col-md-3\">\n" +
-                    "                        <label>Тип данных\n" +
-                    "                            <select class=\"form-control type_subparam\" id=\"type_subparam\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Тип данных\n" +
+                    "                            <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control type_subparam\"\n" +
+                    "                                    id=\"type_subparam\">\n" +
                     "                                {% for t in types %}\n"+
                         "                                    <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
                         +
@@ -157,28 +167,34 @@
                     "                    <div class=\"form-group col-md-4\">\n" +
                     "                        <div class=\"form-check\">\n" +
                     "                            <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
-                    "                            <label class=\"form-check-label\" for=\"gridCheck\">\n" +
-                    "                                Для формулы\n" +
+                    "                            <label style=\"font-size: 20px;\" class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                &nbsp Для формулы\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
-                    "                    <br>\n" +
-                    "                    <br>\n" +
                     "                </div>\n" +
-                    "                <div class=\"form-row drop_down_list\" hidden>\n" +
-                    "                    <div class=\"form-group col-md-6\">\n" +
-                    "                        <label>Выберите необходимый список\n" +
-                    "                            <select class=\"form-control\" id=\"enum_subparam\">\n" +
-                    "                                {% for e in enums %}\n"+
-                        "                                    <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
-                        "                                {% endfor %}\n" +
-                    "                            </select>\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
+                    "                    <div class=\"form-row drop_down_list\" hidden>\n" +
+                    "                        <div class=\"form-group col-md-6\">\n" +
+                    "                            <label style=\"font-size: 20px;\">Выберите необходимый список\n" +
+                    "                                <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\"\n" +
+                    "                                        id=\"enum_subparam\">\n" +
+                    "                                    {% for e in enums %}\n"+
+                        "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
+                    "                    <div class=\"max_numb form-group col-md-5\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Ограничение\n" +
+                    "                            <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"number\"\n" +
+                    "                                   onkeydown=\"return event.keyCode !== 69\"\n" +
+                    "                                   id=\"max_number\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
-                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
-                    "                    <label>Ограничение\n" +
-                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
-                    "                    </label>\n" +
                     "                </div>");
             });
 
@@ -186,18 +202,20 @@
             $('.container').on('click', '.add_subparam', function () {
                 var lastid = $(".subparam:last").attr("id");
                 var id = "subparam_" + (Number(lastid.split('_')[1]) + 1);
-                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam\" id=\"" + id + "\"></div>");
-                $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px;\" aria-label=\"Close\"\n" +
+                $("#" + $("#" + $(this).parent().parent().parent().attr("id") + " .subparam:last").attr("id")).after("<div class=\"subparam d-block\" id=\"" + id + "\"></div>");
+                $("#" + id).append("<a href=\"#\" class=\"close delete_subparam\" style=\"color: red;font-size: 34px; \" aria-label=\"Close\"\n" +
                     "                   role=\"button\">&times;</a>\n" +
-                    "                <div class=\"form-row\">\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
                     "                    <div class=\"form-group col-md-5\">\n" +
-                    "                        <label>Название\n" +
-                    "                            <input class=\"form-control\" type=\"text\" id=\"sub_text\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Название\n" +
+                    "                            <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"text\"\n" +
+                    "                                   id=\"sub_text\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
                     "                    <div class=\"form-group col-md-3\">\n" +
-                    "                        <label>Тип данных\n" +
-                    "                            <select class=\"form-control type_subparam\" id=\"type_subparam\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Тип данных\n" +
+                    "                            <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control type_subparam\"\n" +
+                    "                                    id=\"type_subparam\">\n" +
                     "                                {% for t in types %}\n"+
                         "                                    <option value=\"{{ t | first }}\">{{ t | last }}</option>\n"
                         +
@@ -209,28 +227,34 @@
                     "                    <div class=\"form-group col-md-4\">\n" +
                     "                        <div class=\"form-check\">\n" +
                     "                            <input class=\"form-check-input\" type=\"checkbox\" id=\"for_formula\">\n" +
-                    "                            <label class=\"form-check-label\" for=\"gridCheck\">\n" +
-                    "                                Для формулы\n" +
+                    "                            <label style=\"font-size: 20px;\" class=\"form-check-label\" for=\"gridCheck\">\n" +
+                    "                                &nbsp Для формулы\n" +
                     "                            </label>\n" +
                     "                        </div>\n" +
                     "                    </div>\n" +
-                    "                    <br>\n" +
-                    "                    <br>\n" +
                     "                </div>\n" +
-                    "                <div class=\"form-row drop_down_list\" hidden>\n" +
-                    "                    <div class=\"form-group col-md-6\">\n" +
-                    "                        <label>Выберите необходимый список\n" +
-                    "                            <select class=\"form-control\" id=\"enum_subparam\">\n" +
-                    "                                {% for e in enums %}\n"+
-                        "                                    <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
-                        "                                {% endfor %}\n" +
-                    "                            </select>\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
+                    "                    <div class=\"form-row drop_down_list\" hidden>\n" +
+                    "                        <div class=\"form-group col-md-6\">\n" +
+                    "                            <label style=\"font-size: 20px;\">Выберите необходимый список\n" +
+                    "                                <select style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\"\n" +
+                    "                                        id=\"enum_subparam\">\n" +
+                    "                                    {% for e in enums %}\n"+
+                        "                                        <option value=\"{{ e.id }}\">{{ e.name }}</option>\n"+
+                        "                                    {% endfor %}\n" +
+                    "                                </select>\n" +
+                    "                            </label>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "                <div class=\"row\" style=\"margin-left: 10px;\">\n" +
+                    "                    <div class=\"max_numb form-group col-md-5\">\n" +
+                    "                        <label style=\"font-size: 20px;\">Ограничение\n" +
+                    "                            <input style=\"font-size: 20px; font-weight: lighter\" class=\"form-control\" type=\"number\"\n" +
+                    "                                   onkeydown=\"return event.keyCode !== 69\"\n" +
+                    "                                   id=\"max_number\">\n" +
                     "                        </label>\n" +
                     "                    </div>\n" +
-                    "                </div><div class=\"max_numb form-group col-md-5\">\n" +
-                    "                    <label>Ограничение\n" +
-                    "                        <input class=\"form-control\" type=\"number\" id=\"max_number\">\n" +
-                    "                    </label>\n" +
                     "                </div>");
 
             });
@@ -279,7 +303,7 @@
                         if (Number(tmp["type_subparam"]) === 5) {
                             tmp["enum_id"] = $(subparams[j]).find("#enum_subparam").val();
                         }
-                         if (Number(tmp["type_subparam"]) === 1) {
+                        if (Number(tmp["type_subparam"]) === 1) {
                             tmp["max"] = $(subparams[j]).find("#max_number").val();
                         }
                         data_subparams.push(tmp);

@@ -1,51 +1,51 @@
 {% extends 'fls/base_template.html' %}
-
+{% block style %}
+    .for_sign {
+        font-size: 30px;
+    }
+{% endblock %}
 {% block content %}
     {% block cycle_and_head %}
     {% endblock %}
 
-    <h4>Операции</h4>
+    <h3>Операции</h3>
     <div class="oper">
-        <button type="button" class="tool btn sign" id="plus">+</button>
-        <button type="button" class="tool btn sign" id="minus">-</button>
-        <button type="button" class="tool btn sign" id="div">/</button>
-        <button type="button" class="tool btn sign" id="mult">*</button>
-        <button type="button" class="tool btn" id="left_branch">(</button>
-        <button type="button" class="tool btn" id="right_branch">)</button>
+        <button type="button" class="tool btn sign for_sign" id="plus">+</button>
+        <button type="button" class="tool btn sign for_sign" id="minus">-</button>
+        <button type="button" class="tool btn sign for_sign" id="div">/</button>
+        <button type="button" class="tool btn sign for_sign" id="mult">*</button>
+        <button type="button" class="tool btn for_sign" id="left_branch">(</button>
+        <button type="button" class="tool btn for_sign" id="right_branch">)</button>
     </div>
-
-    <hr>
-    <h4>Функции</h4>
+    <h3>Функции</h3>
     <div class="func">
         {% for f in funcs %}
-            <button type="button" class="tool btn btn-warning" id="{{ f }}">{{ f }}</button>
+            <button type="button" style="font-size: 20px;" class="tool btn btn-warning" id="{{ f }}">{{ f }}</button>
         {% endfor %}
     </div>
-    <hr>
-    <h4>Числа</h4>
+    <h3>Числа</h3>
     <div class="numb">
         <div class="row">
             <div class="col-md-3">
-                <input class="form-control" type="number" id="field_numb">
+                <input  style="font-size: 20px;" class="form-control" type="number" id="field_numb">
             </div>
             <div class="col-md-3">
-                <button type="button" class="tool btn btn-warning" id="numb_button">Добавить</button>
+                <button type="button"  style="font-size: 20px;" class="tool btn btn-warning" id="numb_button">Добавить</button>
             </div>
         </div>
         <br>
         <div class="row">
             <div class="col-md-5 div-err" hidden>
-                <h5>Введите число</h5>
+                <h4>Введите число</h4>
             </div>
         </div>
     </div>
-    <br>
     <form name="form" action="{% block url_form %}url{% endblock %}" method="post">
         {% csrf_token %}
         <div class="row">
             <div class="col-md-5">
-                <label>Формула
-                    <textarea style="resize: none;" name="formula_show" class="form-control rounded-0" rows="5"
+                <label style="font-size: 20px;">Формула
+                    <textarea style="resize: none; font-size: 20px;" name="formula_show " class="form-control rounded-0" rows="5"
                               cols="40"
                               id="desc_show" readonly></textarea>
 
@@ -57,14 +57,13 @@
                 </label>
             </div>
             <br>
-            <button type="button" class="btn btn-danger" id="back"><span class="glyphicon glyphicon-backward"></span>
+            <button style="font-size: 20px;" type="button" class="btn btn-danger" id="back"><span style="font-size: 20px;" class="glyphicon glyphicon-backward"></span>
                 Назад
             </button>
         </div>
-        <br>
         <hr>
         <button type="submit" class="btn btn-primary labelText">
-                                <span style="font-family: 'Comic Sans MS',monospace">
+                                <span style="font-size: 18px;">
                                 {% block name_button %}Сохранить{% endblock %}
                                     </span>
         </button>
@@ -76,14 +75,14 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" id="closeModal" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Выберите параметры для функции <span id="insert"></span></h4>
+                    <h3 class="modal-title">Выберите параметры для функции <span id="insert"></span></h3>
                 </div>
 
                 <div class="modal-body">
                     <div class="container">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="checkAll">
-                            <label class="form-check-label" for="checkAll">Выбрать все</label>
+                            <label style="font-size: 20px;" class="form-check-label" for="checkAll">Выбрать все</label>
                         </div>
                         {% block cycle_popup %}
 
@@ -91,7 +90,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="apply_checkbox"><span>Применить</span>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="apply_checkbox"><span style="font-size: 18px;">Применить</span>
                     </button>
                 </div>
             </div>

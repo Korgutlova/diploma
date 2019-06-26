@@ -5,13 +5,12 @@
 
 {% block cycle_and_head %}
 
-    <h3>Создание формулы для критерия {{ c.name }}</h3>
+    <h3>Создание формулы для критерия "{{ c.name }}"</h3>
     <hr>
-    <h4>Параметры критерия</h4>
+    <h3>Параметры критерия</h3>
     {% for p in params %}
-        <button type="button" class="tool btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
+        <button type="button" style="font-size: 20px;" class="tool btn btn-info param" id="{{ p.id }}">{{ p.name }}</button>
     {% endfor %}
-    <hr>
 {% endblock %}
 
 
@@ -29,7 +28,7 @@
     {% for p in params %}
         <div class="form-check">
             <input type="checkbox" class="form-check-input" name="item" id="{{ p.id }}">
-            <label class="form-check-label" for="{{ p.id }}">{{ p.name }}</label>
+            <label style="font-size: 20px;" class="form-check-label" for="{{ p.id }}">{{ p.name }}</label>
         </div>
     {% endfor %}
 {% endblock %}
