@@ -3,17 +3,17 @@ import random
 
 from openpyxl import load_workbook
 
-file = './data.xlsx'
+file = './data3.xlsx'
 
 wb = load_workbook(filename=file, data_only=True)
 
-ws = wb.get_sheet_by_name('Входные данные')
+ws = wb.get_sheet_by_name('Входные данные (кол)')
 
-academic_performance = [cell[0].value for cell in ws['C2':'C16']]
+academic_performance = [cell[0].value for cell in ws['C2':'C9']]
 
-input_file_template = './static/cmp_results/%s'
+input_file_template = './static/cmp_results/3%s'
 
-criteria = {
+criterion_indexes = {
     'culture': (0, 5),
     'sport': (5, 10),
     'patriotism': (10, 13),
@@ -22,37 +22,37 @@ criteria = {
 }
 
 
-def save_data(param='kfavg'):
+def save_data(param='avg'):
     file = open(input_file_template % param, 'wb')
     param_values = []
     if param == 'kfavg':
         ws = wb.get_sheet_by_name('Входные данные')
-        param_values = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+        param_values = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV9']]
     elif param == 'avg' or param == 'c':
         ws = wb.get_sheet_by_name('Входные данные (кол)')
-        param_values = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV16']]
+        param_values = [list(map(lambda x: x.value, row)) for row in ws['D2':'AV9']]
         if param == 'avg':
-            counts = [cell[0].value for cell in ws['AW2':'AW16']]
+            counts = [cell[0].value for cell in ws['AW2':'AW9']]
             for i in range(len(param_values)):
                 for j in range(len(param_values[i])):
                     param_values[i][j] = param_values[i][j] / counts[i]
 
-    ws = wb.get_sheet_by_name('Входные данные')
-    name_groups = [cell[0].value for cell in ws['A2':'A16']]
-    jury_results = [cell[0].value for cell in ws['B2':'B16']]
+    ws = wb.get_sheet_by_name('Входные данные (кол)')
+    name_groups = [cell[0].value for cell in ws['A2':'A9']]
+    jury_results = [cell[0].value for cell in ws['B2':'B9']]
     pickle.dump([param_values, name_groups, jury_results, academic_performance], file)
 
 
-def calculate_estimations(data, weights):
-    estimations = []
+def calculate_estimations(all_requests_param_values, weights):
 
+    estimations = []
     culture = []
     sport = []
     science = []
     social_work = []
     patriotism = []
 
-    for request_param_values in data:
+    for request_param_values in all_requests_param_values:
         culture.append(sum([sc * w for sc, w in zip(request_param_values[:5], weights[:5])]))
         sport.append(sum([sc * w for sc, w in zip(request_param_values[5:10], weights[5:10])]))
         patriotism.append(sum([sc * w for sc, w in zip(request_param_values[10:13], weights[10:13])]))
@@ -63,43 +63,13 @@ def calculate_estimations(data, weights):
     max_science, min_science = max(science), min(science)
     max_social_work, min_social_work = max(social_work), min(social_work)
     max_patriotism, min_patriotism = max(patriotism), min(patriotism)
-    for i in range(len(data)):
+    for i in range(len(all_requests_param_values)):
         culture_norm = (culture[i] - min_culture) / (max_culture - min_culture) * 10
         sport_norm = (sport[i] - min_sport) / (max_sport - min_sport) * 10
         science_norm = (science[i] - min_science) / (max_science - min_science) * 10
         social_norm = (social_work[i] - min_social_work) / (max_social_work - min_social_work) * 10
         patriotism_norm = (patriotism[i] - min_patriotism) / (max_patriotism - min_patriotism) * 10
         estimations.append(culture_norm + sport_norm + science_norm + social_norm + patriotism_norm +
-                           academic_performance[
-                               i])
+                           academic_performance[i])
     return estimations
 
-
-def smart_gen():
-    const_act = [0, 5, 10, 39, 40]
-    d1_part = [(1, 4), (6, 9), (11, 12), (13, 14), (35, 38), (41, 44)]
-    olimp = [(15, 18, 5), (19, 22, 6), (23, 26, 7), (27, 30, 8), (31, 34, 4)]
-    coef = {}
-    for ind in const_act:
-        coef[ind] = random.randint(1, 9)
-    for ind_st, ind_end in d1_part:
-        ind = ind_end
-        est = random.randint(4, 9)
-        while ind >= ind_st:
-            coef[ind] = est
-            ind -= 1
-            est -= 1
-    for ind_st, ind_end, est_st in olimp:
-        ind = ind_end
-        est = est_st
-        while ind >= ind_st:
-            coef[ind] = est
-            ind -= 1
-            est -= 1
-    coef = dict(sorted(coef.items(), key=lambda item: item[0]))
-    return list(coef.values())
-
-
-def save_ests_all_params():
-    for param in ['kfavg', 'avg', 'count']:
-        save_data(param=param)

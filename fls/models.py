@@ -204,7 +204,7 @@ class Criterion(models.Model):
         unique_together = (('competition', 'name'),)
 
     def __str__(self):
-        return "Конкурс %s - критерий %s" % (self.competition, self.name)
+        return self.name
 
 
 class Param(models.Model):
@@ -300,7 +300,7 @@ class EstimationJury(models.Model):
         unique_together = (('jury', 'request', 'type', 'criterion'),)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.jury, self.request, self.type)
+        return "%s - %s - %s - %s" % (self.jury, self.criterion, self.request, self.type)
 
 
 class WeightParamJury(models.Model):

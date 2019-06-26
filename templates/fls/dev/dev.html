@@ -10,15 +10,15 @@
             </div>
             <ul class="nav navbar-nav">
                 {% if selected_comp_id %}
-                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Сходство оценок</a></li>
                     <li><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
-                    <li class="active"><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по участнику</a></li>
+                    <li class="active"><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по заявке</a></li>
                     <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по конкурсу</a></li>
                 {% else %}
                     <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
                     <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                    <li class="active"><a href="{% url 'fls:devpage' %}">Согласованность по участнику</a></li>
-                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по конкурсу</a></li>
+                    <li class="active"><a href="{% url 'fls:devpage' %}">Согласованность по заявке</a></li>
+                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по всем заявкам</a></li>
                 {% endif %}
 
 
@@ -43,14 +43,7 @@
                 <br id="place">
                 <div id="critfil"></div>
                 <br>
-                <label for="type">Выберите метод:</label>
-                <br>
-                <select name="type" id="type" class="selectpicker">
-                    <option value="1">Ручная оценка</option>
-                    <option value="2">Автоматическая оценка</option>
-                </select>
-                <br>
-                <br>
+
 
                 <div id="reqfil"></div>
 
@@ -74,7 +67,7 @@
             $.ajax({
                 url: '/fls/deviation/',
                 type: 'get',
-                data: {'comp': comp_id, 'type': type, 'reqs': req_id, 'crit': crit_id},
+                data: {'comp': comp_id, 'reqs': req_id, 'crit': crit_id},
                 dataType: 'json',
                 success: function (data) {
                     $("#div_values").html(data.est)
@@ -122,7 +115,6 @@
                     $("#reqfil").html(data.reqs);
                 },
                 complete: function (data) {
-
                     $('#req').addClass('selectpicker');
                     $('#req').selectpicker();
                     $('#crit').addClass('selectpicker');

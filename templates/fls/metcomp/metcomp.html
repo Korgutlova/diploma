@@ -11,15 +11,15 @@
             </div>
             <ul class="nav navbar-nav">
                 {% if selected_comp_id %}
-                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Сходство оценок</a></li>
                     <li class="active"><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по участнику</a></li>
-                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по конкурсу</a></li>
+                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по заявке</a></li>
+                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по всем заявкам</a></li>
                 {% else %}
-                    <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
+                    <li><a href={% url 'fls:simjury' %}>Сходство оценок</a></li>
                     <li class="active"><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' %}">Согласованность по участнику</a></li>
-                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по конкурсу</a></li>
+                    <li><a href="{% url 'fls:devpage' %}">Согласованность по заявке</a></li>
+                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по всем заявкам</a></li>
                 {% endif %}
 
 
@@ -79,20 +79,14 @@
         };
 
         const color_range = function () {
-            color_pos = ['#3fa082', '#52a98e', '#65b39b', '#78bca7', '#8bc6b4', '#9fcfc0', '#b2d9cd', '#c5e2d9', '#d8ece6', '#ebf5f2'];
-            color_neg = ['#cc285f', '#d13d6f', '#d6527e', '#db688f', '#e07e9f', '#e593af', '#eaa9bf', '#efbecf', '#f4d4df'];
+            colors = ['#3fa082', '#52a98e', '#65b39b', '#78bca7', '#8bc6b4', '#9fcfc0', '#b2d9cd', '#c5e2d9', '#d8ece6', '#ebf5f2'];
             $(".paint").each(function (i) {
                 diff_value = parseFloat($(this).text());
                 diff = Math.round(Math.abs(diff_value));
-                if (diff >= color_pos.length) {
-                    diff = color_pos.length - 1
+                if (diff >= colors.length) {
+                    diff = colors.length - 1
                 }
-                if (diff_value >= 0) {
-                    color = color_pos[diff];
-                } else {
-                    color = color_neg[diff];
-
-                }
+                color = colors[diff];
                 $(this).prev().css("background-color", color);
                 $(this).prev().prev().css("background-color", color);
             })

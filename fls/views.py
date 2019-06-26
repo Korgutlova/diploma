@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 
 from fls.forms import CompetitionForm
 from fls.lib import make_ranks, dist_kemeni, clusterization, calculate_jury_automate_ests, \
-    define_optimal_k
+    define_optimal_k, max_dist_kemeni_for_ranking
 from fls.models import Competition, Criterion, CustomUser, Request, \
     CriterionValue, EstimationJury, METHOD_CHOICES, TYPE_PARAM, Param, \
     STATUSES, ParamValue, UploadData, WeightParamJury, CustomEnum, ValuesForEnum, ClusterNumber, Invitation
@@ -423,6 +423,7 @@ def pairwise_comparison_param(request, crit_id):
     if request.method == 'POST':
         values = dict(request.POST)
         del values['csrfmiddlewaretoken']
+        print(values)
         criterion_rows = make_pair_matrix(values)
         elems = sum(criterion_rows.values(), [])
         for key in criterion_rows:
@@ -506,7 +507,7 @@ def logout_page(request):
 @login_required(login_url="login/")
 def get_request(request, id):
     cur_request = Request.objects.get(id=id)
-    estimate = EstimationJury.objects.filter(request=cur_request)
+    estimate = EstimationJury.objects.filter(request=cur_request, jury=request.user.custom_user)
     flag = False
     flag_for_jury = False
     if CustomUser.objects.get(user=request.user) in cur_request.competition.jurys.all():
@@ -586,57 +587,57 @@ def similar_jury_page(request, comp_id=None):
     return render(request, 'fls/sim_jury/sim_jury.html', {'comps': comps, 'selected_comp_id': selected_comp_id})
 
 
-@login_required(login_url="login/")
-def similar_jury(request):
-    comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
-        request.GET['crit'])
-    reqs = Request.objects.filter(competition_id=comp_id)
-    slt_jury = CustomUser.objects.get(id=jury_id)
-    slt_ests = make_ranks(
-        [EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value for req in reqs])
-    rest_jury = CustomUser.objects.filter(role=2).exclude(id=jury_id)
-    smt = {}
-    jury_ests = {}
-    for jury in rest_jury:
-        s = 0
-        jury_ests[jury.id] = []
-        for req in reqs:
-            slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value
-            jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
-            jury_ests[jury.id].append(jury_value)
-            s += abs(slt_value - jury_value)
-        jury_ests[jury.id] = make_ranks(jury_ests[jury.id])
-        smt[jury.id] = round(s, 2)
-    print('smt', smt)
-    if request.GET['key'] == 'est':
-        sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
-    else:
-        sorted_kemeni = {key: dist_kemeni(slt_ests, jury_ests[key]) for key in smt}
-        sorted_smt = dict(sorted(sorted_kemeni.items(), key=lambda item: item[1]))
-
-    print('sorted_smt', sorted_smt)
-    clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i) for i, pk in enumerate(list(sorted_smt.keys()))])
-    ordering = 'CASE %s END' % clauses
-    sorted_jury = CustomUser.objects.filter(pk__in=list(sorted_smt.keys())).extra(
-        select={'ordering': ordering}, order_by=('ordering',))
-    print(sorted_jury)
-    estimation_values = {}
-    for i, req in enumerate(reqs):
-        part_name = req.participant
-        estimation_values[part_name] = []
-        estimation_values[part_name].append((
-            round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
-            slt_ests[i]))
-        estimation_values[part_name].extend(
-            [(round(EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value, 2),
-              jury_ests[jury.id][i]) for
-             jury in sorted_jury])
-    diff = sorted_smt.values()
-    est_key = request.GET['key'] == 'est'
-    data = {'est': render_to_string('fls/sim_jury/table.html',
-                                    {'ests': estimation_values, 'jurys': sorted_jury,
-                                     'slt_jury': slt_jury, 'diffs': diff, 'est_key': est_key})}
-    return JsonResponse(data)
+# @login_required(login_url="login/")
+# def similar_jury(request):
+#     comp_id, type, jury_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['jury']), int(
+#         request.GET['crit'])
+#     reqs = Request.objects.filter(competition_id=comp_id)
+#     slt_jury = CustomUser.objects.get(id=jury_id)
+#     slt_ests = make_ranks(
+#         [EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value for req in reqs])
+#     rest_jury = CustomUser.objects.filter(role=2).exclude(id=jury_id)
+#     smt = {}
+#     jury_ests = {}
+#     for jury in rest_jury:
+#         s = 0
+#         jury_ests[jury.id] = []
+#         for req in reqs:
+#             slt_value = EstimationJury.objects.get(jury=slt_jury, type=type, request=req, criterion_id=crit_id).value
+#             jury_value = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
+#             jury_ests[jury.id].append(jury_value)
+#             s += abs(slt_value - jury_value)
+#         jury_ests[jury.id] = make_ranks(jury_ests[jury.id])
+#         smt[jury.id] = round(s, 2)
+#     print('smt', smt)
+#     if request.GET['key'] == 'est':
+#         sorted_smt = dict(sorted(smt.items(), key=lambda item: item[1]))
+#     else:
+#         sorted_kemeni = {key: dist_kemeni(slt_ests, jury_ests[key]) for key in smt}
+#         sorted_smt = dict(sorted(sorted_kemeni.items(), key=lambda item: item[1]))
+#
+#     print('sorted_smt', sorted_smt)
+#     clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i) for i, pk in enumerate(list(sorted_smt.keys()))])
+#     ordering = 'CASE %s END' % clauses
+#     sorted_jury = CustomUser.objects.filter(pk__in=list(sorted_smt.keys())).extra(
+#         select={'ordering': ordering}, order_by=('ordering',))
+#     print(sorted_jury)
+#     estimation_values = {}
+#     for i, req in enumerate(reqs):
+#         part_name = req.participant
+#         estimation_values[part_name] = []
+#         estimation_values[part_name].append((
+#             round(EstimationJury.objects.get(type=type, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
+#             slt_ests[i]))
+#         estimation_values[part_name].extend(
+#             [(round(EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value, 2),
+#               jury_ests[jury.id][i]) for
+#              jury in sorted_jury])
+#     diff = sorted_smt.values()
+#     est_key = request.GET['key'] == 'est'
+#     data = {'est': render_to_string('fls/sim_jury/table.html',
+#                                     {'ests': estimation_values, 'jurys': sorted_jury,
+#                                      'slt_jury': slt_jury, 'diffs': diff, 'est_key': est_key})}
+#     return JsonResponse(data)
 
 
 @login_required(login_url="login/")
@@ -676,25 +677,23 @@ def deviations_page(request, comp_id=None):
 
 @login_required(login_url="login/")
 def est_deviations(request):
-    comp_id, type, req_id, crit_id = int(request.GET['comp']), int(request.GET['type']), int(request.GET['reqs']), int(
-        request.GET['crit'])
+    comp_id, req_id, crit_id = int(request.GET['comp']), int(request.GET['reqs']), int(request.GET['crit'])
     req = Request.objects.get(id=req_id)
     jurys = Competition.objects.get(id=comp_id).jurys.all()
     avg_est = sum([jury_est.value for jury_est in
-                   EstimationJury.objects.filter(request=req, type=type, criterion_id=crit_id)]) / len(jurys)
+                   EstimationJury.objects.filter(request=req, type=1, criterion_id=crit_id)]) / len(jurys)
     jury_est_values = {}
     for jury in jurys:
         jury_est_values[jury] = []
-        jury_est = EstimationJury.objects.get(jury=jury, type=type, request=req, criterion_id=crit_id).value
+        jury_est = EstimationJury.objects.get(jury=jury, type=1, request=req, criterion_id=crit_id).value
         jury_est_values[jury].extend([round(jury_est, 2), round((jury_est - avg_est), 2)])
     jury_est_values = sorted(jury_est_values.items(), key=lambda item: item[1][1], reverse=True)
-    avg_dev = round(sum([abs(elem[1][1]) for elem in jury_est_values]) / len(jury_est_values), 2)
+    avg_dev = math.sqrt(sum([dev[1][1] ** 2 for dev in jury_est_values]) / len(jury_est_values))
     print(jury_est_values)
-    variation_coef = math.sqrt(
-        sum([dev[1][1] ** 2 for dev in jury_est_values]) / (len(jury_est_values) - 1)) / avg_est
+    variation_coef = avg_dev / avg_est
     data = {'est': render_to_string('fls/dev/table.html',
                                     {'ests': jury_est_values, 'comm': round(avg_est, 2),
-                                     'avg_dev': avg_dev, 'var_coef': round(variation_coef, 2)})}
+                                     'avg_dev': round(avg_dev, 2), 'var_coef': round(variation_coef, 2)})}
     return JsonResponse(data)
 
 
@@ -726,18 +725,16 @@ def coherence_page(request, comp_id=None):
 
 @login_required(login_url="login/")
 def coherence(request):
-    comp_id, type, clusts, crit_id = int(request.GET['comp']), int(request.GET['type']), int(
-        request.GET['clusts']), int(
-        request.GET['crit']),
+    comp_id, clusts, crit_id = int(request.GET['comp']), int(request.GET['clusts']), int(request.GET['crit']),
     comp = Competition.objects.get(id=comp_id)
     reqs = comp.competition_request.all()
     jurys = comp.jurys.all()
     jury_ranks = {}
     for jury in jurys:
         jury_ranks[jury] = make_ranks(
-            [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
+            [EstimationJury.objects.get(type=1, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
             method='average',
-            s_m=True)
+            related_rank_groups=True)
     req_values = {}
     for idx, req in enumerate(reqs):
         req_values[req] = sum([jury_ranks[jury][0][idx] for jury in jurys])
@@ -753,7 +750,7 @@ def coherence(request):
                          2)
 
     jury_rankings = [make_ranks(
-        [EstimationJury.objects.get(type=type, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
+        [EstimationJury.objects.get(type=1, jury=jury, request=req, criterion_id=crit_id).value for req in reqs],
         method='min') for
         jury in jurys]
     clusters, centroids, labels = clusterization(jury_rankings, clusts)
@@ -792,8 +789,8 @@ def comp_criterions_jurys(request):
 
 @login_required(login_url="login/")
 def optimal_k_for_criterion(request):
-    crit_id, type = int(request.GET['crit']), int(request.GET['type'])
-    ks = list(ClusterNumber.objects.filter(criterion_id=crit_id, type=type).values_list('k_number', flat=True))
+    crit_id = int(request.GET['crit'])
+    ks = list(ClusterNumber.objects.filter(criterion_id=crit_id, type=1).values_list('k_number', flat=True))
     k_range = [(k, 1) for k in ks]
     # k_range.extend([(k, 0) for k in range(1, len(jurys)) if k not in ks])
     # print(k_range)
@@ -834,3 +831,54 @@ def delete_req(request, id):
     request.delete()
     print("request deleted")
     return redirect("fls:profile")
+
+
+@login_required(login_url="login/")
+def similar_jury(request):
+    comp_id, jury_id, crit_id = int(request.GET['comp']), int(request.GET['jury']), int(request.GET['crit'])
+    reqs = Request.objects.filter(competition_id=comp_id)
+    slt_jury = CustomUser.objects.get(id=jury_id)
+    slt_ests = make_ranks(
+        [EstimationJury.objects.get(jury=slt_jury, type=1, request=req, criterion_id=crit_id).value for req in reqs])
+    max_dist = max_dist_kemeni_for_ranking(slt_ests)
+    rest_jury = Competition.objects.get(id=comp_id).jurys.exclude(id=jury_id)
+    smt = {}
+    jury_ests = {}
+    for jury in rest_jury:
+        s = 0
+        jury_ests[jury.id] = []
+        for req in reqs:
+            slt_value = EstimationJury.objects.get(jury=slt_jury, type=1, request=req, criterion_id=crit_id).value
+            print(jury.id, req.id)
+            jury_value = EstimationJury.objects.get(jury=jury, type=1, request=req, criterion_id=crit_id).value
+            jury_ests[jury.id].append(jury_value)
+            s += abs(slt_value - jury_value)
+        jury_ests[jury.id] = make_ranks(jury_ests[jury.id])
+        smt[jury.id] = int(s)
+    print('smt', smt)
+
+    sorted_kemeni = {key: (round((dist_kemeni(slt_ests, jury_ests[key]) / max_dist), 2), smt[key]) for key in smt}
+    sorted_smt = dict(sorted(sorted_kemeni.items(), key=lambda item: item[1][0]))
+
+    print('sorted_smt', sorted_smt)
+    clauses = ' '.join(['WHEN id=%s THEN %s' % (pk, i) for i, pk in enumerate(list(sorted_smt.keys()))])
+    ordering = 'CASE %s END' % clauses
+    sorted_jury = CustomUser.objects.filter(pk__in=list(sorted_smt.keys())).extra(
+        select={'ordering': ordering}, order_by=('ordering',))
+    print(sorted_jury)
+    estimation_values = {}
+    for i, req in enumerate(reqs):
+        part_name = req.participant
+        estimation_values[part_name] = []
+        estimation_values[part_name].append((
+            round(EstimationJury.objects.get(type=1, jury=slt_jury, request=req, criterion_id=crit_id).value, 2),
+            slt_ests[i]))
+        estimation_values[part_name].extend(
+            [(round(EstimationJury.objects.get(type=1, jury=jury, request=req, criterion_id=crit_id).value, 2),
+              jury_ests[jury.id][i]) for
+             jury in sorted_jury])
+    dists = sorted_smt.values()
+    data = {'est': render_to_string('fls/sim_jury/table.html',
+                                    {'ests': estimation_values, 'jurys': sorted_jury,
+                                     'slt_jury': slt_jury, 'dists': dists})}
+    return JsonResponse(data)

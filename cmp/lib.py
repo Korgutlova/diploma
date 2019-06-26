@@ -10,11 +10,12 @@ from cmp.lib2 import calculate_estimations
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dipl.settings")
 django.setup()
 
-input_file_template = './static/cmp_results/%s'
+input_file_template = './static/cmp_results/2%s'
 
-output_file_template = './static/cmp_results/weights-%s'
+output_file_template = './static/cmp_results/2weights-%s'
 
-def cmp(weights, param='kfavg'):
+
+def cmp(weights, param='avg'):
     input_file = open(input_file_template % param, 'rb')
     data, name_groups, old_ranking, academic_performance = pickle.load(input_file)
 
@@ -24,8 +25,9 @@ def cmp(weights, param='kfavg'):
         new_ranking) + 1)
 
 
-def fitness(set_weights, data, old_ranking):
-    return [sum([abs(old - new) for old, new in zip(old_ranking, calculate_estimations(data, weights))]) for weights in
+def fitness_function(set_weights, param_values, expert_estimations):
+    return [sum([abs(expert_est - automatic_est) for expert_est, automatic_est in
+                 zip(expert_estimations, calculate_estimations(param_values, weights))]) for weights in
             set_weights]
 
 
@@ -79,7 +81,7 @@ def genetic_algorithm(param='avg'):
 
     fitnesses = []
     for generation in range(num_generations):
-        fitnesses = fitness(population, data, old_ranking)
+        fitnesses = fitness_function(population, data, old_ranking)
         parents = mating_pool(population, fitnesses, num_parents)
         offsprings = crossover(parents, offspring_size)
         offspring_mutation = mutation(offsprings, data)
@@ -93,4 +95,3 @@ def genetic_algorithm(param='avg'):
     return population, fitnesses
 
 
-# print(genetic_algorithm())

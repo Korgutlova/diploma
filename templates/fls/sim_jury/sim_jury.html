@@ -19,15 +19,15 @@
             </div>
             <ul class="nav navbar-nav">
                 {% if selected_comp_id %}
-                    <li class="active"><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li class="active"><a href={% url 'fls:simjury' selected_comp_id %}>Сходство оценок</a></li>
                     <li><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по участнику</a></li>
-                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по конкурсу</a></li>
+                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по заявке</a></li>
+                    <li><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по всем заявкам</a></li>
                 {% else %}
-                    <li class="active"><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
+                    <li class="active"><a href={% url 'fls:simjury' %}>Сходство оценок</a></li>
                     <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' %}">Согласованность по участнику</a></li>
-                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по конкурсу</a></li>
+                    <li><a href="{% url 'fls:devpage' %}">Согласованность по заявке</a></li>
+                    <li><a href="{% url 'fls:coherpage' %}">Согласованность по всем заявкам</a></li>
                 {% endif %}
 
             </ul>
@@ -52,24 +52,10 @@
                 <div id="critfil"></div>
                 <br>
 
-                <label for="type">Выберите метод:</label>
-                <br>
-                <select name="type" id="type" class="selectpicker">
-                    <option value="1">Ручная оценка</option>
-                    <option value="2">Автоматическая оценка</option>
-                </select>
-                <br>
-                <br>
+
                 <div id="jury_fill"></div>
                 <br>
-                <label for="key">Выберите метрику:</label>
-                <br>
-                <select id="key" name="key" class="selectpicker">
 
-                    <option value="est">Сумма модулей отклонений оценок</option>
-                    <option value="rank">Расстояние Кемени</option>
-                </select>
-                <br>
             </div>
             <div class="col-sm-9" id="div_values"></div>
         </div>
@@ -82,16 +68,14 @@
     <script>
 
         const fill_estimations = function () {
-            type = $('#type').val();
             comp_id = $('#comp').val();
             jury = $('#jury').val();
-            key = $('#key').val();
             crit = $('#crit').val();
 
             $.ajax({
                 url: '/fls/similar_jury/',
                 type: 'get',
-                data: {'comp': comp_id, 'type': type, 'jury': jury, 'key': key, 'crit': crit},
+                data: {'comp': comp_id,  'jury': jury, 'crit': crit},
                 dataType: 'json',
                 success: function (data) {
                     $("#div_values").html(data.est)
@@ -129,17 +113,11 @@
         };
 
         select_comp = $('#comp');
-        select_type = $('#type');
-        select_key = $('#key');
-
         select_comp.selectpicker();
-        select_type.selectpicker();
-        select_key.selectpicker();
 
         $(document).ready(fill_criterions_jury);
         select_comp.change(fill_criterions_jury);
-        select_type.change(fill_estimations);
-        select_key.change(fill_estimations);
+
 
         $('#critfil').on('change', '#crit', function () {
             fill_estimations();

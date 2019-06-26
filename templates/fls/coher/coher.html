@@ -10,16 +10,16 @@
             </div>
             <ul class="nav navbar-nav">
                 {% if selected_comp_id %}
-                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Схожесть жюри</a></li>
+                    <li><a href={% url 'fls:simjury' selected_comp_id %}>Сходство оценок</a></li>
                     <li><a href="{% url 'fls:metcomp' selected_comp_id %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по участнику</a></li>
-                    <li class="active"><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по конкурсу</a>
+                    <li><a href="{% url 'fls:devpage' selected_comp_id %}">Согласованность по заявке</a></li>
+                    <li class="active"><a href="{% url 'fls:coherpage' selected_comp_id %}">Согласованность по всем заявкам</a>
                     </li>
                 {% else %}
-                    <li><a href={% url 'fls:simjury' %}>Схожесть жюри</a></li>
+                    <li><a href={% url 'fls:simjury' %}>Сходство оценок</a></li>
                     <li><a href="{% url 'fls:metcomp' %}">Отклонения от правил</a></li>
-                    <li><a href="{% url 'fls:devpage' %}">Согласованность по участнику</a></li>
-                    <li class="active"><a href="{% url 'fls:coherpage' %}">Согласованность по конкурсу</a></li>
+                    <li><a href="{% url 'fls:devpage' %}">Согласованность по заявке</a></li>
+                    <li class="active"><a href="{% url 'fls:coherpage' %}">Согласованность по всем заявкам</a></li>
                 {% endif %}
 
 
@@ -43,14 +43,7 @@
                 <br>
                 <br>
                 <div id="critfil"></div>
-                <br>
-                <label for="type">Выберите метод:</label>
-                <br>
-                <select name="type" id="type" class="selectpicker">
-                    <option value="1">Ручная оценка</option>
-                    <option value="2">Автоматическая оценка</option>
-                </select>
-                <br>
+
                 <br>
                 <div id="k_range_fil"></div>
                 <br>
@@ -70,12 +63,11 @@
         const fill_estimations = function () {
             comp_id = $('#comp').val();
             crit_id = $("#crit").val();
-            type = $('#type').val();
             clusts = $('#clusts').val();
             $.ajax({
                 url: '/fls/coher/',
                 type: 'get',
-                data: {'comp': comp_id, 'type': type, 'clusts': clusts, 'crit': crit_id},
+                data: {'comp': comp_id, 'clusts': clusts, 'crit': crit_id},
                 dataType: 'json',
                 success: function (data) {
                     $("#div_values").html(data.est);
@@ -130,11 +122,10 @@
 
         const fill_k_range = function () {
             crit_id = $("#crit").val();
-            type = $('#type').val();
             $.ajax({
                 url: '/fls/fill_k/',
                 type: 'get',
-                data: {'crit': crit_id, 'type': type},
+                data: {'crit': crit_id},
                 dataType: 'json',
                 success: function (data) {
                     $("#k_range_fil").html(data.k_range);
@@ -150,12 +141,9 @@
         };
 
         select_comp = $('#comp');
-        select_type = $('#type');
         select_comp.selectpicker();
-        select_type.selectpicker();
         $(document).ready(fill_criterions);
         select_comp.change(fill_criterions);
-        select_type.change(fill_k_range);
 
 
         $('#critfil').on('change', '#crit', function () {

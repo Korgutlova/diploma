@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 
 from cmp.lib import cmp
 
-input_file_template = './static/cmp_results/weights-%s'
+input_file_template = './static/cmp_results/2weights-%s'
 
 
 def cmp_estimations(request):

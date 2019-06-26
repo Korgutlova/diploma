@@ -49,33 +49,36 @@ def parse_formula(formula, params_values):
 
 # parse_formula("5*a_0 + func1(a_1, a_2)/log(a_3)", [2, 8, 7, 5])
 
-
-def median_kemeni(rankings):
-    n_reqs = len(rankings[0])
-    n_jury = len(rankings)
+def make_loss_matrix(rankings):
+    n_reqs, n_experts = len(rankings[0]), len(rankings)
     matrixes = [make_matrix(ranking) for ranking in rankings]
     loss_matrix = np.empty(shape=(n_reqs, n_reqs))
-    indexes = list(range(0, n_reqs))
-    ranks = []
     for i in range(n_reqs):
         for j in range(n_reqs):
             loss_matrix[i, j] = 0
-            for k in range(n_jury):
+            for k in range(n_experts):
                 loss_matrix[i, j] += 1 - matrixes[k][i, j]
+    return loss_matrix
+
+
+def median_kemeni(rankings):
+    loss_matrix = make_loss_matrix(rankings)
+    n_requests = loss_matrix.shape[0]
+    indexes, ranks = list(range(0, n_requests)), []
     pen_matrix = deepcopy(loss_matrix)
     while not pen_matrix.size == 0:
         row_sums = np.sum(pen_matrix, axis=1)
-        idx = np.argmin(row_sums)
-        ranks.append(indexes[int(idx)])
-        indexes.pop(int(idx))
-        pen_matrix = np.delete(pen_matrix, idx, axis=0)
-        pen_matrix = np.delete(pen_matrix, idx, axis=1)
-    for k in range(n_reqs - 2, -1, -1):
+        request_idx = np.argmin(row_sums)
+        ranks.append(indexes[request_idx])
+        indexes.pop(request_idx)
+        pen_matrix = np.delete(pen_matrix, request_idx, axis=0)
+        pen_matrix = np.delete(pen_matrix, request_idx, axis=1)
+    for k in range(n_requests - 2, -1, -1):
         if loss_matrix[ranks[k], ranks[k + 1]] > loss_matrix[ranks[k + 1], ranks[k]]:
             ranks[k], ranks[k + 1] = ranks[k + 1], ranks[k]
-    median = np.empty(shape=(n_reqs))
-    for i, elem in enumerate(ranks):
-        median[elem] = i + 1
+    median = np.empty(shape=(n_requests))
+    for i, request_idx in enumerate(ranks):
+        median[request_idx] = i + 1
     return list(map(int, median))
 
 
@@ -102,11 +105,34 @@ def make_matrix(ranking):
     return matrix
 
 
-def make_ranks(values, method='min', s_m=False):
-    ranks = list(rankdata([-1 * e for e in values], method=method))
-    same_groups_count = [ranks.count(rank) for rank in set(ranks) if ranks.count(rank) > 1]
+def make_inverse_matrix(matrix):
+    length = matrix.shape[0]
+    inverse_matrix = np.empty(shape=(length, length))
+    for i in range(length):
+        for j in range(i, length):
+            if i != j:
+                if matrix[i, j] == 1:
+                    inverse_matrix[i, j] = -1
+                    inverse_matrix[j, i] = 1
+                elif matrix[i, j] == 0:
+                    inverse_matrix[i, j] = 1
+                    inverse_matrix[j, i] = -1
+            else:
+                inverse_matrix[i, j] = 0
+    return inverse_matrix
 
-    return (ranks, same_groups_count) if s_m else ranks
+
+def max_dist_kemeni_for_ranking(ranking):
+    matrix = make_matrix(ranking)
+    inverse_matrix = make_inverse_matrix(matrix)
+    diff_matrix = matrix - inverse_matrix
+    return int(np.sum(np.absolute(diff_matrix)))
+
+
+def make_ranks(estimations, method='min', related_rank_groups=False):
+    ranks = list(rankdata([-1 * e for e in estimations], method=method))
+    rank_counts_in_related_groups = [ranks.count(rank) for rank in set(ranks) if ranks.count(rank) > 1]
+    return (ranks, rank_counts_in_related_groups) if related_rank_groups else ranks
 
 
 def distance(elem1, elem2):
@@ -162,6 +188,7 @@ def clusterization(dataset, n_clusters):
         clusters[label].append(dataset[idx])
 
     return clusters, centroids, labels
+
 
 
 def generate_reference_datasets(B, dataset):
@@ -233,9 +260,9 @@ def define_optimal_k_number(dataset):
     return result_k
 
 
-def normalize_crit_params_values(crit):
-    reqs = crit.competition.competition_request.all()
-    params = crit.param_criterion.filter(type__in=(1, 3, 4, 5))
+def normalize_crit_params_values(criterion):
+    reqs = criterion.competition.competition_request.all()
+    params = criterion.param_criterion.filter(type__in=(1, 3, 4, 5))
     req_param_values = []
     for req in reqs:
         req_values = []
@@ -252,8 +279,8 @@ def normalize_crit_params_values(crit):
     for i in range(len(params)):
         max_v, min_v = np.max(req_param_values[:, i]), np.min(req_param_values[:, i])
         for k in range(len(reqs)):
-            req_param_values[k, i] = 1 + (req_param_values[k, i] - min_v) / (max_v - min_v) * (
-                    crit.competition.max_for_criteria - 1)
+            req_param_values[k, i] = (req_param_values[k, i] - min_v) / (
+                    max_v - min_v) * criterion.competition.max_for_criteria
     return req_param_values, reqs, params
 
 
@@ -313,3 +340,5 @@ def define_optimal_k(comp_id):
             ClusterNumber.objects.filter(criterion=criterion, type=type).delete()
             for k in result_k:
                 ClusterNumber.objects.create(criterion=criterion, type=type, k_number=k)
+
+

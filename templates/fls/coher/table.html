@@ -1,6 +1,8 @@
 <br>
-<b>Согласованность мнений комиссии</b> : <span id="exp_est">хорошо</span> (<span id="ken_coef">{{ kendall_coef }}</span>)
-<br>
+<div style="font-family: 'Arial';font-size: 13pt">
+<span><b>Согласованность мнений комиссии</b></span> : <span id="exp_est">хорошо</span> (<span id="ken_coef">{{ kendall_coef }}</span>)
+</div>
+
 
 <table id="values" class="table table-striped table-bordered">
     <caption class="text-center" style="font-family: 'Arial',monospace"><strong>Согласованные группы мнений</strong>
@@ -8,9 +10,9 @@
     <thead class="thead thead-light">
     <br>
     <tr>
-        <th>Участник</th>
+        <th>Заявка</th>
         {% for cluster, jurys  in clusters_jury.items %}
-            <th><b>Группа {{ cluster }}</b></th>
+            <th><b>Группа {{ cluster|add:1 }}</b></th>
             {% for jury in jurys %}
                 <th>{{ jury }}</th>
             {% endfor %}

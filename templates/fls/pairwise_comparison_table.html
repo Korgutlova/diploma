@@ -10,40 +10,38 @@
     <hr>
     <br>
     <div class="div-info">
-        <p><strong>Информация по заполнению!</strong><br>
-            <strong>Менее важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по вертикали важнее чем
-            параметр по горизонтали <br>
+        <p style="font-size: 18px"><strong>Информация по заполнению!</strong><br>
+            <strong>Менее важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по вертикали важнее, чем
+            {% if crit %}параметр{% else %}критерий{% endif %} по горизонтали. <br>
             <strong>Равны</strong> - {% if crit %}Параметры{% else %}Критерии{% endif %} по горизитонали и вертикали по
-            значимости равны<br>
-            <strong>Более важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по горизитонали важнее
-            чем параметр по вертикали</p>
+            значимости равны.<br>
+            <strong>Более важный</strong> - {% if crit %}Параметр{% else %}Критерий{% endif %} по горизитонали важнее,
+            чем {% if crit %}параметр{% else %}критерий{% endif %} по вертикали.</p>
     </div>
     <form name="form" id="form" action="
-
-
             {% if crit %}{% url 'fls:pairwise_comparison_param' crit.id %}{% else %}{% url 'fls:pairwise_comparison' comp.id %}{% endif %}"
           method="post">
         {% csrf_token %}
         <table class="table table-bordered" id="itable">
-            <caption class="text-center"><strong>Попарные сравнения {% if crit %}параметров{% else %}
+            <caption class="text-center" style="font-size: 20px"><strong>Попарные сравнения {% if crit %}параметров{% else %}
                 критериев{% endif %}</strong></caption>
             <thead>
             <tr>
                 <th scope="col"></th>
                 {% for p in params %}
-                    <th scope="col">{{ p }}</th>
+                    <th scope="col" style="font-size: 20px">{{ p }}</th>
                 {% endfor %}
             </tr>
             </thead>
             <tbody>
             {% for key, value in params.items %}
                 <tr>
-                    <th scope="col">{{ key }}</th>
+                    <th scope="col" style="font-size: 20px">{{ key }}</th>
                     {% for item in value %}
                         <th scope="col">
                             {% if item|filter_equals %}
                             {% else %}
-                                <select name="rank{{ item }}" id="{{ item }}" class="cell form-control">
+                                <select name="rank{{ item }}" id="{{ item }}"  style="font-size: 19px; height: 38px" class="cell form-control">
                                     <option selected value="-">-</option>
                                     <option value="0">Менее важный</option>
                                     <option value="0.5">Равны</option>
@@ -58,7 +56,7 @@
         </table>
         <p class="has-error" style="font-weight:bold; color: #c10d1f; " hidden>
             Заполните все поля!</p>
-        <button type="submit" id="submit" class="btn btn-primary labelText">Сохранить
+        <button type="submit" id="submit" class="btn btn-primary labelText" style="font-size: 16px">Сохранить
         </button>
     </form>
     <br><br>
@@ -92,7 +90,6 @@
                     $(new_id).css('background-color', 'white');
                 }
             });
-
             $('#submit').click(function () {
                 $('form[name=form]').submit(function (e) {
                     var sub = true;
@@ -107,7 +104,5 @@
                 });
             });
         });
-
-
     </script>
 {% endblock %}
